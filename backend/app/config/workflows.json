@@ -1,0 +1,52 @@
+{
+  "workflows": [
+    {
+      "workflow_id": "weather_workflow",
+      "name": "Weather Forecast Advisory",
+      "description": "Fetches weather forecast datasets.",
+      "version": "1.0.0",
+      "steps": ["Planner", "Weather", "Verifier"],
+      "is_active": true
+    },
+    {
+      "workflow_id": "disease_workflow",
+      "name": "Crop Disease Diagnosis RAG",
+      "description": "Queries crop pathology reference manuals.",
+      "version": "1.0.0",
+      "steps": ["Planner", "Knowledge", "Verifier"],
+      "is_active": true
+    },
+    {
+      "workflow_id": "market_workflow",
+      "name": "Market Pricing Advisory",
+      "description": "Queries Mandi trading prices.",
+      "version": "1.0.0",
+      "steps": ["Planner", "Market", "Verifier"],
+      "is_active": true
+    },
+    {
+      "workflow_id": "scheme_workflow",
+      "name": "Government Subsidy Advisory",
+      "description": "Scans welfare scheme benefit matching rules.",
+      "version": "1.0.0",
+      "steps": ["Planner", "GovernmentScheme", "Verifier"],
+      "is_active": true
+    },
+    {
+      "workflow_id": "mixed_workflow",
+      "name": "Mixed Multi-agent Query",
+      "description": "Orchestrates mixed intent workflows.",
+      "version": "1.0.0",
+      "steps": ["Planner", "Weather", "Market", "Knowledge", "Verifier"],
+      "is_active": true
+    },
+    {
+      "workflow_id": "unknown_workflow",
+      "name": "Unknown Fallback Loop",
+      "description": "Default loopback route.",
+      "version": "1.0.0",
+      "steps": ["Planner", "Verifier"],
+      "is_active": true
+    }
+  ]
+}

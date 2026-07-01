@@ -1,0 +1,9 @@
+# Global code owners
+* @KisanMitraAI-maintainers
+
+# Frontend specific owners
+/frontend/ @KisanMitraAI-frontend-leads
+
+# Backend specific owners
+/backend/ @KisanMitraAI-backend-leads
+/backend/agents/ @KisanMitraAI-agent-architects

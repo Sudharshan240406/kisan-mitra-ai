@@ -1,0 +1,56 @@
+{
+  "models": [
+    {
+      "model_id": "mock-local-llama3",
+      "name": "Local Llama 3 8B",
+      "provider": "Local",
+      "version": "3.0.0",
+      "capabilities": ["text-generation", "local-inference"],
+      "latency_ms": 120.0,
+      "context_window": 8192,
+      "cost_placeholder": 0.0,
+      "availability": "high",
+      "health": "healthy",
+      "status": "active"
+    },
+    {
+      "model_id": "mock-cloud-gemini-pro",
+      "name": "Gemini 1.5 Pro",
+      "provider": "Cloud",
+      "version": "1.5.0",
+      "capabilities": ["text-generation", "multimodal", "complex-reasoning"],
+      "latency_ms": 350.0,
+      "context_window": 1048576,
+      "cost_placeholder": 0.007,
+      "availability": "high",
+      "health": "healthy",
+      "status": "active"
+    },
+    {
+      "model_id": "mock-cloud-openai-gpt4o",
+      "name": "GPT-4o",
+      "provider": "Cloud",
+      "version": "4.0.0",
+      "capabilities": ["text-generation", "agent-orchestration"],
+      "latency_ms": 280.0,
+      "context_window": 128000,
+      "cost_placeholder": 0.015,
+      "availability": "high",
+      "health": "healthy",
+      "status": "active"
+    },
+    {
+      "model_id": "mock-edge-phi3",
+      "name": "Phi-3 Mini",
+      "provider": "Edge",
+      "version": "3.0.0",
+      "capabilities": ["text-generation", "offline-inference"],
+      "latency_ms": 90.0,
+      "context_window": 4096,
+      "cost_placeholder": 0.0,
+      "availability": "medium",
+      "health": "healthy",
+      "status": "active"
+    }
+  ]
+}

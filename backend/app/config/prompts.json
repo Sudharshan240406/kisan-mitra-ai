@@ -1,0 +1,76 @@
+{
+  "prompts": [
+    {
+      "prompt_id": "intent_classification",
+      "version": "1.0.0",
+      "description": "Classifies farmer query into agricultural intent categories.",
+      "owner": "intelligence",
+      "workflow": null,
+      "capability": "intent_resolution",
+      "variables": ["query", "language", "context"],
+      "validation_rules": {"max_tokens": 512, "required_vars": ["query"]},
+      "status": "active",
+      "template": "Classify the following farmer query into one of the categories: weather, disease, market, scheme, soil, finance, mixed, unknown.\n\nQuery: {query}\nLanguage: {language}\nContext: {context}"
+    },
+    {
+      "prompt_id": "disease_diagnosis",
+      "version": "1.0.0",
+      "description": "Diagnoses crop diseases based on symptom descriptions.",
+      "owner": "knowledge",
+      "workflow": "disease_workflow",
+      "capability": "disease_diagnosis",
+      "variables": ["crop", "symptoms", "region", "season"],
+      "validation_rules": {"max_tokens": 1024, "required_vars": ["crop", "symptoms"]},
+      "status": "active",
+      "template": "Analyze the following crop disease symptoms and provide diagnosis.\n\nCrop: {crop}\nSymptoms: {symptoms}\nRegion: {region}\nSeason: {season}"
+    },
+    {
+      "prompt_id": "weather_advisory",
+      "version": "1.0.0",
+      "description": "Generates weather advisory based on forecast data.",
+      "owner": "weather",
+      "workflow": "weather_workflow",
+      "capability": "weather_advisory",
+      "variables": ["location", "duration", "crop"],
+      "validation_rules": {"max_tokens": 512, "required_vars": ["location"]},
+      "status": "active",
+      "template": "Provide agricultural weather advisory for the following parameters.\n\nLocation: {location}\nDuration: {duration}\nCrop: {crop}"
+    },
+    {
+      "prompt_id": "market_price_advisory",
+      "version": "1.0.0",
+      "description": "Provides market price analysis and selling recommendations.",
+      "owner": "market",
+      "workflow": "market_workflow",
+      "capability": "market_advisory",
+      "variables": ["crop", "location", "quantity"],
+      "validation_rules": {"max_tokens": 512, "required_vars": ["crop"]},
+      "status": "active",
+      "template": "Analyze the market prices for the following crop and provide selling recommendations.\n\nCrop: {crop}\nLocation: {location}\nQuantity: {quantity}"
+    },
+    {
+      "prompt_id": "scheme_eligibility",
+      "version": "1.0.0",
+      "description": "Determines eligibility for government agricultural schemes.",
+      "owner": "government",
+      "workflow": "scheme_workflow",
+      "capability": "scheme_advisory",
+      "variables": ["farmer_id", "scheme_title", "land_area", "state"],
+      "validation_rules": {"max_tokens": 512, "required_vars": ["scheme_title"]},
+      "status": "active",
+      "template": "Determine eligibility for the following government scheme.\n\nFarmer ID: {farmer_id}\nScheme: {scheme_title}\nLand Area: {land_area}\nState: {state}"
+    },
+    {
+      "prompt_id": "recommendation_safety",
+      "version": "1.0.0",
+      "description": "Validates safety of generated agricultural recommendations.",
+      "owner": "governance",
+      "workflow": null,
+      "capability": "safety_validation",
+      "variables": ["recommendation", "confidence", "risk_score"],
+      "validation_rules": {"max_tokens": 256, "required_vars": ["recommendation"]},
+      "status": "active",
+      "template": "Validate the safety of the following agricultural recommendation.\n\nRecommendation: {recommendation}\nConfidence: {confidence}\nRisk Score: {risk_score}"
+    }
+  ]
+}

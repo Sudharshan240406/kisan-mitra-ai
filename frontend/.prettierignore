@@ -1,0 +1,9 @@
+.next/
+node_modules/
+build/
+out/
+public/
+package-lock.json
+package.json
+tsconfig.json
+components.json
