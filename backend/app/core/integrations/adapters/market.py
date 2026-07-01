@@ -1,6 +1,7 @@
 import logging
+import httpx
 from typing import Any
-
+from app.core.config import settings
 from app.core.integrations.base import IMarketAdapter, IntegrationMetadata
 
 logger = logging.getLogger("kisan_mitra_ai.integrations.adapters.market")
@@ -18,7 +19,7 @@ class AgmarknetMarketAdapter(IMarketAdapter):
             description="Agmarknet official mandi pricing service registry.",
             type="market",
             capabilities=["mandi_prices"],
-            configuration={"api_endpoint": "https://agmarknet.gov.in/api"},
+            configuration={"api_endpoint": "https://api.data.gov.in/resource/9ef84f99-ffc9-4b20-bb41-1120e9941120"},
             feature_flags={"enabled": True}
         )
 
@@ -37,6 +38,51 @@ class AgmarknetMarketAdapter(IMarketAdapter):
 
     async def get_market_price(self, crop: str, location: str) -> dict[str, Any]:
         logger.info(f"Fetching Agmarknet price for crop: {crop} in location: {location}")
+        
+        api_key = settings.AGMARKNET_API_KEY
+        if api_key:
+            endpoint = self.metadata.configuration.get("api_endpoint", "https://api.data.gov.in/resource/9ef84f99-ffc9-4b20-bb41-1120e9941120")
+            try:
+                async with httpx.AsyncClient(timeout=4.0) as client:
+                    response = await client.get(
+                        endpoint,
+                        params={
+                            "api-key": api_key,
+                            "format": "json",
+                            "filters[commodity]": crop,
+                            "filters[state]": location,
+                            "limit": 1
+                        }
+                    )
+                    if response.status_code == 200:
+                        data = response.json()
+                        records = data.get("records", [])
+                        if records:
+                            record = records[0]
+                            raw_price = float(record.get("modal_price", 2350))
+                            unit = record.get("unit", "quintal").lower()
+                            
+                            # Normalization: Standard unit is Quintal (100 Kg)
+                            if "kg" in unit:
+                                modal_price = raw_price * 100
+                            elif "ton" in unit or "tonne" in unit:
+                                modal_price = raw_price / 10
+                            else:
+                                modal_price = raw_price
+                                
+                            return {
+                                "provider": "Agmarknet",
+                                "crop": crop,
+                                "location": location,
+                                "min_price_per_quintal": modal_price * 0.95,
+                                "max_price_per_quintal": modal_price * 1.05,
+                                "modal_price_per_quintal": modal_price,
+                                "currency": "INR"
+                            }
+            except Exception as e:
+                logger.warning(f"[AgmarknetMarketAdapter] HTTP call failed, falling back: {e}")
+
+        # Fallback Mock Data
         return {
             "provider": "Agmarknet",
             "crop": crop,
@@ -60,8 +106,8 @@ class eNAMMarketAdapter(IMarketAdapter):
             description="eNAM digital platform API provider registry.",
             type="market",
             capabilities=["mandi_prices", "bidding"],
-            configuration={"api_endpoint": "https://enam.gov.in/api"},
-            feature_flags={"enabled": False}
+            configuration={"api_endpoint": settings.ENAM_API_ENDPOINT},
+            feature_flags={"enabled": True}
         )
 
     @property
@@ -79,6 +125,41 @@ class eNAMMarketAdapter(IMarketAdapter):
 
     async def get_market_price(self, crop: str, location: str) -> dict[str, Any]:
         logger.info(f"Fetching eNAM price for crop: {crop} in location: {location}")
+        
+        endpoint = settings.ENAM_API_ENDPOINT
+        if endpoint:
+            try:
+                async with httpx.AsyncClient(timeout=4.0) as client:
+                    response = await client.post(
+                        endpoint,
+                        json={"crop": crop, "state": location}
+                    )
+                    if response.status_code == 200:
+                        data = response.json()
+                        raw_price = float(data.get("price", 2300))
+                        unit = data.get("unit", "quintal").lower()
+                        
+                        # Normalization
+                        if "kg" in unit:
+                            modal_price = raw_price * 100
+                        elif "ton" in unit or "tonne" in unit:
+                            modal_price = raw_price / 10
+                        else:
+                            modal_price = raw_price
+                            
+                        return {
+                            "provider": "eNAM",
+                            "crop": crop,
+                            "location": location,
+                            "min_price_per_quintal": modal_price * 0.93,
+                            "max_price_per_quintal": modal_price * 1.08,
+                            "modal_price_per_quintal": modal_price,
+                            "currency": "INR"
+                        }
+            except Exception as e:
+                logger.warning(f"[eNAMMarketAdapter] HTTP call failed, falling back: {e}")
+
+        # Fallback Mock Data
         return {
             "provider": "eNAM",
             "crop": crop,

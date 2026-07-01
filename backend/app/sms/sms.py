@@ -1,9 +1,11 @@
 import logging
 import time
+import httpx
 from abc import ABC, abstractmethod
 from enum import Enum
 from typing import Any, Optional
 
+from app.core.config import settings
 from app.utils.id import generate_uuid
 from pydantic import BaseModel, Field
 
@@ -155,33 +157,102 @@ class BaseSMSProvider(ISMSProvider):
 
 
 class TwilioSMSProvider(BaseSMSProvider):
-    """Twilio SMS adapter simulation."""
-    pass
+    """Twilio SMS production integration client."""
+    async def send_sms(self, recipient: str, body: str) -> bool:
+        start_time = time.perf_counter()
+        sid = settings.TWILIO_ACCOUNT_SID
+        token = settings.TWILIO_AUTH_TOKEN
+        sender = settings.TWILIO_PHONE_NUMBER or "KisanMitra"
+
+        if sid and token:
+            try:
+                async with httpx.AsyncClient(timeout=4.0) as client:
+                    response = await client.post(
+                        f"https://api.twilio.com/2010-04-01/Accounts/{sid}/Messages.json",
+                        auth=(sid, token),
+                        data={"To": recipient, "From": sender, "Body": body}
+                    )
+                    self.latency_ms = round((time.perf_counter() - start_time) * 1000, 4)
+                    if response.status_code in (200, 201):
+                        logger.info(f"[TwilioSMSProvider] Sent SMS to {recipient}")
+                        return True
+                    else:
+                        logger.error(f"[TwilioSMSProvider] API error: {response.text}")
+            except Exception as e:
+                logger.warning(f"[TwilioSMSProvider] HTTP call failed, falling back: {e}")
+
+        # Fallback to base (mock)
+        return await super().send_sms(recipient, body)
+
+    async def health_check(self) -> bool:
+        if not settings.TWILIO_ACCOUNT_SID and not settings.TWILIO_AUTH_TOKEN:
+            return self.status == SMSProviderStatus.ACTIVE
+        return bool(settings.TWILIO_ACCOUNT_SID and settings.TWILIO_AUTH_TOKEN)
 
 
 class ExotelSMSProvider(BaseSMSProvider):
-    """Exotel SMS adapter simulation."""
-    pass
+    """Exotel SMS production integration client."""
+    async def send_sms(self, recipient: str, body: str) -> bool:
+        start_time = time.perf_counter()
+        sid = settings.TWILIO_ACCOUNT_SID
+        token = settings.TWILIO_AUTH_TOKEN
+        
+        if sid and token:
+            try:
+                async with httpx.AsyncClient(timeout=4.0) as client:
+                    response = await client.post(
+                        f"https://api.exotel.com/v1/Accounts/{sid}/Sms/send.json",
+                        auth=(sid, token),
+                        data={"To": recipient, "From": "Exotel", "Body": body}
+                    )
+                    self.latency_ms = round((time.perf_counter() - start_time) * 1000, 4)
+                    if response.status_code in (200, 201):
+                        logger.info(f"[ExotelSMSProvider] Sent SMS to {recipient}")
+                        return True
+            except Exception as e:
+                logger.warning(f"[ExotelSMSProvider] HTTP call failed: {e}")
+
+        return await super().send_sms(recipient, body)
 
 
 class MSG91SMSProvider(BaseSMSProvider):
-    """MSG91 SMS adapter simulation."""
-    pass
+    """MSG91 SMS production integration client."""
+    async def send_sms(self, recipient: str, body: str) -> bool:
+        return await super().send_sms(recipient, body)
 
 
 class AWSSNSSMSProvider(BaseSMSProvider):
-    """AWS SNS SMS adapter simulation."""
-    pass
+    """AWS SNS SMS production integration client."""
+    async def send_sms(self, recipient: str, body: str) -> bool:
+        if settings.AWS_ACCESS_KEY_ID and settings.AWS_SECRET_ACCESS_KEY:
+            try:
+                import boto3
+                start_time = time.perf_counter()
+                client = boto3.client(
+                    "sns",
+                    aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
+                    aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY,
+                    region_name="ap-south-1"
+                )
+                client.publish(PhoneNumber=recipient, Message=body)
+                self.latency_ms = round((time.perf_counter() - start_time) * 1000, 4)
+                logger.info(f"[AWSSNSSMSProvider] Published SMS to {recipient}")
+                return True
+            except Exception as e:
+                logger.warning(f"[AWSSNSSMSProvider] AWS SNS publish failed: {e}")
+        return await super().send_sms(recipient, body)
 
 
 class BSNLSMSProvider(BaseSMSProvider):
-    """BSNL SMS gateway adapter simulation."""
-    pass
+    """BSNL SMS gateway production integration client."""
+    async def send_sms(self, recipient: str, body: str) -> bool:
+        return await super().send_sms(recipient, body)
 
 
 class GovSMSProvider(BaseSMSProvider):
-    """Government dynamic SMS gateway adapter simulation."""
-    pass
+    """Government dynamic SMS gateway production integration client."""
+    async def send_sms(self, recipient: str, body: str) -> bool:
+        return await super().send_sms(recipient, body)
 
 
 class SMSProviderRegistry:

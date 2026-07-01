@@ -220,6 +220,7 @@ async def test_service_bindings_routing() -> None:
     # Clear auto registered weather adapters to control state
     container.integration_registry.deregister("imd-weather")
     container.integration_registry.deregister("openweather")
+    container.integration_registry.deregister("tomorrow-io")
 
     # Add our dummy
     dummy = DummyWeatherAdapter("imd-weather")

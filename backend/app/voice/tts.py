@@ -23,6 +23,7 @@ from __future__ import annotations
 
 import logging
 import time
+import httpx
 from typing import Any, Optional, Protocol, runtime_checkable
 
 from pydantic import BaseModel, Field
@@ -107,7 +108,36 @@ class GoogleTTSProvider:
         streaming: bool = False,
     ) -> TTSResult:
         start = time.perf_counter()
-        # Stub: encode text as bytes (real impl would call Google TTS API)
+        
+        # Real Google TTS REST call if API key is set
+        if self._api_key:
+            try:
+                url = f"https://texttospeech.googleapis.com/v1/text:synthesize?key={self._api_key}"
+                lang_code = f"{language}-IN" if language != "en" else "en-US"
+                payload = {
+                    "input": {"text": text},
+                    "voice": {"languageCode": lang_code, "name": voice_profile or f"{lang_code}-Wavenet-A"},
+                    "audioConfig": {"audioEncoding": "LINEAR16", "speakingRate": speed}
+                }
+                async with httpx.AsyncClient(timeout=6.0) as client:
+                    response = await client.post(url, json=payload)
+                    if response.status_code == 200:
+                        import base64
+                        audio_content = base64.b64decode(response.json().get("audioContent", ""))
+                        latency = (time.perf_counter() - start) * 1000
+                        return TTSResult(
+                            audio_bytes=audio_content,
+                            format="LINEAR16",
+                            sample_rate=8000,
+                            duration_ms=_estimate_duration_ms(text, language),
+                            latency_ms=latency,
+                            provider=self.provider_name,
+                            language=language,
+                        )
+            except Exception as e:
+                logger.warning(f"[GoogleTTS] Real synthesis call failed: {e}")
+
+        # Stub fallback: encode text as bytes
         audio = text.encode("utf-8")
         latency = (time.perf_counter() - start) * 1000
         return TTSResult(
@@ -121,7 +151,7 @@ class GoogleTTSProvider:
         )
 
     def health(self) -> dict[str, Any]:
-        return {"provider": self.provider_name, "status": "stub"}
+        return {"provider": self.provider_name, "status": "active" if self._api_key else "stub"}
 
 
 # ---------------------------------------------------------------------------
@@ -145,6 +175,31 @@ class AzureTTSProvider:
         streaming: bool = False,
     ) -> TTSResult:
         start = time.perf_counter()
+        
+        # Real Azure TTS REST call if key is set
+        if self._key:
+            try:
+                url = f"https://{self._region}.tts.speech.microsoft.com/cognitiveservices/v1"
+                lang_code = f"{language}-IN" if language != "en" else "en-US"
+                voice_name = voice_profile or (f"Microsoft Server Speech Text to Speech Voice ({lang_code}, SwaraNeural)" if language == "hi" else f"Microsoft Server Speech Text to Speech Voice ({lang_code}, JennyNeural)")
+                ssml = f"<speak version='1.0' xml:lang='{lang_code}'><voice name='{voice_name}'>{text}</voice></speak>"
+                headers = {
+                    "Ocp-Apim-Subscription-Key": self._key,
+                    "Content-Type": "application/ssml+xml",
+                    "X-Microsoft-OutputFormat": "riff-8khz-8bit-mono-mulaw"
+                }
+                async with httpx.AsyncClient(timeout=6.0) as client:
+                    response = await client.post(url, content=ssml, headers=headers)
+                    if response.status_code == 200:
+                        latency = (time.perf_counter() - start) * 1000
+                        return TTSResult(
+                            audio_bytes=response.content, format="MULAW", sample_rate=8000,
+                            duration_ms=_estimate_duration_ms(text, language),
+                            latency_ms=latency, provider=self.provider_name, language=language,
+                        )
+            except Exception as e:
+                logger.warning(f"[AzureTTS] Real synthesis call failed: {e}")
+
         audio = text.encode("utf-8")
         latency = (time.perf_counter() - start) * 1000
         return TTSResult(
@@ -154,7 +209,7 @@ class AzureTTSProvider:
         )
 
     def health(self) -> dict[str, Any]:
-        return {"provider": self.provider_name, "status": "stub", "region": self._region}
+        return {"provider": self.provider_name, "status": "active" if self._key else "stub", "region": self._region}
 
 
 # ---------------------------------------------------------------------------

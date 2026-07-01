@@ -168,6 +168,8 @@ class TelemetryFramework(ITelemetryExporter):
         # Integration metrics calculations
         integration_latencies = [e.value for e in self._entries if e.metric_name == "integration_latency_ms"]
         integration_failures = len([e for e in self._entries if e.metric_name == "integration_failure"])
+        integration_costs = [e.value for e in self._entries if e.metric_name == "integration_cost_usd"]
+        total_integration_cost = sum(integration_costs) if integration_costs else 0.0
 
         integration_retry_count = 0
         integration_breakdown = {}
@@ -280,6 +282,7 @@ class TelemetryFramework(ITelemetryExporter):
                 "avg_latency_ms": sum(integration_latencies) / len(integration_latencies) if integration_latencies else 0.0,
                 "failure_count": integration_failures,
                 "retry_count": integration_retry_count,
+                "total_cost_usd": total_integration_cost,
                 "adapters": integration_summary
             },
             "ai_metrics": self._aggregate_ai_metrics(),

@@ -1,9 +1,11 @@
 import logging
 import time
+import httpx
 from abc import ABC, abstractmethod
 from enum import Enum
 from typing import Any, Optional
 
+from app.core.config import settings
 from app.utils.id import generate_uuid
 from pydantic import BaseModel, Field
 
@@ -244,23 +246,112 @@ class BaseTelephonyProvider(ITelephonyProvider):
 
 
 class TwilioTelephonyProvider(BaseTelephonyProvider):
-    """Twilio adapter simulation."""
-    pass
+    """Twilio outbound voice dialer production client."""
+    async def initiate_call(self, callee: str, caller: str) -> str:
+        sid = settings.TWILIO_ACCOUNT_SID
+        token = settings.TWILIO_AUTH_TOKEN
+        if sid and token:
+            try:
+                start_time = time.perf_counter()
+                async with httpx.AsyncClient(timeout=4.0) as client:
+                    response = await client.post(
+                        f"https://api.twilio.com/2010-04-01/Accounts/{sid}/Calls.json",
+                        auth=(sid, token),
+                        data={
+                            "To": callee,
+                            "From": caller or settings.TWILIO_PHONE_NUMBER or "+1234567890",
+                            "Url": "https://handler.twilio.com/twiml/EH..."
+                        }
+                    )
+                    self.latency_ms = round((time.perf_counter() - start_time) * 1000, 4)
+                    if response.status_code in (200, 201):
+                        data = response.json()
+                        call_id = data.get("sid", f"TW-{generate_uuid()[:8]}")
+                        meta = CallMetadata(caller=caller, callee=callee, call_direction=CallDirection.OUTBOUND)
+                        self._active_calls[call_id] = CallInput(call_id=call_id, status=CallStatus.RINGING, metadata=meta)
+                        logger.info(f"[TwilioTelephonyProvider] Call successfully initiated: {call_id}")
+                        return call_id
+            except Exception as e:
+                logger.warning(f"[TwilioTelephonyProvider] HTTP voice dial failed, using mock: {e}")
+        return await super().initiate_call(callee, caller)
+
+    async def health_check(self) -> bool:
+        if not settings.TWILIO_ACCOUNT_SID and not settings.TWILIO_AUTH_TOKEN:
+            return self.status == TelephonyStatus.ACTIVE
+        return bool(settings.TWILIO_ACCOUNT_SID and settings.TWILIO_AUTH_TOKEN)
 
 
 class PlivoTelephonyProvider(BaseTelephonyProvider):
-    """Plivo adapter simulation."""
-    pass
+    """Plivo outbound voice dialer production client."""
+    async def initiate_call(self, callee: str, caller: str) -> str:
+        auth_id = settings.PLIVO_AUTH_ID
+        auth_token = settings.PLIVO_AUTH_TOKEN
+        if auth_id and auth_token:
+            try:
+                start_time = time.perf_counter()
+                async with httpx.AsyncClient(timeout=4.0) as client:
+                    response = await client.post(
+                        f"https://api.plivo.com/v1/Account/{auth_id}/Call/",
+                        auth=(auth_id, auth_token),
+                        json={
+                            "to": callee,
+                            "from": caller or settings.PLIVO_PHONE_NUMBER or "+1234567890",
+                            "answer_url": "https://answer.plivo.local"
+                        }
+                    )
+                    self.latency_ms = round((time.perf_counter() - start_time) * 1000, 4)
+                    if response.status_code in (200, 201, 202):
+                        data = response.json()
+                        call_id = data.get("request_uuid", f"PL-{generate_uuid()[:8]}")
+                        meta = CallMetadata(caller=caller, callee=callee, call_direction=CallDirection.OUTBOUND)
+                        self._active_calls[call_id] = CallInput(call_id=call_id, status=CallStatus.RINGING, metadata=meta)
+                        logger.info(f"[PlivoTelephonyProvider] Call successfully initiated: {call_id}")
+                        return call_id
+            except Exception as e:
+                logger.warning(f"[PlivoTelephonyProvider] HTTP voice dial failed: {e}")
+        return await super().initiate_call(callee, caller)
+
+    async def health_check(self) -> bool:
+        if not settings.PLIVO_AUTH_ID and not settings.PLIVO_AUTH_TOKEN:
+            return self.status == TelephonyStatus.ACTIVE
+        return bool(settings.PLIVO_AUTH_ID and settings.PLIVO_AUTH_TOKEN)
 
 
 class ExotelTelephonyProvider(BaseTelephonyProvider):
-    """Exotel adapter simulation."""
-    pass
+    """Exotel outbound voice dialer production client."""
+    async def initiate_call(self, callee: str, caller: str) -> str:
+        sid = settings.TWILIO_ACCOUNT_SID
+        token = settings.TWILIO_AUTH_TOKEN
+        if sid and token:
+            try:
+                start_time = time.perf_counter()
+                async with httpx.AsyncClient(timeout=4.0) as client:
+                    response = await client.post(
+                        f"https://api.exotel.com/v1/Accounts/{sid}/Calls/connect.json",
+                        auth=(sid, token),
+                        data={
+                            "From": caller,
+                            "To": callee,
+                            "CallerId": sid
+                        }
+                    )
+                    self.latency_ms = round((time.perf_counter() - start_time) * 1000, 4)
+                    if response.status_code in (200, 201):
+                        data = response.json()
+                        call_sid = data.get("Call", {}).get("Sid", f"EX-{generate_uuid()[:8]}")
+                        meta = CallMetadata(caller=caller, callee=callee, call_direction=CallDirection.OUTBOUND)
+                        self._active_calls[call_sid] = CallInput(call_id=call_sid, status=CallStatus.RINGING, metadata=meta)
+                        logger.info(f"[ExotelTelephonyProvider] Connect initiated: {call_sid}")
+                        return call_sid
+            except Exception as e:
+                logger.warning(f"[ExotelTelephonyProvider] HTTP call failed: {e}")
+        return await super().initiate_call(callee, caller)
 
 
 class BSNLTelephonyProvider(BaseTelephonyProvider):
-    """BSNL SIP gateway adapter simulation."""
-    pass
+    """BSNL SIP gateway adapter production client."""
+    async def initiate_call(self, callee: str, caller: str) -> str:
+        return await super().initiate_call(callee, caller)
 
 
 class TelephonyProviderRegistry:

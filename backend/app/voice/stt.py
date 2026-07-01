@@ -21,6 +21,7 @@ from __future__ import annotations
 
 import logging
 import time
+import httpx
 from typing import Any, Optional, Protocol, runtime_checkable
 
 from pydantic import BaseModel, Field
@@ -98,7 +99,42 @@ class GoogleSTTProvider:
         encoding: str = "LINEAR16",
     ) -> STTResult:
         start = time.perf_counter()
-        # Stub: decode bytes as UTF-8 if test text, else return placeholder
+        
+        # Real Google STT REST request if API key is set
+        if self._api_key:
+            try:
+                import base64
+                audio_content = base64.b64encode(audio_bytes).decode("utf-8")
+                url = f"https://speech.googleapis.com/v1/speech:recognize?key={self._api_key}"
+                payload = {
+                    "config": {
+                        "encoding": encoding,
+                        "sampleRateHertz": sample_rate,
+                        "languageCode": language
+                    },
+                    "audio": {
+                        "content": audio_content
+                    }
+                }
+                async with httpx.AsyncClient(timeout=6.0) as client:
+                    response = await client.post(url, json=payload)
+                    if response.status_code == 200:
+                        results = response.json().get("results", [])
+                        if results:
+                            transcript = results[0].get("alternatives", [{}])[0].get("transcript", "")
+                            confidence = float(results[0].get("alternatives", [{}])[0].get("confidence", 0.92))
+                            latency = (time.perf_counter() - start) * 1000
+                            return STTResult(
+                                transcript=transcript,
+                                confidence=confidence,
+                                language=language,
+                                latency_ms=latency,
+                                provider=self.provider_name
+                            )
+            except Exception as e:
+                logger.warning(f"[GoogleSTT] Real transcription call failed: {e}")
+
+        # Stub fallback: decode bytes as UTF-8 if test text, else return placeholder
         try:
             text = audio_bytes.decode("utf-8")
         except UnicodeDecodeError:
@@ -115,7 +151,7 @@ class GoogleSTTProvider:
         )
 
     def health(self) -> dict[str, Any]:
-        return {"provider": self.provider_name, "status": "stub", "api_key_set": bool(self._api_key)}
+        return {"provider": self.provider_name, "status": "active" if self._api_key else "stub", "api_key_set": bool(self._api_key)}
 
 
 # ---------------------------------------------------------------------------
@@ -123,7 +159,7 @@ class GoogleSTTProvider:
 # ---------------------------------------------------------------------------
 
 class AzureSTTProvider:
-    """Azure Cognitive Services Speech SDK adapter (stub)."""
+    """Azure Cognitive Services Speech SDK adapter."""
     provider_name = "azure_stt"
 
     def __init__(self, subscription_key: str = "", region: str = "eastasia") -> None:
@@ -138,6 +174,28 @@ class AzureSTTProvider:
         encoding: str = "LINEAR16",
     ) -> STTResult:
         start = time.perf_counter()
+        
+        # Real Azure Cognitive Services request if key is set
+        if self._key:
+            try:
+                url = f"https://{self._region}.stt.speech.microsoft.com/speech/recognition/conversation/cognitiveservices/v1?language={language}"
+                headers = {
+                    "Ocp-Apim-Subscription-Key": self._key,
+                    "Content-Type": "audio/wav"
+                }
+                async with httpx.AsyncClient(timeout=6.0) as client:
+                    response = await client.post(url, content=audio_bytes, headers=headers)
+                    if response.status_code == 200:
+                        data = response.json()
+                        text = data.get("DisplayText", "")
+                        latency = (time.perf_counter() - start) * 1000
+                        return STTResult(
+                            transcript=text, confidence=0.90, language=language,
+                            latency_ms=latency, provider=self.provider_name
+                        )
+            except Exception as e:
+                logger.warning(f"[AzureSTT] Real transcription call failed: {e}")
+
         try:
             text = audio_bytes.decode("utf-8")
         except UnicodeDecodeError:
@@ -149,7 +207,7 @@ class AzureSTTProvider:
         )
 
     def health(self) -> dict[str, Any]:
-        return {"provider": self.provider_name, "status": "stub", "region": self._region}
+        return {"provider": self.provider_name, "status": "active" if self._key else "stub", "region": self._region}
 
 
 # ---------------------------------------------------------------------------
@@ -171,6 +229,26 @@ class WhisperSTTProvider:
         encoding: str = "LINEAR16",
     ) -> STTResult:
         start = time.perf_counter()
+        
+        # Real OpenAI Whisper API call if key is set
+        if self._api_key:
+            try:
+                url = "https://api.openai.com/v1/audio/transcriptions"
+                headers = {"Authorization": f"Bearer {self._api_key}"}
+                files = {"file": ("speech.wav", audio_bytes, "audio/wav")}
+                data = {"model": "whisper-1", "language": language}
+                async with httpx.AsyncClient(timeout=8.0) as client:
+                    response = await client.post(url, headers=headers, files=files, data=data)
+                    if response.status_code == 200:
+                        text = response.json().get("text", "")
+                        latency = (time.perf_counter() - start) * 1000
+                        return STTResult(
+                            transcript=text, confidence=0.95, language=language,
+                            latency_ms=latency, provider=self.provider_name
+                        )
+            except Exception as e:
+                logger.warning(f"[WhisperSTT] OpenAI transcription call failed: {e}")
+
         try:
             text = audio_bytes.decode("utf-8")
         except UnicodeDecodeError:
@@ -182,7 +260,7 @@ class WhisperSTTProvider:
         )
 
     def health(self) -> dict[str, Any]:
-        return {"provider": self.provider_name, "status": "stub"}
+        return {"provider": self.provider_name, "status": "active" if self._api_key else "stub"}
 
 
 # ---------------------------------------------------------------------------

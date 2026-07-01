@@ -164,6 +164,21 @@ class ResilientRunner:
                         ))
 
                 if self.telemetry:
+                    # Estimate integration costs
+                    cost = 0.0001
+                    if "stt" in integration_id or "whisper" in integration_id:
+                        cost = 0.006
+                    elif "tts" in integration_id:
+                        cost = 0.004
+                    elif "cloud" in integration_id:
+                        cost = 0.0005
+                    self.telemetry.record(
+                        name="integration_cost_usd",
+                        value=cost,
+                        trace_id=trace_id,
+                        session_id=session_id,
+                        metadata={"integration_id": integration_id}
+                    )
                     self.telemetry.record(
                         name="integration_latency_ms",
                         value=duration_ms,
@@ -199,6 +214,21 @@ class ResilientRunner:
                         ))
 
                     if self.telemetry:
+                        # Estimate integration costs
+                        cost = 0.0001
+                        if "stt" in integration_id or "whisper" in integration_id:
+                            cost = 0.006
+                        elif "tts" in integration_id:
+                            cost = 0.004
+                        elif "cloud" in integration_id:
+                            cost = 0.0005
+                        self.telemetry.record(
+                            name="integration_cost_usd",
+                            value=cost,
+                            trace_id=trace_id,
+                            session_id=session_id,
+                            metadata={"integration_id": integration_id}
+                        )
                         self.telemetry.record(
                             name="integration_failure",
                             value=1.0,

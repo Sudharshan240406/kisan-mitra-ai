@@ -403,15 +403,18 @@ class Container:
             PostgreSQLStorageAdapter,
             RedisStorageAdapter,
             VectorDBStorageAdapter,
+            CloudStorageAdapter,
         )
         from app.core.integrations.adapters.weather import (
             IMDWeatherAdapter,
             OpenWeatherAdapter,
+            TomorrowIOWeatherAdapter,
         )
 
         # Register Weather Adapters
         self.integration_registry.register(IMDWeatherAdapter())
         self.integration_registry.register(OpenWeatherAdapter())
+        self.integration_registry.register(TomorrowIOWeatherAdapter())
 
         # Register Market Adapters
         self.integration_registry.register(AgmarknetMarketAdapter())
@@ -428,6 +431,7 @@ class Container:
         self.integration_registry.register(PostgreSQLStorageAdapter())
         self.integration_registry.register(RedisStorageAdapter())
         self.integration_registry.register(VectorDBStorageAdapter())
+        self.integration_registry.register(CloudStorageAdapter())
 
         # Register Notifications Adapters
         self.integration_registry.register(SMSNotificationAdapter())

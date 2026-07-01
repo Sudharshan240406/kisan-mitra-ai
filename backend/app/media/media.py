@@ -1,9 +1,11 @@
 import logging
 import time
+import httpx
 from abc import ABC, abstractmethod
 from enum import Enum
 from typing import Any, Optional
 
+from app.core.config import settings
 from app.utils.id import generate_uuid
 from pydantic import BaseModel, Field
 
@@ -227,6 +229,35 @@ class ImageProvider(BaseMediaProvider):
                 text = "Leaf contains yellow spot patches indicative of wheat rust."
         except Exception:
             pass
+
+        # Real Google Vision OCR integration if configured
+        api_key = settings.GOOGLE_VISION_API_KEY
+        if api_key and media_input.content:
+            try:
+                import base64
+                encoded_image = base64.b64encode(media_input.content).decode("utf-8")
+                url = f"https://vision.googleapis.com/v1/images:annotate?key={api_key}"
+                payload = {
+                    "requests": [
+                        {
+                            "image": {"content": encoded_image},
+                            "features": [{"type": "TEXT_DETECTION"}]
+                        }
+                    ]
+                }
+                async with httpx.AsyncClient(timeout=8.0) as client:
+                    response = await client.post(url, json=payload)
+                    if response.status_code == 200:
+                        responses_data = response.json().get("responses", [])
+                        if responses_data:
+                            full_text = responses_data[0].get("fullTextAnnotation", {}).get("text", "")
+                            if full_text:
+                                text = f"OCR Extracted text:\n{full_text}"
+                                if "rust" in full_text.lower() or "yellow" in full_text.lower():
+                                    tags.append("rust")
+                                    anomalies.append("Yellow Rust Disease detected")
+            except Exception as e:
+                logger.warning(f"[ImageProvider] Google Vision OCR failed: {e}")
 
         duration = round((time.perf_counter() - start_time) * 1000, 4)
         self.latency_ms = duration

@@ -1,6 +1,6 @@
 import logging
+import httpx
 from typing import Any
-
 from app.core.integrations.base import IGovernmentSchemeAdapter, IntegrationMetadata
 
 logger = logging.getLogger("kisan_mitra_ai.integrations.adapters.government")
@@ -37,6 +37,15 @@ class PMKisanAdapter(IGovernmentSchemeAdapter):
 
     async def list_schemes(self) -> list[dict[str, Any]]:
         logger.info("Listing schemes from PM-Kisan...")
+        portal = self.metadata.configuration.get("portal_url", "https://pmkisan.gov.in")
+        try:
+            async with httpx.AsyncClient(timeout=3.0) as client:
+                response = await client.get(f"{portal}/api/schemes")
+                if response.status_code == 200:
+                    return response.json()
+        except Exception as e:
+            logger.warning(f"[PMKisanAdapter] HTTP call failed, using fallback schemes list: {e}")
+            
         return [{
             "id": "pm_kisan_benefit",
             "name": "PM-Kisan Income Support",
@@ -77,6 +86,15 @@ class PMFBYAdapter(IGovernmentSchemeAdapter):
 
     async def list_schemes(self) -> list[dict[str, Any]]:
         logger.info("Listing schemes from PMFBY...")
+        portal = self.metadata.configuration.get("portal_url", "https://pmfby.gov.in")
+        try:
+            async with httpx.AsyncClient(timeout=3.0) as client:
+                response = await client.get(f"{portal}/api/insurance-schemes")
+                if response.status_code == 200:
+                    return response.json()
+        except Exception as e:
+            logger.warning(f"[PMFBYAdapter] HTTP call failed, using fallback schemes list: {e}")
+
         return [{
             "id": "pmfby_insurance",
             "name": "PM Fasal Bima Yojana",
@@ -117,6 +135,15 @@ class SoilHealthCardAdapter(IGovernmentSchemeAdapter):
 
     async def list_schemes(self) -> list[dict[str, Any]]:
         logger.info("Listing schemes from Soil Health Card Scheme...")
+        portal = self.metadata.configuration.get("portal_url", "https://soilhealth.dac.gov.in")
+        try:
+            async with httpx.AsyncClient(timeout=3.0) as client:
+                response = await client.get(f"{portal}/api/soil-programs")
+                if response.status_code == 200:
+                    return response.json()
+        except Exception as e:
+            logger.warning(f"[SoilHealthCardAdapter] HTTP call failed, using fallback schemes list: {e}")
+
         return [{
             "id": "soil_health_card",
             "name": "Soil Health Card Scheme",
@@ -128,7 +155,7 @@ class SoilHealthCardAdapter(IGovernmentSchemeAdapter):
 
 class StateSchemesAdapter(IGovernmentSchemeAdapter):
     """
-    State Welfare Schemes Integration Adapter (Framework only).
+    State Welfare Schemes Integration Adapter.
     """
     def __init__(self) -> None:
         self._metadata = IntegrationMetadata(
@@ -139,7 +166,7 @@ class StateSchemesAdapter(IGovernmentSchemeAdapter):
             type="government",
             capabilities=["local_subsidies"],
             configuration={"portal_url": "https://state.agri.gov.in"},
-            feature_flags={"enabled": False}
+            feature_flags={"enabled": True}
         )
 
     @property
@@ -157,6 +184,15 @@ class StateSchemesAdapter(IGovernmentSchemeAdapter):
 
     async def list_schemes(self) -> list[dict[str, Any]]:
         logger.info("Listing schemes from State Schemes Adapter...")
+        portal = self.metadata.configuration.get("portal_url", "https://state.agri.gov.in")
+        try:
+            async with httpx.AsyncClient(timeout=3.0) as client:
+                response = await client.get(f"{portal}/api/regional-schemes")
+                if response.status_code == 200:
+                    return response.json()
+        except Exception as e:
+            logger.warning(f"[StateSchemesAdapter] HTTP call failed, using fallback schemes list: {e}")
+
         return [{
             "id": "state_subsidy",
             "name": "State Farm Equipment Subsidy",

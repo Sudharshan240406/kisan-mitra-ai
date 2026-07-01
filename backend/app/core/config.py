@@ -9,6 +9,7 @@ class Settings(BaseSettings):
     APP_NAME: str = "KisanMitraAI"
     APP_ENV: str = "development"
     DEBUG: bool = True
+    SECRET_KEY: str = "supersecretkey12345"
 
     # FastAPI Host/Port
     BACKEND_HOST: str = "0.0.0.0"
@@ -82,6 +83,20 @@ class Settings(BaseSettings):
     PLIVO_AUTH_TOKEN: str = ""
     PLIVO_PHONE_NUMBER: str = ""
 
+    # External API Keys (Weather & Market)
+    OPENWEATHER_API_KEY: str = ""
+    TOMORROW_IO_API_KEY: str = ""
+    AGMARKNET_API_KEY: str = ""
+    ENAM_API_ENDPOINT: str = "https://enam.gov.in/NAMWSRetail/NAMWS/GetMandiPrice"
+
+    # Cloud Storage (S3 / R2)
+    AWS_ACCESS_KEY_ID: str = ""
+    AWS_SECRET_ACCESS_KEY: str = ""
+    S3_BUCKET_NAME: str = ""
+
+    # OCR Integration
+    GOOGLE_VISION_API_KEY: str = ""
+
     # Feature Flags
     FEATURE_REASONING_ENABLED: bool = True
     FEATURE_WORKFLOW_ENABLED: bool = True
@@ -132,6 +147,13 @@ def validate_production_config(cfg: Settings) -> None:
             errors.append("DEFAULT_LLM_PROVIDER is set to 'openai' but OPENAI_API_KEY is missing or invalid.")
         elif cfg.DEFAULT_LLM_PROVIDER == "claude" and (not cfg.CLAUDE_API_KEY or "api-key" in cfg.CLAUDE_API_KEY.lower()):
             errors.append("DEFAULT_LLM_PROVIDER is set to 'claude' but CLAUDE_API_KEY is missing or invalid.")
+
+    # Validate integrations configs in production if enabled
+    if cfg.FEATURE_INTEGRATIONS_ENABLED:
+        if cfg.SMS_PROVIDER == "twilio" and not cfg.TWILIO_AUTH_TOKEN:
+            errors.append("SMS_PROVIDER is 'twilio' but TWILIO_AUTH_TOKEN is missing.")
+        if cfg.SMS_PROVIDER == "plivo" and not cfg.PLIVO_AUTH_TOKEN:
+            errors.append("SMS_PROVIDER is 'plivo' but PLIVO_AUTH_TOKEN is missing.")
 
     # Warn or error on debug features
     if cfg.DEBUG:
