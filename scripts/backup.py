@@ -77,6 +77,16 @@ def main():
     else:
         print("[*] No active '.env' file found at project root. Skipping config file backup...")
 
+    # 4.5 Backup active local files from data/ directory
+    data_dir = os.path.join(BASE_DIR, "data")
+    data_backup_dir = os.path.join(target_backup_dir, "data")
+    if os.path.exists(data_dir):
+        try:
+            shutil.copytree(data_dir, data_backup_dir)
+            print(f"[+] Local data files directory backed up to: {data_backup_dir}")
+        except Exception as e:
+            print(f"[-] Failed to backup data files: {e}")
+
     # 5. Compress the backup directory into a tarball
     archive_format = "gztar" if sys.platform != "win32" else "zip"
     archive_extension = "tar.gz" if sys.platform != "win32" else "zip"

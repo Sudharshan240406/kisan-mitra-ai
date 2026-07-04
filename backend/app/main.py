@@ -21,6 +21,7 @@ from app.api.v1.sms import router as sms_router
 from app.api.v1.telemetry import router as telemetry_router
 from app.api.v1.telephony import router as telephony_router
 from app.api.v1.personalization import router as personalization_router
+from app.api.v1.admin import router as admin_router
 from app.core.config import settings, validate_production_config
 from app.core.container import Container
 from app.core.logging_config import setup_logging
@@ -149,6 +150,7 @@ app.include_router(knowledge_router)
 app.include_router(health_router, prefix="/api/v1/health", tags=["Health"])
 app.include_router(ai_router, prefix="/api/v1/ai", tags=["AI Platform"])
 app.include_router(personalization_router)
+app.include_router(admin_router)
 
 
 

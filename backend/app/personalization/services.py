@@ -54,6 +54,7 @@ class ProfileManagerService:
                 self.platform.reminders[farmer_id] = []
 
         logger.info(f"[ProfileManagerService] Saved profile for farmer: {farmer_id}")
+        self.platform.save_to_disk()
         return profile
 
 
@@ -71,6 +72,7 @@ class DigitalTwinService:
     def update_twin(self, twin: FarmDetails) -> FarmDetails:
         self.platform.twins[twin.farmer_id] = twin
         logger.info(f"[DigitalTwinService] Updated digital twin details for: {twin.farmer_id}")
+        self.platform.save_to_disk()
         return twin
 
     def add_soil_record(self, farmer_id: str, record: dict[str, Any]) -> Optional[FarmDetails]:
@@ -79,6 +81,7 @@ class DigitalTwinService:
             record.setdefault("tested_at", time.time())
             twin.soil_history.append(record)
             logger.info(f"[DigitalTwinService] Appended soil health record for: {farmer_id}")
+            self.platform.save_to_disk()
         return twin
 
     def add_crop_record(self, farmer_id: str, record: dict[str, Any]) -> Optional[FarmDetails]:
@@ -86,6 +89,7 @@ class DigitalTwinService:
         if twin:
             twin.crop_history.append(record)
             logger.info(f"[DigitalTwinService] Appended crop history record for: {farmer_id}")
+            self.platform.save_to_disk()
         return twin
 
 
@@ -111,6 +115,7 @@ class LongTermMemoryService:
             # keep conversation history bounded to 50 items
             if len(memory.conversations) > 50:
                 memory.conversations.pop(0)
+            self.platform.save_to_disk()
 
     def log_recommendation(self, farmer_id: str, rec_id: str, text: str, confidence: float) -> None:
         memory = self.get_memory(farmer_id)
@@ -125,6 +130,7 @@ class LongTermMemoryService:
             self.platform.metrics.memory_usage_records = sum(
                 len(m.conversations) + len(m.recommendations) for m in self.platform.memories.values()
             )
+            self.platform.save_to_disk()
 
     def log_feedback(self, farmer_id: str, rec_id: str, rating: int, comment: str = "") -> None:
         memory = self.get_memory(farmer_id)
@@ -142,6 +148,7 @@ class LongTermMemoryService:
                 "timestamp": time.time()
             })
             logger.info(f"[LongTermMemoryService] Logged feedback for recommendation {rec_id} (rating={rating})")
+            self.platform.save_to_disk()
 
 
 class ReminderSchedulerService:
@@ -167,6 +174,7 @@ class ReminderSchedulerService:
         self.platform.reminders[fid].append(reminder)
         self._update_reminder_metrics()
         logger.info(f"[ReminderSchedulerService] Scheduled reminder '{reminder.reminder_id}' for {fid}")
+        self.platform.save_to_disk()
         return reminder
 
     def dismiss_reminder(self, farmer_id: str, reminder_id: str) -> bool:
@@ -176,6 +184,7 @@ class ReminderSchedulerService:
                 r.status = "dismissed"
                 self._update_reminder_metrics()
                 logger.info(f"[ReminderSchedulerService] Dismissed reminder '{reminder_id}'")
+                self.platform.save_to_disk()
                 return True
         return False
 
@@ -186,6 +195,7 @@ class ReminderSchedulerService:
                 r.status = "sent"
                 self._update_reminder_metrics()
                 logger.info(f"[ReminderSchedulerService] Marked reminder '{reminder_id}' as sent")
+                self.platform.save_to_disk()
                 return True
         return False
 
@@ -244,6 +254,7 @@ class ContinuousLearningService:
                 profile.risk_tolerance = "low"
                 logger.info(f"[ContinuousLearning] Downgraded risk tolerance of '{farmer_id}' to 'low' due to low rating alerts.")
 
+        self.platform.save_to_disk()
         return {
             "status": "success",
             "feedback_processed": len(feedbacks),
@@ -266,6 +277,7 @@ class PrivacyConsentService:
     def update_consent(self, consent: PrivacyConsent) -> PrivacyConsent:
         self.platform.consents[consent.farmer_id] = consent
         logger.info(f"[PrivacyConsentService] Updated privacy consent settings for: {consent.farmer_id}")
+        self.platform.save_to_disk()
         return consent
 
     def scrub_farmer_memory(self, farmer_id: str) -> bool:
@@ -288,5 +300,6 @@ class PrivacyConsentService:
                 self.platform.reminders[farmer_id].clear()
 
             logger.info(f"[PrivacyConsentService] Scrubbed all personalization memories and alerts for farmer: {farmer_id}")
+            self.platform.save_to_disk()
             return True
         return False

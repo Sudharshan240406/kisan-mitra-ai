@@ -77,6 +77,24 @@ def main():
         else:
             print("[*] No environment configuration file found in backup.")
 
+        # 3.5 Restore local data files
+        data_src_dir = os.path.join(temp_dir, "data")
+        if os.path.exists(data_src_dir):
+            target_data = os.path.join(BASE_DIR, "data")
+            confirm = input(f"[?] Copy local data files directory to {target_data}? (y/n): ").strip().lower()
+            if confirm == 'y':
+                try:
+                    if os.path.exists(target_data):
+                        shutil.rmtree(target_data)
+                    shutil.copytree(data_src_dir, target_data)
+                    print(f"[+] Restored local data files to: {target_data}")
+                except Exception as e:
+                    print(f"[-] Failed to restore local data files: {e}")
+            else:
+                print("[*] Skipped local data files restoration.")
+        else:
+            print("[*] No local data files directory found in backup.")
+
         # 4. Restore PostgreSQL database
         if db_sql_file:
             db_host = os.getenv("DB_HOST", "localhost")

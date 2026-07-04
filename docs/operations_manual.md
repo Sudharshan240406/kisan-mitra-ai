@@ -30,12 +30,20 @@ docker compose logs -f proxy
 
 Examine the aggregated system metrics via the HTTP GET API:
 ```bash
+# General operational metrics
 curl -s http://localhost/api/v1/telemetry/metrics | jq
+
+# Administrative live stats & onboarding metrics
+curl -s http://localhost/api/v1/admin/stats | jq
+
+# Active configurations & adapter mappings
+curl -s http://localhost/api/v1/admin/config | jq
 ```
 This payload aggregates:
 *   Planning, reasoning, and verifier agent latencies.
 *   API request error rates.
 *   Container system usage (CPU and Memory bytes).
+*   Live counts of onboarded farmers, cached tokens, and active weather/market adapters.
 
 ---
 

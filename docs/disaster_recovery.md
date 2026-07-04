@@ -11,6 +11,7 @@ This guide documents the procedures for backing up and restoring database and co
 *   **Target Content**:
     *   PostgreSQL relational schema and tables.
     *   `.env` deployment configuration parameters.
+    *   Local JSON personalization database files (profiles, twins, consents, memories) inside `data/` directory.
 
 ---
 
@@ -23,7 +24,7 @@ python scripts/backup.py
 This utility:
 1. Connects to PostgreSQL using database parameters in environment variables.
 2. Generates an SQL snapshot file.
-3. Packages the SQL snapshot and active `.env` file into a timestamped compressed archive in `backups/` directory.
+3. Packages the SQL snapshot, the active `.env` file, and the entire `data/` directory files into a timestamped compressed archive in `backups/` directory.
 
 ---
 
@@ -43,6 +44,7 @@ To restore your systems from a backup archive:
 
 3. Follow the interactive prompts:
    * Confirm copying the environment profile.
+   * Confirm restoring the local JSON personalization database files directory.
    * Confirm dropping the existing target database and restoring the snapshot.
 
 4. Start the application containers again:

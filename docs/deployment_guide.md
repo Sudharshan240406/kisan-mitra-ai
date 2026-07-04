@@ -78,4 +78,4 @@ curl -f http://localhost/api/v1/health/readiness
 
 *   **Non-Root Context**: Processes in the Backend (`appuser`) and Frontend (`node`) containers execute as non-privileged users.
 *   **Network Bridging**: All components reside inside the custom `kisan_network` bridge. External access is only allowed through the Nginx container on port 80/443.
-*   **Volume Persistence**: Postgres database data, Redis caching state, Chroma records, and backend logs are saved in persistent volumes.
+*   **Volume Persistence**: Postgres database data, Redis caching state, Chroma records, backend logs, and the **local personalization JSON databases** (inside `./data` folder mapped to `/backend/data`) are saved in persistent volumes to preserve profile histories across container updates.

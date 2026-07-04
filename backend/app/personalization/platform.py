@@ -86,8 +86,62 @@ class PersonalizationPlatform:
         self.consents: Dict[str, PrivacyConsent] = {}
         self.reminders: Dict[str, List[Reminder]] = {}
 
-        self._prepopulate_default_farmers()
+        if not self.load_from_disk():
+            self._prepopulate_default_farmers()
+            self.save_to_disk()
         logger.info("[PersonalizationPlatform] Personalized Farmer AI platform initialized.")
+
+    def save_to_disk(self) -> None:
+        """Saves current personalization state to local JSON files under data/farmers/."""
+        import os
+        import json
+        try:
+            os.makedirs("data/farmers", exist_ok=True)
+            with open("data/farmers/profiles.json", "w", encoding="utf-8") as f:
+                json.dump({k: v.model_dump() for k, v in self.profiles.items()}, f, ensure_ascii=False, indent=2)
+            with open("data/farmers/twins.json", "w", encoding="utf-8") as f:
+                json.dump({k: v.model_dump() for k, v in self.twins.items()}, f, ensure_ascii=False, indent=2)
+            with open("data/farmers/memories.json", "w", encoding="utf-8") as f:
+                json.dump({k: v.model_dump() for k, v in self.memories.items()}, f, ensure_ascii=False, indent=2)
+            with open("data/farmers/consents.json", "w", encoding="utf-8") as f:
+                json.dump({k: v.model_dump() for k, v in self.consents.items()}, f, ensure_ascii=False, indent=2)
+            
+            reminders_dict = {}
+            for k, val_list in self.reminders.items():
+                reminders_dict[k] = [r.model_dump() for r in val_list]
+            with open("data/farmers/reminders.json", "w", encoding="utf-8") as f:
+                json.dump(reminders_dict, f, ensure_ascii=False, indent=2)
+            logger.debug("[PersonalizationPlatform] Saved state to local files.")
+        except Exception as e:
+            logger.error(f"[PersonalizationPlatform] Failed to save state to disk: {e}")
+
+    def load_from_disk(self) -> bool:
+        """Loads state from local JSON files under data/farmers/. Returns True if successfully loaded."""
+        import os
+        import json
+        if not os.path.exists("data/farmers/profiles.json"):
+            return False
+        try:
+            with open("data/farmers/profiles.json", "r", encoding="utf-8") as f:
+                self.profiles = {k: FarmerProfile(**v) for k, v in json.load(f).items()}
+            if os.path.exists("data/farmers/twins.json"):
+                with open("data/farmers/twins.json", "r", encoding="utf-8") as f:
+                    self.twins = {k: FarmDetails(**v) for k, v in json.load(f).items()}
+            if os.path.exists("data/farmers/memories.json"):
+                with open("data/farmers/memories.json", "r", encoding="utf-8") as f:
+                    self.memories = {k: LongTermMemory(**v) for k, v in json.load(f).items()}
+            if os.path.exists("data/farmers/consents.json"):
+                with open("data/farmers/consents.json", "r", encoding="utf-8") as f:
+                    self.consents = {k: PrivacyConsent(**v) for k, v in json.load(f).items()}
+            if os.path.exists("data/farmers/reminders.json"):
+                with open("data/farmers/reminders.json", "r", encoding="utf-8") as f:
+                    self.reminders = {k: [Reminder(**r) for r in v] for k, v in json.load(f).items()}
+            self.metrics.total_profiles = len(self.profiles)
+            logger.info(f"[PersonalizationPlatform] Successfully loaded {len(self.profiles)} profiles from disk.")
+            return True
+        except Exception as e:
+            logger.error(f"[PersonalizationPlatform] Error loading state from disk: {e}")
+            return False
 
     def _prepopulate_default_farmers(self) -> None:
         """Pre-populates Ramesh Singh and Siddappa Gowda to mirror knowledge graph."""

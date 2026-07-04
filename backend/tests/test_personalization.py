@@ -307,3 +307,32 @@ def test_api_personalization_endpoints(client: TestClient) -> None:
     resp = client.get("/api/v1/personalization/metrics")
     assert resp.status_code == 200
     assert resp.json()["status"] == "healthy"
+
+    # 5. POST onboard
+    resp = client.post(
+        "/api/v1/personalization/onboard",
+        json={
+            "name": "Laxmi Devi",
+            "phone_number": "+918888888888",
+            "preferred_language": "te",
+            "experience_level": "beginner",
+            "risk_tolerance": "low",
+            "budget_limit": 80000.0,
+            "land_size_acres": 2.0,
+            "village": "Adilabad Rural",
+            "district": "Adilabad",
+            "state": "Telangana",
+            "climate_zone": "Semi-Arid Zone",
+            "irrigation_type": "rainfed"
+        }
+    )
+    assert resp.status_code == 201
+    assert resp.json()["status"] == "success"
+    assert "farmer_id" in resp.json()
+    farmer_id = resp.json()["farmer_id"]
+    assert "laxmi" in farmer_id
+
+    # Verify profile exists
+    resp_get = client.get(f"/api/v1/personalization/profile/{farmer_id}")
+    assert resp_get.status_code == 200
+    assert resp_get.json()["name"] == "Laxmi Devi"

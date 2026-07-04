@@ -165,3 +165,79 @@ def scrub_memory(farmer_id: str, container: Container = Depends(get_container)) 
 @router.get("/metrics")
 def get_platform_metrics(container: Container = Depends(get_container)) -> dict[str, Any]:
     return container.personalization_platform.health()
+
+
+class OnboardingRequest(BaseModel):
+    name: str
+    phone_number: str
+    preferred_language: str = "hi"
+    experience_level: str = "intermediate"
+    risk_tolerance: str = "medium"
+    budget_limit: float = 100000.0
+    land_size_acres: float = 2.0
+    village: str = ""
+    district: str = ""
+    state: str = ""
+    climate_zone: str = ""
+    irrigation_type: str = "rainfed"
+
+
+@router.post("/onboard", status_code=status.HTTP_201_CREATED)
+def onboard_farmer(request: OnboardingRequest, container: Container = Depends(get_container)) -> dict[str, Any]:
+    import re
+    clean_name = re.sub(r'[^a-zA-Z0-9]', '', request.name.lower())
+    clean_phone = re.sub(r'[^0-9]', '', request.phone_number)
+    farmer_id = f"farmer_{clean_name}_{clean_phone[:4]}" if clean_name else f"farmer_{clean_phone[:8]}"
+
+    # Get services
+    profile_svc = container.personalization_platform.registry.get("profile_manager")
+    twin_svc = container.personalization_platform.registry.get("digital_twin")
+    consent_svc = container.personalization_platform.registry.get("privacy_consent")
+
+    # Create profile
+    profile = FarmerProfile(
+        farmer_id=farmer_id,
+        name=request.name,
+        preferred_language=request.preferred_language,
+        experience_level=request.experience_level,
+        risk_tolerance=request.risk_tolerance,
+        budget_limit=request.budget_limit,
+        budget_spent=0.0,
+        farm_goals=["Increase crop yield"],
+    )
+    profile_svc.create_or_update_profile(profile)
+
+    # Create twin
+    twin = FarmDetails(
+        farmer_id=farmer_id,
+        land_size_acres=request.land_size_acres,
+        village=request.village,
+        district=request.district,
+        state=request.state,
+        climate_zone=request.climate_zone,
+        crop_zone="General Crop Zone",
+        crop_history=[],
+        soil_history=[],
+        equipment=[],
+        livestock=[],
+        irrigation_type=request.irrigation_type,
+        scheme_history=[],
+    )
+    twin_svc.update_twin(twin)
+
+    # Set default consent
+    consent = PrivacyConsent(
+        farmer_id=farmer_id,
+        consent_given=True,
+        data_retention_days=365,
+        memory_controls={},
+        personalization_settings={},
+        privacy_preferences={}
+    )
+    consent_svc.update_consent(consent)
+
+    return {
+        "status": "success",
+        "farmer_id": farmer_id,
+        "message": f"Farmer '{request.name}' successfully onboarded with ID '{farmer_id}'."
+    }

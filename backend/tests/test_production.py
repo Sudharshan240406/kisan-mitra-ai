@@ -67,3 +67,25 @@ def test_validate_production_config_fails_debug_active():
     with pytest.raises(ValueError) as excinfo:
         validate_production_config(cfg)
     assert "DEBUG" in str(excinfo.value)
+
+
+def test_admin_endpoints():
+    with TestClient(app) as client:
+        # 1. Config
+        resp = client.get("/api/v1/admin/config")
+        assert resp.status_code == 200
+        data = resp.json()
+        assert "app_name" in data
+        assert "active_llm_provider" in data
+
+        # 2. Stats
+        resp = client.get("/api/v1/admin/stats")
+        assert resp.status_code == 200
+        data = resp.json()
+        assert "onboarded_farmers_count" in data
+        assert "registered_agents" in data
+
+        # 3. Logs
+        resp = client.get("/api/v1/admin/logs?lines=10&log_type=app")
+        assert resp.status_code == 200
+        assert isinstance(resp.json(), list)
