@@ -9,3 +9,4 @@ redis>=5.0.6
 chromadb>=0.5.3
 langgraph>=0.0.60
 langchain-core>=0.2.9
+python-multipart>=0.0.9
