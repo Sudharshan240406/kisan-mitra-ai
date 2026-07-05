@@ -2,6 +2,10 @@
 
 import React, { useState, useEffect, lazy, Suspense } from "react";
 import dynamic from "next/dynamic";
+import { DashboardProvider, useDashboard } from "@/components/DashboardContext";
+import TopNavigation from "@/components/TopNavigation";
+import LeftSidebar from "@/components/LeftSidebar";
+import RightThinkingPanel from "@/components/RightThinkingPanel";
 
 const MissionControl = dynamic(() => import("@/components/MissionControl"), { ssr: false });
 import {
@@ -190,247 +194,39 @@ interface SMSSession {
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
 export default function Home() {
-  const [activeTab, setActiveTab] = useState<string>("mission-control");
-  const [query, setQuery] = useState("");
-  const [sessionId, setSessionId] = useState("SES-DEFAULT");
-  const [isLoading, setIsLoading] = useState(false);
-  const [response, setResponse] = useState<AdvisoryResponse | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [latency, setLatency] = useState<number | null>(null);
+  return (
+    <DashboardProvider>
+      <DashboardContent />
+    </DashboardProvider>
+  );
+}
 
-  // Live polling data
-  const [metrics, setMetrics] = useState<TelemetryMetrics | null>(null);
-  const [calls, setCalls] = useState<CallSession[]>([]);
-  const [smsSessions, setSmsSessions] = useState<SMSSession[]>([]);
-  const [integrations, setIntegrations] = useState<any[]>([]);
-  const [systemLogs, setSystemLogs] = useState<string[]>([]);
-  const [alerts, setAlerts] = useState<Array<{ type: "warn" | "error" | "info"; msg: string; time: string }>>([]);
-  const [knowledgeStatus, setKnowledgeStatus] = useState<any>(null);
+function DashboardContent() {
+  const {
+    activeTab, setActiveTab,
+    query, setQuery,
+    sessionId, setSessionId,
+    isLoading, setIsLoading,
+    response, setResponse,
+    error, setError,
+    latency, setLatency,
+    metrics, calls, smsSessions, integrations, systemLogs, alerts, knowledgeStatus,
+    aiProviders, aiSummary,
+    diagPrompt, setDiagPrompt,
+    diagTask, setDiagTask,
+    diagPref, setDiagPref,
+    diagResponse, setDiagResponse,
+    diagLoading, setDiagLoading,
+    newBudgetLimit, setNewBudgetLimit,
+    featureFlags, setFeatureFlags,
+    agents, setAgents,
+    sampleQueries, systemComponents,
+    fetchLiveState, logEvent, handleQuerySubmit, cleanExpiredSessions,
+    handleToggleIntegration, handleActivateIntegration, handleTestIntegration,
+    updateBudgetLimit, toggleModelAvailability, runRouterDiagnostic
+  } = useDashboard();
 
-  // AI Model Platform States
-  const [aiProviders, setAiProviders] = useState<any[]>([]);
-  const [aiSummary, setAiSummary] = useState<any>(null);
-  const [diagPrompt, setDiagPrompt] = useState("Explain drip irrigation benefits.");
-  const [diagTask, setDiagTask] = useState("advisory");
-  const [diagPref, setDiagPref] = useState("");
-  const [diagResponse, setDiagResponse] = useState<any>(null);
-  const [diagLoading, setDiagLoading] = useState(false);
-  const [newBudgetLimit, setNewBudgetLimit] = useState("5.0");
-
-  // Feature Flags State
-  const [featureFlags, setFeatureFlags] = useState({
-    mockLlm: true,
-    strictSafety: true,
-    cacheAnswers: true,
-    rateLimiting: true,
-    modelName: "mock-gemini-pro"
-  });
-
-  // Agent Hub Status Check
-  const [agents, setAgents] = useState<AgentHealth[]>([
-    { name: "Planner Agent", role: "Intent & Graph Routing", status: "ready", latency: "2ms", icon: <Cpu className="w-4 h-4 text-emerald-400" /> },
-    { name: "Weather Specialist", role: "Forecasts & Climate", status: "ready", latency: "12ms", icon: <CloudSun className="w-4 h-4 text-sky-400" /> },
-    { name: "Market Specialist", role: "Pricing & Mandi Rates", status: "ready", latency: "15ms", icon: <TrendingUp className="w-4 h-4 text-amber-400" /> },
-    { name: "Knowledge Specialist", role: "Pathology & Manuals", status: "ready", latency: "24ms", icon: <BookOpen className="w-4 h-4 text-indigo-400" /> },
-    { name: "Scheme Matcher", role: "Welfare & Subsidies", status: "ready", latency: "18ms", icon: <Award className="w-4 h-4 text-purple-400" /> },
-    { name: "Memory Specialist", role: "Conversation History & ARM", status: "ready", latency: "5ms", icon: <Database className="w-4 h-4 text-pink-400" /> },
-    { name: "Verifier Agent", role: "Safety & Decision Engine", status: "ready", latency: "8ms", icon: <ShieldCheck className="w-4 h-4 text-teal-400" /> }
-  ]);
-
-  const sampleQueries = [
-    "Will weather affect my wheat crop rust disease in Ludhiana Punjab?",
-    "What is the mandi price of wheat and will it rain in Punjab?",
-    "Will it rain today in Ludhiana?",
-    "Is there any subsidy scheme for drip irrigation or crop insurance?"
-  ];
-
-  // System Health components
-  const systemComponents = [
-    { name: "Conversation Platform", status: "online", desc: "User session & context threads" },
-    { name: "Media Intelligence", status: "online", desc: "OCR & recorded voice parsing pipelines" },
-    { name: "Telephony Gateway", status: "online", desc: "BSNL/BSNL SIP trunk & Twilio interfaces" },
-    { name: "SMS Gateway Service", status: "online", desc: "Feature phone alert delivery" },
-    { name: "Governance & Policies", status: "online", desc: "Dynamic validator & compliance engines" },
-    { name: "Execution Planner", status: "online", desc: "Topological scheduling & LangGraph compilers" },
-    { name: "Event Bus Routing", status: "online", desc: "Decoupled transactional signals" }
-  ];
-
-  // Fetch metrics & active calls/SMS sessions dynamically
-  const fetchLiveState = async () => {
-    try {
-      // 1. Telemetry metrics
-      const metricsRes = await fetch(`${API_BASE}/api/v1/telemetry/metrics`);
-      if (metricsRes.ok) {
-        const metricsData = await metricsRes.json();
-        setMetrics(metricsData);
-      }
-
-      // 2. Active calls
-      const callsRes = await fetch(`${API_BASE}/api/v1/telephony/calls`);
-      if (callsRes.ok) {
-        const callsData = await callsRes.json();
-        setCalls(callsData);
-      }
-
-      // 3. SMS Sessions
-      const smsRes = await fetch(`${API_BASE}/api/v1/sms/sessions`);
-      if (smsRes.ok) {
-        const smsData = await smsRes.json();
-        setSmsSessions(smsData);
-      }
-
-      // 4. Integrations Platform
-      const integrationsRes = await fetch(`${API_BASE}/api/v1/integrations`);
-      if (integrationsRes.ok) {
-        const integrationsData = await integrationsRes.json();
-        setIntegrations(integrationsData);
-      }
-
-      // 5. AI Platform Providers specifications
-      const aiProvidersRes = await fetch(`${API_BASE}/api/v1/ai/providers`);
-      if (aiProvidersRes.ok) {
-        const aiProvidersData = await aiProvidersRes.json();
-        setAiProviders(aiProvidersData);
-      }
-
-      // 6. AI Platform budget summary logs
-      const aiSummaryRes = await fetch(`${API_BASE}/api/v1/ai/summary`);
-      if (aiSummaryRes.ok) {
-        const aiSummaryData = await aiSummaryRes.json();
-        setAiSummary(aiSummaryData);
-      }
-
-      // 7. Knowledge Platform status
-      const knowledgeRes = await fetch(`${API_BASE}/api/v1/knowledge/status`);
-      if (knowledgeRes.ok) {
-        const knowledgeData = await knowledgeRes.json();
-        setKnowledgeStatus(knowledgeData);
-      }
-    } catch (e) {
-      console.log("Telemetry fetch skipped - backend may be offline.", e);
-    }
-  };
-
-  useEffect(() => {
-    fetchLiveState();
-    const interval = setInterval(fetchLiveState, 4000);
-    return () => clearInterval(interval);
-  }, []);
-
-  // Sync state log additions
-  const logEvent = (msg: string, type: "info" | "warn" | "error" = "info") => {
-    const timestamp = new Date().toLocaleTimeString();
-    setSystemLogs(prev => [`[${timestamp}] ${msg}`, ...prev.slice(0, 49)]);
-    setAlerts(prev => [{ type, msg, time: timestamp }, ...prev.slice(0, 19)]);
-  };
-
-  const handleQuerySubmit = async (queryText: string) => {
-    if (!queryText.trim()) return;
-    setIsLoading(true);
-    setError(null);
-    setResponse(null);
-    setLatency(null);
-    logEvent(`Initiating LangGraph multi-agent compile for query: "${queryText.slice(0, 30)}..."`, "info");
-    
-    setAgents(prev => prev.map(a => ({ ...a, status: "running" })));
-    const startTime = performance.now();
-
-    try {
-      const res = await fetch(`${API_BASE}/api/v1/query`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ query: queryText, session_id: sessionId })
-      });
-
-      if (!res.ok) {
-        throw new Error(`API error: ${res.status} ${res.statusText}`);
-      }
-
-      const data = await res.json();
-      if (data.status === "success") {
-        setResponse(data.data);
-        logEvent(`Successfully generated trusted advisory (Confidence: ${(data.data.confidence * 100).toFixed(0)}%)`, "info");
-        
-        // Add alerts if risk score is high
-        if (data.data.risk > 0.4) {
-          logEvent(`Elevated risk detected on query advice! (Score: ${(data.data.risk * 100).toFixed(0)}%)`, "warn");
-        }
-      } else {
-        throw new Error(data.message || "Failed to generate advisory.");
-      }
-    } catch (err: any) {
-      console.error(err);
-      const errMsg = err.message || "Pipeline execution failed. Ensure backend server is running.";
-      setError(errMsg);
-      logEvent(`Query compile error: ${errMsg}`, "error");
-    } finally {
-      setIsLoading(false);
-      const endTime = performance.now();
-      setLatency(Math.round(endTime - startTime));
-      setAgents(prev => prev.map(a => ({ ...a, status: "ready" })));
-      fetchLiveState();
-    }
-  };
-
-  const cleanExpiredSessions = async () => {
-    try {
-      const res = await fetch(`${API_BASE}/api/v1/channels/sessions/cleanup`, { method: "POST" });
-      if (res.ok) {
-        logEvent("Manually triggered expired communication sessions cleanup", "info");
-      }
-    } catch (e) {
-      logEvent("Failed to trigger manual sessions cleanup", "error");
-    }
-  };
-
-  const handleToggleIntegration = async (integrationId: string) => {
-    try {
-      const res = await fetch(`${API_BASE}/api/v1/integrations/${integrationId}/toggle`, { method: "POST" });
-      if (res.ok) {
-        const data = await res.json();
-        logEvent(`Successfully toggled integration ${integrationId} status to ${data.new_status}`, "info");
-        fetchLiveState();
-      } else {
-        logEvent(`Failed to toggle integration ${integrationId}`, "error");
-      }
-    } catch (e) {
-      logEvent(`Failed to toggle integration ${integrationId}: connection error`, "error");
-    }
-  };
-
-  const handleActivateIntegration = async (integrationId: string, type: string) => {
-    try {
-      const res = await fetch(`${API_BASE}/api/v1/integrations/${integrationId}/activate`, { method: "POST" });
-      if (res.ok) {
-        logEvent(`Activated integration ${integrationId} as active provider for ${type}`, "info");
-        fetchLiveState();
-      } else {
-        logEvent(`Failed to activate integration ${integrationId}`, "error");
-      }
-    } catch (e) {
-      logEvent(`Failed to activate integration ${integrationId}: connection error`, "error");
-    }
-  };
-
-  const handleTestIntegration = async (integrationId: string) => {
-    try {
-      logEvent(`Executing test run for integration adapter: ${integrationId}...`, "info");
-      const res = await fetch(`${API_BASE}/api/v1/integrations/${integrationId}/test`, { method: "POST" });
-      const data = await res.json();
-      if (data.status === "success") {
-        logEvent(`Integration ${integrationId} test completed successfully. Result: ${data.result}`, "info");
-        fetchLiveState();
-      } else {
-        logEvent(`Integration ${integrationId} test failed: ${data.error}`, "error");
-      }
-    } catch (e) {
-      logEvent(`Integration ${integrationId} test failed: connection error`, "error");
-    }
-  };
-
-
-  // Pre-compiled fallback metric statistics
-  const fallbackMetrics: TelemetryMetrics = {
+  const fallbackMetrics: any = {
     planning_latency: { avg_ms: 18.4, count: 12 },
     workflow_latency: { avg_ms: 145.2, count: 12 },
     decision_latency: { avg_ms: 12.8, count: 12 },
@@ -502,103 +298,18 @@ export default function Home() {
   };
 
   const activeMetrics = metrics || fallbackMetrics;
-
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans select-none selection:bg-emerald-500 selection:text-slate-950">
       
-      {/* Top Navigation Header */}
-      <header className="border-b border-slate-900 bg-slate-950/80 backdrop-blur-md sticky top-0 z-50 px-6 py-4 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-500 to-teal-400 flex items-center justify-center shadow-lg shadow-emerald-500/20">
-            <Cpu className="w-5 h-5 text-slate-950 animate-pulse" />
-          </div>
-          <div>
-            <h1 className="text-xl font-bold tracking-wider bg-clip-text text-transparent bg-gradient-to-r from-emerald-400 to-teal-200">
-              KISAN MITRA COMMAND CENTER
-            </h1>
-            <p className="text-xs text-slate-400 font-medium">Operations Control Center & Platform Monitor v1.0</p>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-6">
-          <div className="flex items-center gap-2 bg-slate-900/60 px-3 py-1.5 rounded-full border border-slate-800">
-            <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-            </span>
-            <span className="text-xs font-semibold text-emerald-400 uppercase tracking-wider">Advisory Platform: Baseline 1.0</span>
-          </div>
-
-          <div className="text-xs text-slate-400">
-            Current Session: <strong className="text-slate-200">{sessionId}</strong>
-          </div>
-        </div>
-      </header>
+      <TopNavigation />
 
       {/* Main Core Layout Grid */}
-      <div className="flex-1 max-w-8xl w-full mx-auto p-6 flex flex-col md:flex-row gap-6">
+      <div className="flex-1 flex flex-col md:flex-row h-[calc(100vh-53px)] overflow-hidden">
         
-        {/* Left Side Navigation Panels */}
-        <aside className="w-full md:w-64 bg-slate-900/40 border border-slate-900 rounded-2xl p-5 flex flex-col gap-2">
-          <div className="flex items-center gap-2 border-b border-slate-900 pb-3 mb-2">
-            <Activity className="w-4 h-4 text-emerald-400" />
-            <span className="font-bold text-slate-200 text-xs uppercase tracking-wider">Navigations Modules</span>
-          </div>
-
-          <nav className="flex flex-col gap-1.5">
-            {[
-              { id: "mission-control", label: "⚡ Mission Control", icon: <Radio className="w-4 h-4" /> },
-              { id: "overview", label: "Overview", icon: <Server className="w-4 h-4" /> },
-              { id: "platform", label: "Agent Playground", icon: <MessageSquare className="w-4 h-4" /> },
-              { id: "ai", label: "AI Specialist Hub", icon: <Cpu className="w-4 h-4" /> },
-              { id: "conversations", label: "Conversations Monitor", icon: <List className="w-4 h-4" /> },
-              { id: "media", label: "Media Ingestion", icon: <HardDrive className="w-4 h-4" /> },
-              { id: "telephony", label: "Telephony & IVR", icon: <Phone className="w-4 h-4" /> },
-              { id: "sms", label: "SMS Gateway", icon: <Mail className="w-4 h-4" /> },
-              { id: "governance", label: "Governance & Registry", icon: <ShieldCheck className="w-4 h-4" /> },
-              { id: "integrations", label: "Integrations Platform", icon: <RefreshCw className="w-4 h-4" /> },
-              { id: "knowledge", label: "Knowledge Platform", icon: <BookOpen className="w-4 h-4" /> },
-              { id: "telemetry", label: "Telemetry & Logs", icon: <Terminal className="w-4 h-4" /> },
-              { id: "settings", label: "Configuration Flags", icon: <Settings className="w-4 h-4" /> }
-            ].map((tab) => (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-left text-xs font-semibold tracking-wide transition-all ${
-                  activeTab === tab.id
-                    ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
-                    : "text-slate-400 hover:text-slate-200 hover:bg-slate-900/60 border border-transparent"
-                }`}
-              >
-                {tab.icon}
-                {tab.label}
-              </button>
-            ))}
-          </nav>
-
-          <div className="mt-8 border-t border-slate-900 pt-4">
-            <div className="flex items-center gap-2 mb-2">
-              <Bell className="w-4 h-4 text-amber-400" />
-              <span className="font-bold text-slate-400 text-[10px] uppercase tracking-wider">Recent Alerts Stream</span>
-            </div>
-            <div className="flex flex-col gap-1.5 max-h-36 overflow-y-auto pr-1">
-              {alerts.length === 0 ? (
-                <span className="text-[10px] text-slate-600">No alerts logged.</span>
-              ) : (
-                alerts.map((alert, i) => (
-                  <div key={i} className="text-[9px] leading-relaxed border-l-2 border-slate-800 pl-2 py-0.5">
-                    <span className={`font-bold uppercase ${
-                      alert.type === "error" ? "text-red-400" : alert.type === "warn" ? "text-amber-400" : "text-sky-400"
-                    }`}>{alert.type}:</span> {alert.msg}
-                  </div>
-                ))
-              )}
-            </div>
-          </div>
-        </aside>
+        <LeftSidebar />
 
         {/* Dynamic Display Panel */}
-        <main className="flex-1 bg-slate-900/20 border border-slate-900 rounded-3xl p-6 overflow-y-auto">
+        <main className="flex-1 bg-slate-900/10 p-6 overflow-y-auto mc-scrollbar">
           
           {/* TAB 0: MISSION CONTROL */}
           {activeTab === "mission-control" && (
@@ -1748,10 +1459,12 @@ export default function Home() {
           )}
 
         </main>
+        
+        <RightThinkingPanel />
       </div>
 
       {/* Footer */}
-      <footer className="border-t border-slate-900 bg-slate-950 py-4 px-6 mt-12 text-center text-xs text-slate-500 flex items-center justify-between">
+      <footer className="border-t border-slate-900/60 bg-slate-950 py-3 px-6 text-center text-xs text-slate-500 flex items-center justify-between shrink-0">
         <p>&copy; 2026 Kisan Mitra AI. Open-source under Apache License 2.0.</p>
         <p className="font-semibold text-slate-400">Principal Software Engineering Team Production-Grade Platform</p>
       </footer>
