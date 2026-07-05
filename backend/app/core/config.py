@@ -61,7 +61,7 @@ class Settings(BaseSettings):
     CHROMA_DB_PATH: str = "./data/vector_db"
 
     # LLM Config & Providers
-    DEFAULT_LLM_PROVIDER: str = "mock"  # Options: mock, gemini, openai, claude, ollama
+    DEFAULT_LLM_PROVIDER: str = "gemini"  # Options: mock, gemini, openai, claude, ollama
     GEMINI_API_KEY: str = ""
     GEMINI_MODEL: str = "gemini-1.5-pro"
     OPENAI_API_KEY: str = ""

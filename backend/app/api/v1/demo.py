@@ -92,8 +92,15 @@ async def get_farmer_scheme_eligibility(farmer_id: str) -> dict[str, Any]:
 # Core Simulation: Full Pipeline with All 13 WebSocket Events
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
+from fastapi import Depends
+from app.dependencies.container import get_container
+from app.core.container import Container
+
 @router.post("/simulate-call/{farmer_id}", response_model=dict[str, Any])
-async def simulate_call(farmer_id: str) -> dict[str, Any]:
+async def simulate_call(
+    farmer_id: str,
+    container: Container = Depends(get_container)
+) -> dict[str, Any]:
     """
     Simulate a complete IVR call for a demo farmer.
 
@@ -208,11 +215,47 @@ async def simulate_call(farmer_id: str) -> dict[str, Any]:
         top_rec = eligible[0] if eligible else (possibly[0] if possibly else None)
 
         if top_rec:
+            import json
+            try:
+                from agents.schemes.schemes import GovernmentSchemeAgent
+                from app.schemas.requests import AgentRequest
+                from app.core.context import AgentContext
+                from app.services.scheme_service import GovernmentSchemeService
+
+                agent_context = AgentContext(
+                    request_id=call_id,
+                    trace_id=call_id,
+                    session_id=call_id,
+                    farmer_id=farmer_id,
+                    language=farmer.preferred_language
+                )
+                agent_context.metadata["container"] = container
+
+                scheme_service = GovernmentSchemeService()
+                scheme_agent = GovernmentSchemeAgent(container.llm_provider, scheme_service)
+                agent_result = await scheme_agent.execute(AgentRequest(query="schemes"), agent_context)
+
+                ai_data = json.loads(agent_result.content)
+                explanation_val = ai_data.get("explanation", "")
+                if not explanation_val:
+                    explanation_list = top_rec.reasoning
+                elif isinstance(explanation_val, list):
+                    explanation_list = [str(x) for x in explanation_val]
+                else:
+                    explanation_list = [s.strip() for s in explanation_val.split(".") if s.strip()]
+
+                explanation_list = [f"✓ Rule-Based Engine: Eligible for {top_rec.title}"] + explanation_list
+                voice_text = ai_data.get("voice_summary", "")
+            except Exception as e:
+                logger.error(f"Failed to generate Gemini explanation in demo: {e}")
+                explanation_list = top_rec.reasoning
+                voice_text = ""
+
             await ws_manager.push_event("REASONING_COMPLETED", {
                 "call_id": call_id,
                 "top_scheme": top_rec.title,
                 "scheme_id": top_rec.scheme_id,
-                "reasoning": top_rec.reasoning,
+                "reasoning": explanation_list,
                 "evidence": top_rec.evidence,
                 "confidence": round(top_rec.confidence, 3),
                 "benefits": top_rec.benefits,
@@ -236,9 +279,10 @@ async def simulate_call(farmer_id: str) -> dict[str, Any]:
             await asyncio.sleep(0.2)
 
             # ── Event N+4: VOICE_RESPONSE_STARTED ─────────────────────────
-            voice_text = _document_advisor.generate_voice_summary(
-                farmer, top_rec, farmer.preferred_language
-            )
+            if not voice_text:
+                voice_text = _document_advisor.generate_voice_summary(
+                    farmer, top_rec, farmer.preferred_language
+                )
             await ws_manager.push_event("VOICE_RESPONSE_STARTED", {
                 "call_id": call_id,
                 "text": voice_text,
