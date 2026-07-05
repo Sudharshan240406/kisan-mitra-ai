@@ -129,10 +129,13 @@ function PanelCard({ icon, title, badge, children, className = "" }: {
    Main Component
    ═══════════════════════════════════════════════════════════════════════════ */
 
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+const WS_BASE = API_BASE.replace(/^http/, "ws");
+
 export default function MissionControl() {
   // WebSocket
   const { events, lastEvent, isConnected, clientCount } = useWebSocket({
-    url: "ws://localhost:8000/ws/live",
+    url: `${WS_BASE}/ws/live`,
   });
 
   // State
@@ -164,7 +167,7 @@ export default function MissionControl() {
 
   // Fetch demo farmers on load
   useEffect(() => {
-    fetch("http://localhost:8000/api/v1/demo/farmers")
+    fetch(`${API_BASE}/api/v1/demo/farmers`)
       .then((r) => (r.ok ? r.json() : []))
       .then(setDemoFarmers)
       .catch(() => {});
@@ -342,7 +345,7 @@ export default function MissionControl() {
     if (!farmerId) return;
     setAiState("CONNECTING");
     try {
-      await fetch(`http://localhost:8000/api/v1/demo/simulate-call/${farmerId}`, { method: "POST" });
+      await fetch(`${API_BASE}/api/v1/demo/simulate-call/${farmerId}`, { method: "POST" });
     } catch {
       setAiState("ERROR");
     }
@@ -351,7 +354,7 @@ export default function MissionControl() {
   const handleStartDemo = async () => {
     setIsDemoRunning(true);
     try {
-      await fetch("http://localhost:8000/api/v1/demo/start", { method: "POST" });
+      await fetch(`${API_BASE}/api/v1/demo/start`, { method: "POST" });
     } catch {
       setIsDemoRunning(false);
     }

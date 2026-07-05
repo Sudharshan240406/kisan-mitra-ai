@@ -187,6 +187,8 @@ interface SMSSession {
   thread_history: Array<{ direction: string; text: string; timestamp: number }>;
 }
 
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+
 export default function Home() {
   const [activeTab, setActiveTab] = useState<string>("mission-control");
   const [query, setQuery] = useState("");
@@ -257,49 +259,49 @@ export default function Home() {
   const fetchLiveState = async () => {
     try {
       // 1. Telemetry metrics
-      const metricsRes = await fetch("http://localhost:8000/api/v1/telemetry/metrics");
+      const metricsRes = await fetch(`${API_BASE}/api/v1/telemetry/metrics`);
       if (metricsRes.ok) {
         const metricsData = await metricsRes.json();
         setMetrics(metricsData);
       }
 
       // 2. Active calls
-      const callsRes = await fetch("http://localhost:8000/api/v1/telephony/calls");
+      const callsRes = await fetch(`${API_BASE}/api/v1/telephony/calls`);
       if (callsRes.ok) {
         const callsData = await callsRes.json();
         setCalls(callsData);
       }
 
       // 3. SMS Sessions
-      const smsRes = await fetch("http://localhost:8000/api/v1/sms/sessions");
+      const smsRes = await fetch(`${API_BASE}/api/v1/sms/sessions`);
       if (smsRes.ok) {
         const smsData = await smsRes.json();
         setSmsSessions(smsData);
       }
 
       // 4. Integrations Platform
-      const integrationsRes = await fetch("http://localhost:8000/api/v1/integrations");
+      const integrationsRes = await fetch(`${API_BASE}/api/v1/integrations`);
       if (integrationsRes.ok) {
         const integrationsData = await integrationsRes.json();
         setIntegrations(integrationsData);
       }
 
       // 5. AI Platform Providers specifications
-      const aiProvidersRes = await fetch("http://localhost:8000/api/v1/ai/providers");
+      const aiProvidersRes = await fetch(`${API_BASE}/api/v1/ai/providers`);
       if (aiProvidersRes.ok) {
         const aiProvidersData = await aiProvidersRes.json();
         setAiProviders(aiProvidersData);
       }
 
       // 6. AI Platform budget summary logs
-      const aiSummaryRes = await fetch("http://localhost:8000/api/v1/ai/summary");
+      const aiSummaryRes = await fetch(`${API_BASE}/api/v1/ai/summary`);
       if (aiSummaryRes.ok) {
         const aiSummaryData = await aiSummaryRes.json();
         setAiSummary(aiSummaryData);
       }
 
       // 7. Knowledge Platform status
-      const knowledgeRes = await fetch("http://localhost:8000/api/v1/knowledge/status");
+      const knowledgeRes = await fetch(`${API_BASE}/api/v1/knowledge/status`);
       if (knowledgeRes.ok) {
         const knowledgeData = await knowledgeRes.json();
         setKnowledgeStatus(knowledgeData);
@@ -334,7 +336,7 @@ export default function Home() {
     const startTime = performance.now();
 
     try {
-      const res = await fetch("http://localhost:8000/api/v1/query", {
+      const res = await fetch(`${API_BASE}/api/v1/query`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ query: queryText, session_id: sessionId })
@@ -372,7 +374,7 @@ export default function Home() {
 
   const cleanExpiredSessions = async () => {
     try {
-      const res = await fetch("http://localhost:8000/api/v1/channels/sessions/cleanup", { method: "POST" });
+      const res = await fetch(`${API_BASE}/api/v1/channels/sessions/cleanup`, { method: "POST" });
       if (res.ok) {
         logEvent("Manually triggered expired communication sessions cleanup", "info");
       }
@@ -383,7 +385,7 @@ export default function Home() {
 
   const handleToggleIntegration = async (integrationId: string) => {
     try {
-      const res = await fetch(`http://localhost:8000/api/v1/integrations/${integrationId}/toggle`, { method: "POST" });
+      const res = await fetch(`${API_BASE}/api/v1/integrations/${integrationId}/toggle`, { method: "POST" });
       if (res.ok) {
         const data = await res.json();
         logEvent(`Successfully toggled integration ${integrationId} status to ${data.new_status}`, "info");
@@ -398,7 +400,7 @@ export default function Home() {
 
   const handleActivateIntegration = async (integrationId: string, type: string) => {
     try {
-      const res = await fetch(`http://localhost:8000/api/v1/integrations/${integrationId}/activate`, { method: "POST" });
+      const res = await fetch(`${API_BASE}/api/v1/integrations/${integrationId}/activate`, { method: "POST" });
       if (res.ok) {
         logEvent(`Activated integration ${integrationId} as active provider for ${type}`, "info");
         fetchLiveState();
@@ -413,7 +415,7 @@ export default function Home() {
   const handleTestIntegration = async (integrationId: string) => {
     try {
       logEvent(`Executing test run for integration adapter: ${integrationId}...`, "info");
-      const res = await fetch(`http://localhost:8000/api/v1/integrations/${integrationId}/test`, { method: "POST" });
+      const res = await fetch(`${API_BASE}/api/v1/integrations/${integrationId}/test`, { method: "POST" });
       const data = await res.json();
       if (data.status === "success") {
         logEvent(`Integration ${integrationId} test completed successfully. Result: ${data.result}`, "info");
@@ -853,7 +855,7 @@ export default function Home() {
                       onClick={async () => {
                         const lim = parseFloat(newBudgetLimit);
                         if (!isNaN(lim)) {
-                          await fetch("http://localhost:8000/api/v1/ai/budget", {
+                          await fetch(`${API_BASE}/api/v1/ai/budget`, {
                             method: "POST",
                             headers: { "Content-Type": "application/json" },
                             body: JSON.stringify({ daily_budget_usd: lim })
@@ -913,7 +915,7 @@ export default function Home() {
                               <button 
                                 onClick={async () => {
                                   const nextState = p.availability === "healthy" ? "offline" : "healthy";
-                                  await fetch("http://localhost:8000/api/v1/ai/toggle", {
+                                  await fetch(`${API_BASE}/api/v1/ai/toggle`, {
                                     method: "POST",
                                     headers: { "Content-Type": "application/json" },
                                     body: JSON.stringify({ model_id: p.model_id, availability: nextState })
@@ -982,7 +984,7 @@ export default function Home() {
                         setDiagLoading(true);
                         setDiagResponse(null);
                         try {
-                          const res = await fetch("http://localhost:8000/api/v1/ai/test", {
+                          const res = await fetch(`${API_BASE}/api/v1/ai/test`, {
                             method: "POST",
                             headers: { "Content-Type": "application/json" },
                             body: JSON.stringify({
