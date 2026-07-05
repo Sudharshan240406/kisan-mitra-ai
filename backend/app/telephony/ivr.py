@@ -11,7 +11,11 @@ class IVRState(str, Enum):
     """Supported states within the IVR call navigation system."""
     GREETING = "GREETING"
     LANGUAGE_SELECTION = "LANGUAGE_SELECTION"
+    CALLER_IDENTIFICATION = "CALLER_IDENTIFICATION"
     INTENT_CAPTURE = "INTENT_CAPTURE"
+    SCHEME_INQUIRY = "SCHEME_INQUIRY"
+    SCHEME_RESULT = "SCHEME_RESULT"
+    DOCUMENT_ADVISOR = "DOCUMENT_ADVISOR"
     CLARIFICATION = "CLARIFICATION"
     RECOMMENDATION_PLAYBACK = "RECOMMENDATION_PLAYBACK"
     CONFIRMATION = "CONFIRMATION"
@@ -23,44 +27,87 @@ class IVRState(str, Enum):
 DEFAULT_IVR_CONFIG: dict[str, dict[str, Any]] = {
     "GREETING": {
         "prompts": {
-            "hi": "नमस्ते, किसान मित्र एआई में आपका स्वागत है।",
-            "pa": "ਸਤਿ ਸ੍ਰੀ ਅਕਾਲ, ਕਿਸਾਨ ਮਿੱਤਰ ਏਆਈ ਵਿੱਚ ਤੁਹਾਡਾ ਸੁਆਗਤ ਹੈ।",
-            "en": "Hello, welcome to Kisan Mitra AI."
+            "hi": "नमस्ते, किसान मित्र एआई में आपका स्वागत है। मैं आपकी सरकारी योजनाओं और खेती की समस्याओं में मदद करूंगा।",
+            "pa": "ਸਤਿ ਸ੍ਰੀ ਅਕਾਲ, ਕਿਸਾਨ ਮਿੱਤਰ ਏਆਈ ਵਿੱਚ ਤੁਹਾਡਾ ਸੁਆਗਤ ਹੈ। ਮੈਂ ਤੁਹਾਡੀ ਸਰਕਾਰੀ ਯੋਜਨਾਵਾਂ ਅਤੇ ਖੇਤੀਬਾੜੀ ਸਮੱਸਿਆਵਾਂ ਵਿੱਚ ਮਦਦ ਕਰਾਂਗਾ।",
+            "en": "Hello, welcome to Kisan Mitra AI. I will help you with government schemes and farming assistance.",
         },
         "next": "LANGUAGE_SELECTION"
     },
     "LANGUAGE_SELECTION": {
         "prompts": {
-            "hi": "भाषा चुनने के लिए: हिंदी के लिए 1 दबाएं, फॉर इंग्लिश प्रेस 2, ਪੰਜਾਬੀ ਲਈ 3 ਦਬਾਓ।",
-            "pa": "भाषा चुनने के लिए: हिंदी के लिए 1 दबाएं, फॉर इंग्लिश प्रेस 2, ਪੰਜਾਬੀ ਲਈ 3 ਦਬਾਓ।",
-            "en": "To select language: Press 1 for Hindi, 2 for English, 3 for Punjabi."
+            "hi": "भाषा चुनने के लिए: हिंदी के लिए 1 दबाएं, For English press 2, ਪੰਜਾਬੀ ਲਈ 3 ਦਬਾਓ।",
+            "pa": "भाषा चुनने के लिए: हिंदी के लिए 1 दबाएं, For English press 2, ਪੰਜਾਬੀ ਲਈ 3 ਦਬਾਓ।",
+            "en": "To select language: Press 1 for Hindi, 2 for English, 3 for Punjabi.",
         },
         "dtmf": {
-            "1": {"next": "INTENT_CAPTURE", "set_language": "hi"},
-            "2": {"next": "INTENT_CAPTURE", "set_language": "en"},
-            "3": {"next": "INTENT_CAPTURE", "set_language": "pa"}
+            "1": {"next": "CALLER_IDENTIFICATION", "set_language": "hi"},
+            "2": {"next": "CALLER_IDENTIFICATION", "set_language": "en"},
+            "3": {"next": "CALLER_IDENTIFICATION", "set_language": "pa"},
         },
         "fallback": "LANGUAGE_SELECTION"
     },
-    "INTENT_CAPTURE": {
+    "CALLER_IDENTIFICATION": {
         "prompts": {
-            "hi": "मुख्य मेनू: मौसम की जानकारी के लिए 1 दबाएं, बाजार भाव के लिए 2 दबाएं, रोग नियंत्रण सलाह के लिए 3 दबाएं, या ग्राहक प्रतिनिधि से बात करने के लिए 9 दबाएं।",
-            "pa": "ਮੁੱਖ ਮੇਨੂ: ਮੌਸਮ ਦੀ ਜਾਣਕਾਰੀ ਲਈ 1 ਦਬਾਓ, ਮੰਡੀ ਦੇ ਭਾਅ ਲਈ 2 ਦਬਾਓ, ਬਿਮਾਰੀ ਦੇ ਇਲਾਜ ਲਈ 3 ਦਬਾਓ, ਜਾਂ ਕਸਟਮਰ ਕੇਅਰ ਨਾਲ ਗੱਲ ਕਰਨ ਲਈ 9 ਦਬਾਓ।",
-            "en": "Main menu: Press 1 for Weather, 2 for Market Prices, 3 for crop disease advice, or press 9 to speak with an agent."
+            "hi": "यदि आप पंजीकृत किसान हैं तो 1 दबाएं। नए किसान के लिए 2 दबाएं। गेस्ट डेमो के लिए 3 दबाएं।",
+            "pa": "ਜੇ ਤੁਸੀਂ ਰਜਿਸਟਰਡ ਕਿਸਾਨ ਹੋ ਤਾਂ 1 ਦਬਾਓ। ਨਵੇਂ ਕਿਸਾਨ ਲਈ 2 ਦਬਾਓ। ਗੈਸਟ ਡੈਮੋ ਲਈ 3 ਦਬਾਓ।",
+            "en": "Press 1 if you are a registered farmer. Press 2 for new registration. Press 3 for guest demo.",
         },
         "dtmf": {
-            "1": {"next": "RECOMMENDATION_PLAYBACK", "query": "weather forecast"},
-            "2": {"next": "RECOMMENDATION_PLAYBACK", "query": "market prices"},
-            "3": {"next": "RECOMMENDATION_PLAYBACK", "query": "crop disease advice"},
-            "9": {"next": "HUMAN_TRANSFER"}
+            "1": {"next": "INTENT_CAPTURE", "caller_type": "registered"},
+            "2": {"next": "INTENT_CAPTURE", "caller_type": "new"},
+            "3": {"next": "INTENT_CAPTURE", "caller_type": "guest"},
+        },
+        "fallback": "CALLER_IDENTIFICATION"
+    },
+    "INTENT_CAPTURE": {
+        "prompts": {
+            "hi": "मुख्य मेनू: सरकारी योजनाओं की जानकारी के लिए 1 दबाएं, मौसम के लिए 2, बाजार भाव के लिए 3, फसल रोग सलाह के लिए 4, या सहायक से बात के लिए 9 दबाएं।",
+            "pa": "ਮੁੱਖ ਮੇਨੂ: ਸਰਕਾਰੀ ਯੋਜਨਾਵਾਂ ਲਈ 1 ਦਬਾਓ, ਮੌਸਮ ਲਈ 2, ਮੰਡੀ ਭਾਅ ਲਈ 3, ਫ਼ਸਲ ਰੋਗ ਲਈ 4, ਜਾਂ ਸਹਾਇਕ ਨਾਲ ਗੱਲ ਲਈ 9 ਦਬਾਓ।",
+            "en": "Main menu: Press 1 for Government Schemes, 2 for Weather, 3 for Market Prices, 4 for Crop Disease advice, or 9 to speak with an agent.",
+        },
+        "dtmf": {
+            "1": {"next": "SCHEME_INQUIRY", "query": "government schemes eligibility"},
+            "2": {"next": "RECOMMENDATION_PLAYBACK", "query": "weather forecast"},
+            "3": {"next": "RECOMMENDATION_PLAYBACK", "query": "market prices"},
+            "4": {"next": "RECOMMENDATION_PLAYBACK", "query": "crop disease advice"},
+            "9": {"next": "HUMAN_TRANSFER"},
         },
         "fallback": "INTENT_CAPTURE"
+    },
+    "SCHEME_INQUIRY": {
+        "prompts": {
+            "hi": "मैं आपके लिए सरकारी योजनाओं की पात्रता जाँच रहा हूँ। कृपया प्रतीक्षा करें...",
+            "pa": "ਮੈਂ ਤੁਹਾਡੇ ਲਈ ਸਰਕਾਰੀ ਯੋਜਨਾਵਾਂ ਦੀ ਯੋਗਤਾ ਜਾਂਚ ਰਿਹਾ ਹਾਂ। ਕਿਰਪਾ ਕਰਕੇ ਇੰਤਜ਼ਾਰ ਕਰੋ...",
+            "en": "I am checking your eligibility for government schemes. Please wait...",
+        },
+        "next": "SCHEME_RESULT"
+    },
+    "SCHEME_RESULT": {
+        "prompts": {
+            "hi": "यहाँ आपकी योजना की जानकारी है: ",
+            "pa": "ਇੱਥੇ ਤੁਹਾਡੀ ਯੋਜਨਾ ਦੀ ਜਾਣਕਾਰੀ ਹੈ: ",
+            "en": "Here is your scheme eligibility information: ",
+        },
+        "next": "DOCUMENT_ADVISOR"
+    },
+    "DOCUMENT_ADVISOR": {
+        "prompts": {
+            "hi": "दस्तावेज़ मार्गदर्शन सुनने के लिए 1 दबाएं। अगली योजना सुनने के लिए 2 दबाएं। मुख्य मेनू के लिए 9 दबाएं।",
+            "pa": "ਦਸਤਾਵੇਜ਼ ਮਾਰਗਦਰਸ਼ਨ ਸੁਣਨ ਲਈ 1 ਦਬਾਓ। ਅਗਲੀ ਯੋਜਨਾ ਸੁਣਨ ਲਈ 2 ਦਬਾਓ। ਮੁੱਖ ਮੇਨੂ ਲਈ 9 ਦਬਾਓ।",
+            "en": "Press 1 to hear document requirements. Press 2 for next scheme. Press 9 for main menu.",
+        },
+        "dtmf": {
+            "1": {"next": "RECOMMENDATION_PLAYBACK", "query": "document_guidance"},
+            "2": {"next": "SCHEME_RESULT", "next_scheme": True},
+            "9": {"next": "INTENT_CAPTURE"},
+        },
+        "fallback": "DOCUMENT_ADVISOR"
     },
     "CLARIFICATION": {
         "prompts": {
             "hi": "कृपया अधिक जानकारी प्रदान करें। अपनी समस्या रिकॉर्ड करने के लिए 1 दबाएं या मुख्य मेनू पर लौटने के लिए 9 दबाएं।",
             "pa": "ਕਿਰਪਾ ਕਰਕੇ ਹੋਰ ਜਾਣਕਾਰੀ ਦਿਓ। ਆਪਣੀ ਸਮੱਸਿਆ ਰਿਕਾਰਡ ਕਰਨ ਲਈ 1 ਦਬਾਓ ਜਾਂ ਮੁੱਖ ਮੇਨੂ ਤੇ ਜਾਣ ਲਈ 9 ਦਬਾਓ।",
-            "en": "Please provide more details. Press 1 to record your query, or press 9 to return to the main menu."
+            "en": "Please provide more details. Press 1 to record your query, or press 9 to return to the main menu.",
         },
         "dtmf": {
             "1": {"next": "INTENT_CAPTURE", "voice_record": True},
@@ -72,7 +119,7 @@ DEFAULT_IVR_CONFIG: dict[str, dict[str, Any]] = {
         "prompts": {
             "hi": "यहाँ आपकी सलाह है: ",
             "pa": "ਇੱਥੇ ਤੁਹਾਡੀ ਸਲਾਹ ਹੈ: ",
-            "en": "Here is your advisory recommendation: "
+            "en": "Here is your advisory recommendation: ",
         },
         "next": "CONFIRMATION"
     },
@@ -80,7 +127,7 @@ DEFAULT_IVR_CONFIG: dict[str, dict[str, Any]] = {
         "prompts": {
             "hi": "यदि आप सलाह समझ गए हैं तो 1 दबाएं। सलाह दोबारा सुनने के लिए 2 दबाएं। मुख्य मेनू पर लौटने के लिए 9 दबाएं।",
             "pa": "ਜੇਕਰ ਤੁਸੀਂ ਸਲਾਹ ਸਮਝ ਗਏ ਹੋ ਤਾਂ 1 ਦਬਾਓ। ਸਲਾਹ ਦੁਬਾਰਾ ਸੁਣਨ ਲਈ 2 ਦਬਾਓ। ਮੁੱਖ ਮੇਨੂ ਤੇ ਜਾਣ ਲਈ 9 ਦਬਾਓ।",
-            "en": "If you understood the advisory, press 1. To repeat the advisory, press 2. To return to the main menu, press 9."
+            "en": "If you understood the advisory, press 1. To repeat the advisory, press 2. To return to the main menu, press 9.",
         },
         "dtmf": {
             "1": {"next": "EXIT"},
@@ -93,15 +140,15 @@ DEFAULT_IVR_CONFIG: dict[str, dict[str, Any]] = {
         "prompts": {
             "hi": "कृपया प्रतीक्षा करें, आपकी कॉल हमारे कृषि विशेषज्ञ को ट्रांसफर की जा रही है।",
             "pa": "ਕਿਰਪਾ ਕਰਕੇ ਇੰਤਜ਼ਾਰ ਕਰੋ, ਤੁਹਾਡੀ ਕਾਲ ਸਾਡੇ ਖੇਤੀਬਾੜੀ ਮਾਹਿਰ ਨੂੰ ਟ੍ਰਾਂਸਫਰ ਕੀਤੀ ਜਾ ਰਹੀ ਹੈ।",
-            "en": "Please wait while we transfer your call to our agricultural specialist."
+            "en": "Please wait while we transfer your call to our agricultural specialist.",
         },
         "next": "EXIT"
     },
     "EXIT": {
         "prompts": {
-            "hi": "किसान मित्र से संपर्क करने के लिए धन्यवाद। आपका दिन शुभ हो!",
-            "pa": "ਕਿਸਾਨ ਮਿੱਤਰ ਨਾਲ ਸੰਪਰਕ ਕਰਨ ਲਈ ਧੰਨਵਾਦ। ਤੁਹਾਡਾ ਦਿਨ ਵਧੀਆ ਰਹੇ!",
-            "en": "Thank you for calling Kisan Mitra. Have a great day!"
+            "hi": "किसान मित्र से संपर्क करने के लिए धन्यवाद। आपकी फसल लहलहाए, आपका दिन शुभ हो!",
+            "pa": "ਕਿਸਾਨ ਮਿੱਤਰ ਨਾਲ ਸੰਪਰਕ ਕਰਨ ਲਈ ਧੰਨਵਾਦ। ਚੰਗੀ ਫਸਲ ਹੋਵੇ, ਤੁਹਾਡਾ ਦਿਨ ਵਧੀਆ ਰਹੇ!",
+            "en": "Thank you for calling Kisan Mitra. Wishing you a great harvest and a wonderful day!",
         },
         "next": "CLOSED"
     }
@@ -179,6 +226,10 @@ class IVRStateMachine:
         if "set_language" in action:
             session.language = action["set_language"]
             logger.info(f"Session '{session.call_id}' switched language to: {session.language}")
+
+        if "caller_type" in action:
+            session.metadata["caller_type"] = action["caller_type"]
+            logger.info(f"Session '{session.call_id}' caller type: {action['caller_type']}")
 
         if "query" in action:
             # Store intent query in metadata for CallManager to route

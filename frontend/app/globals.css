@@ -128,3 +128,89 @@
     @apply font-sans;
   }
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Mission Control — Premium Dashboard Styles
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* Glassmorphism panel */
+.mc-panel {
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.mc-panel:hover {
+  border-color: rgba(16, 185, 129, 0.15);
+  box-shadow: 0 0 20px rgba(16, 185, 129, 0.04);
+}
+
+/* Live indicator pulse */
+.mc-live-badge {
+  animation: mc-pulse 2s ease-in-out infinite;
+}
+@keyframes mc-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+/* Scrollbar */
+.mc-scrollbar::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+.mc-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.mc-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(100, 116, 139, 0.3);
+  border-radius: 100px;
+}
+.mc-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(100, 116, 139, 0.5);
+}
+
+/* Scheme card slide-in */
+@keyframes mc-slide-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Event timeline horizontal scroll */
+.mc-timeline-item {
+  animation: mc-slide-in 0.3s ease-out;
+}
+
+/* Confidence gauge glow */
+.mc-confidence-glow {
+  filter: drop-shadow(0 0 6px rgba(16, 185, 129, 0.3));
+}
+
+/* Reasoning chain line animation */
+@keyframes mc-reason-appear {
+  from {
+    opacity: 0;
+    transform: translateX(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Transcript bubble animation */
+@keyframes mc-transcript-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}

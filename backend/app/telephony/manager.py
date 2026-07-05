@@ -87,11 +87,14 @@ class CallManager:
             {"digits": digits, "state": session.current_ivr_state}
         )
 
+        # Capture state before transition to check for specific flows
+        pre_transition_state = session.current_ivr_state
+
         # Handle in state machine
         next_state, prompt = await self._ivr_state_machine.handle_dtmf(session, digits)
 
-        # Check if language selected
-        if next_state == IVRState.INTENT_CAPTURE and digits in ["1", "2", "3"]:
+        # Check if language selected (fires when coming from LANGUAGE_SELECTION)
+        if pre_transition_state == IVRState.LANGUAGE_SELECTION.value and digits in ["1", "2", "3"]:
             self._publish_event(
                 TelephonyEventType.LANGUAGE_SELECTED.value,
                 call_id,
@@ -99,7 +102,17 @@ class CallManager:
                 {"language": session.language}
             )
 
-        # Route query if INTENT triggered
+        # Handle Scheme Inquiry — eligibility evaluation flow
+        if session.current_ivr_state == IVRState.SCHEME_INQUIRY.value:
+            logger.info(f"Scheme inquiry triggered for call '{call_id}'")
+            scheme_response = await self._handle_scheme_inquiry(session)
+            prompt = f"{prompt} {scheme_response}"
+            # Transition to SCHEME_RESULT then DOCUMENT_ADVISOR
+            session.current_ivr_state = IVRState.DOCUMENT_ADVISOR.value
+            doc_prompt = await self._ivr_state_machine.get_prompt(IVRState.DOCUMENT_ADVISOR.value, session.language)
+            prompt = f"{prompt} {doc_prompt}"
+
+        # Route query if INTENT triggered (non-scheme paths)
         advisory_text = ""
         if session.current_ivr_state == IVRState.RECOMMENDATION_PLAYBACK.value and "intent_query" in session.metadata:
             query = session.metadata.pop("intent_query")
@@ -259,6 +272,52 @@ class CallManager:
             "tts_prompt": combined_prompt,
             "advisory_text": advisory_text
         }
+
+    async def _handle_scheme_inquiry(self, session: CallSession) -> str:
+        """
+        Handle government scheme inquiry: identify farmer, evaluate eligibility,
+        generate natural voice response.
+        """
+        try:
+            from app.knowledge.modules.government import GovernmentKnowledgeProvider
+            from app.services.demo import DemoService
+            from app.services.eligibility import EligibilityEngine
+            from app.services.scheme_service import GovernmentSchemeService
+
+            demo_service = DemoService()
+            scheme_service = GovernmentSchemeService()
+            gov_provider = GovernmentKnowledgeProvider()
+
+            # Try to identify farmer by caller number
+            caller = session.metadata.get("caller", "")
+            farmer = demo_service.get_farmer_by_phone(caller)
+
+            if not farmer:
+                # Use first demo farmer as fallback for demo
+                all_farmers = demo_service.get_all_farmers()
+                farmer = all_farmers[0] if all_farmers else None
+
+            if not farmer:
+                return "No farmer profile found. Please register first."
+
+            # Bind farmer to session
+            session.farmer_id = farmer.farmer_id
+            session.farmer_profile_snapshot = farmer.model_dump()
+
+            # Evaluate all schemes
+            all_schemes = gov_provider.get_all_schemes()
+            recommendations = scheme_service.evaluate_farmer_eligibility(farmer, all_schemes)
+
+            # Generate natural voice response
+            voice_response = scheme_service.generate_voice_response(
+                farmer, recommendations, session.language
+            )
+
+            return voice_response
+
+        except Exception as e:
+            logger.error(f"Scheme inquiry failed: {e}")
+            return "Sorry, there was an issue checking your scheme eligibility. Please try again."
 
     def _record_telephony_metrics(self, session: CallSession, completed: bool = True) -> None:
         """Publishes operational telemetry metrics to Telemetry Framework."""

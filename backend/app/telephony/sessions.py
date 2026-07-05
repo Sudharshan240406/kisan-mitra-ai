@@ -31,6 +31,8 @@ class CallSession(BaseModel):
     last_activity: float = Field(default_factory=time.time, description="Last activity timestamp.")
     timeout_seconds: int = Field(default=300, description="Inactivity timeout window in seconds (default 5 min).")
     dtmf_buffer: str = Field(default="", description="Accumulated DTMF digits pressed.")
+    farmer_id: Optional[str] = Field(default=None, description="Linked farmer profile ID from Digital Twin.")
+    farmer_profile_snapshot: dict[str, Any] = Field(default_factory=dict, description="Cached farmer profile data for scheme evaluation.")
     recording_metadata: dict[str, Any] = Field(default_factory=dict, description="Metadata for call recordings.")
     metadata: dict[str, Any] = Field(default_factory=dict, description="Extensible metadata values.")
     recovery_count: int = Field(default=0, description="Track recovery retries count.")

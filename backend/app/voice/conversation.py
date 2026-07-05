@@ -217,3 +217,43 @@ class ConversationManager:
             "kn": "ನಿಮ್ಮ ಸಮಸ್ಯೆ ಅರ್ಥಮಾಡಿಕೊಳ್ಳಲು ತೊಂದರೆಯಾಗುತ್ತಿದೆ. ತಜ್ಞರಿಗೆ ಸಂಪರ್ಕಿಸುತ್ತಿದ್ದೇವೆ.",
         }
         return msgs.get(lang, msgs["hi"])
+
+    def deliver_scheme_response(
+        self,
+        scheme_text: str,
+        confidence: float,
+        latency_ms: float,
+    ) -> None:
+        """
+        Records a scheme eligibility response as a conversation turn.
+        Uses a natural conversational tone rather than robotic output.
+        """
+        lang = self.session.detected_language
+        intro = self.SCHEME_RESPONSE_INTROS.get(lang, self.SCHEME_RESPONSE_INTROS["hi"])
+        full_text = f"{intro} {scheme_text}"
+
+        turn = TranscriptTurn(
+            role="assistant",
+            text=full_text,
+            language=lang,
+            confidence=confidence,
+            latency_ms=latency_ms,
+            metadata={"type": "scheme_response"},
+        )
+        self.session.add_turn(turn)
+        if self._history:
+            self._history[-1].assistant_text = full_text
+            self._history[-1].intent = "government_scheme"
+        self._previous_advisory = full_text
+        self.session.record_reasoning(confidence, latency_ms)
+        self._stage = ConversationStage.CONFIRMATION
+        self._touch_activity()
+
+    SCHEME_RESPONSE_INTROS: dict[str, str] = {
+        "hi": "आपकी प्रोफ़ाइल के अनुसार, मैंने सरकारी योजनाओं की जाँच की है।",
+        "en": "Based on your profile, I have checked government schemes for you.",
+        "pa": "ਤੁਹਾਡੀ ਪ੍ਰੋਫਾਈਲ ਅਨੁਸਾਰ, ਮੈਂ ਸਰਕਾਰੀ ਯੋਜਨਾਵਾਂ ਦੀ ਜਾਂਚ ਕੀਤੀ ਹੈ।",
+        "kn": "ನಿಮ್ಮ ಪ್ರೊಫೈಲ್ ಪ್ರಕಾರ, ಸರ್ಕಾರಿ ಯೋಜನೆಗಳನ್ನು ಪರಿಶೀಲಿಸಿದ್ದೇನೆ.",
+        "te": "మీ ప్రొఫైల్ ఆధారంగా, ప్రభుత్వ పథకాలను తనిఖీ చేశాను.",
+    }
+

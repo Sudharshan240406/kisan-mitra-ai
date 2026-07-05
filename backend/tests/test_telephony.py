@@ -143,11 +143,17 @@ async def test_ivr_state_machine_transitions() -> None:
     assert state == IVRState.LANGUAGE_SELECTION
     assert "To select language" in prompt
 
-    # Language Selection -> Intent Capture via DTMF button
+    # Language Selection -> Caller Identification via DTMF
     state_lang, prompt_lang = await ivr.handle_dtmf(sess, "1")  # Press 1 for Hindi
     assert sess.language == "hi"
-    assert state_lang == IVRState.INTENT_CAPTURE
-    assert "मुख्य मेनू" in prompt_lang
+    assert state_lang == IVRState.CALLER_IDENTIFICATION
+    assert "पंजीकृत" in prompt_lang or "ग्रुप" in prompt_lang or "दबाएं" in prompt_lang
+
+    # Caller Identification -> Intent Capture via DTMF (guest)
+    state_id, prompt_id = await ivr.handle_dtmf(sess, "3")  # Press 3 for guest demo
+    assert sess.metadata.get("caller_type") == "guest"
+    assert state_id == IVRState.INTENT_CAPTURE
+    assert "मुख्य मेनू" in prompt_id
 
     # Invalid DTMF button fallback
     state_fail, prompt_fail = await ivr.handle_dtmf(sess, "8")
@@ -228,11 +234,16 @@ async def test_call_manager_e2e_flow() -> None:
     # 2. Select language
     res_lang = await manager.handle_dtmf_input("call-test-99", "1")  # Hindi
     assert res_lang["success"] is True
-    assert res_lang["current_state"] == "INTENT_CAPTURE"
+    assert res_lang["current_state"] == "CALLER_IDENTIFICATION"
     assert TelephonyEventType.LANGUAGE_SELECTED.value in events_logged
 
-    # 3. Select intent (1 = Weather query)
-    res_intent = await manager.handle_dtmf_input("call-test-99", "1")
+    # 2b. Caller identification (guest demo)
+    res_caller = await manager.handle_dtmf_input("call-test-99", "3")  # Guest
+    assert res_caller["success"] is True
+    assert res_caller["current_state"] == "INTENT_CAPTURE"
+
+    # 3. Select intent (2 = Weather query — avoids scheme inquiry async flow)
+    res_intent = await manager.handle_dtmf_input("call-test-99", "2")
     assert res_intent["success"] is True
     assert res_intent["current_state"] == "CONFIRMATION"
     assert "सलाह" in res_intent["tts_prompt"]

@@ -1,6 +1,9 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, lazy, Suspense } from "react";
+import dynamic from "next/dynamic";
+
+const MissionControl = dynamic(() => import("@/components/MissionControl"), { ssr: false });
 import {
   MessageSquare,
   CloudSun,
@@ -185,7 +188,7 @@ interface SMSSession {
 }
 
 export default function Home() {
-  const [activeTab, setActiveTab] = useState<string>("overview");
+  const [activeTab, setActiveTab] = useState<string>("mission-control");
   const [query, setQuery] = useState("");
   const [sessionId, setSessionId] = useState("SES-DEFAULT");
   const [isLoading, setIsLoading] = useState(false);
@@ -542,6 +545,7 @@ export default function Home() {
 
           <nav className="flex flex-col gap-1.5">
             {[
+              { id: "mission-control", label: "⚡ Mission Control", icon: <Radio className="w-4 h-4" /> },
               { id: "overview", label: "Overview", icon: <Server className="w-4 h-4" /> },
               { id: "platform", label: "Agent Playground", icon: <MessageSquare className="w-4 h-4" /> },
               { id: "ai", label: "AI Specialist Hub", icon: <Cpu className="w-4 h-4" /> },
@@ -594,6 +598,13 @@ export default function Home() {
         {/* Dynamic Display Panel */}
         <main className="flex-1 bg-slate-900/20 border border-slate-900 rounded-3xl p-6 overflow-y-auto">
           
+          {/* TAB 0: MISSION CONTROL */}
+          {activeTab === "mission-control" && (
+            <Suspense fallback={<div className="text-slate-500 text-sm p-8">Loading Mission Control...</div>}>
+              <MissionControl />
+            </Suspense>
+          )}
+
           {/* TAB 1: OVERVIEW */}
           {activeTab === "overview" && (
             <div className="flex flex-col gap-6">
