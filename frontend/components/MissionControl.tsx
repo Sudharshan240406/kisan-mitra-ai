@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   Phone,
   Mic,
@@ -24,8 +24,9 @@ import {
   ChevronDown,
   Wifi,
   WifiOff,
+  Layers
 } from "lucide-react";
-import { useWebSocket, WSEvent } from "@/hooks/useWebSocket";
+import { useWebSocket } from "@/hooks/useWebSocket";
 
 /* ═══════════════════════════════════════════════════════════════════════════
    Types
@@ -46,6 +47,10 @@ interface FarmerProfile {
   recent_damage: string | null;
   is_organic: boolean;
   is_tenant: boolean;
+  digital_twin_version?: string;
+  profile_completeness?: number;
+  last_interaction?: string;
+  risk_profile?: string;
 }
 
 interface SchemeResult {
@@ -53,12 +58,23 @@ interface SchemeResult {
   title: string;
   status: string;
   confidence: number;
+  benefits?: string;
 }
 
 interface TranscriptLine {
   role: string;
   text: string;
   timestamp: number;
+}
+
+interface DocumentGuidance {
+  scheme_id: string;
+  required_documents: string[];
+  missing_documents: string[];
+  tips: string[];
+  nearest_office: string;
+  helpline: string;
+  application_steps: string[];
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -83,30 +99,6 @@ function StatusBadge({ status }: { status: string }) {
       {icons[status]}
       {status.replace(/_/g, " ")}
     </span>
-  );
-}
-
-function ConfidenceGauge({ value }: { value: number }) {
-  const pct = Math.round(value * 100);
-  const color = pct >= 80 ? "text-emerald-400" : pct >= 60 ? "text-amber-400" : "text-red-400";
-  const bgColor = pct >= 80 ? "bg-emerald-500" : pct >= 60 ? "bg-amber-500" : "bg-red-500";
-  return (
-    <div className="flex flex-col items-center gap-1">
-      <div className="relative w-20 h-20">
-        <svg className="w-20 h-20 -rotate-90" viewBox="0 0 80 80">
-          <circle cx="40" cy="40" r="34" fill="none" stroke="currentColor" strokeWidth="6" className="text-slate-800" />
-          <circle cx="40" cy="40" r="34" fill="none" stroke="currentColor" strokeWidth="6" className={color}
-            strokeDasharray={`${pct * 2.136} 213.6`}
-            strokeLinecap="round"
-            style={{ transition: "stroke-dasharray 1s ease-in-out" }}
-          />
-        </svg>
-        <div className="absolute inset-0 flex items-center justify-center">
-          <span className={`text-lg font-black ${color}`}>{pct}%</span>
-        </div>
-      </div>
-      <span className="text-[9px] text-slate-500 font-semibold uppercase tracking-wider">Confidence</span>
-    </div>
   );
 }
 
@@ -139,7 +131,7 @@ function PanelCard({ icon, title, badge, children, className = "" }: {
 
 export default function MissionControl() {
   // WebSocket
-  const { events, lastEvent, isConnected } = useWebSocket({
+  const { events, lastEvent, isConnected, clientCount } = useWebSocket({
     url: "ws://localhost:8000/ws/live",
   });
 
@@ -158,15 +150,32 @@ export default function MissionControl() {
   const [isDemoRunning, setIsDemoRunning] = useState(false);
   const [selectedFarmer, setSelectedFarmer] = useState<string>("");
   const [elapsedMs, setElapsedMs] = useState(0);
-  const [topScheme, setTopScheme] = useState<any>(null);
+  const [topSchemeName, setTopSchemeName] = useState<string>("");
+  const [documentGuidance, setDocumentGuidance] = useState<DocumentGuidance | null>(null);
+  
+  // Reconnect count
+  const [reconnects, setReconnects] = useState(0);
+  
+  // Error handling state
+  const [errorMsg, setErrorMsg] = useState("");
+  const [recoveryAction, setRecoveryAction] = useState("");
 
-  // Fetch demo farmers
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  // Fetch demo farmers on load
   useEffect(() => {
     fetch("http://localhost:8000/api/v1/demo/farmers")
-      .then((r) => r.ok ? r.json() : [])
+      .then((r) => (r.ok ? r.json() : []))
       .then(setDemoFarmers)
       .catch(() => {});
   }, []);
+
+  // Auto scroll transcript to bottom
+  useEffect(() => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+    }
+  }, [transcript]);
 
   // Process WebSocket events
   useEffect(() => {
@@ -184,47 +193,118 @@ export default function MissionControl() {
         setEvidence([]);
         setVoiceText("");
         setConfidence(0);
-        setTopScheme(null);
+        setTopSchemeName("");
+        setDocumentGuidance(null);
+        setErrorMsg("");
+        setRecoveryAction("");
         break;
 
-      case "FARMER_IDENTIFIED":
-        setFarmer(payload.farmer || null);
-        setAiState("FARMER_IDENTIFIED");
+      case "CALLER_IDENTIFIED":
+        setAiState("CALLER_IDENTIFIED");
+        setFarmer({
+          farmer_id: payload.farmer_id,
+          name: payload.farmer_name,
+          phone: payload.phone,
+          state: payload.state,
+          district: payload.district,
+          category: "",
+          gender: "",
+          land_hectares: 0,
+          crops: [],
+          language: "",
+          caste: "",
+          recent_damage: null,
+          is_organic: false,
+          is_tenant: false
+        });
         break;
 
-      case "SCHEME_MATCHING":
-        setAiState("SCHEME_MATCHING");
+      case "DIGITAL_TWIN_LOADED":
+        setAiState("DIGITAL_TWIN_LOADED");
+        if (payload.digital_twin) {
+          setFarmer(payload.digital_twin);
+        }
         break;
 
-      case "ELIGIBILITY_COMPLETE":
-        setSchemes(payload.results || []);
-        setAiState("ELIGIBILITY_COMPLETE");
+      case "SCHEME_SEARCH_STARTED":
+        setAiState("SCHEME_SEARCH_STARTED");
+        setSchemes([]);
         break;
 
-      case "REASONING_COMPLETE":
+      case "SCHEME_MATCHED":
+        setAiState("SCHEME_EVALUATING");
+        setSchemes((prev) => {
+          const exists = prev.some((s) => s.scheme_id === payload.scheme_id);
+          if (exists) {
+            return prev.map((s) => (s.scheme_id === payload.scheme_id ? {
+              scheme_id: payload.scheme_id,
+              title: payload.title,
+              status: payload.status,
+              confidence: payload.confidence,
+              benefits: payload.benefits
+            } : s));
+          }
+          return [
+            ...prev,
+            {
+              scheme_id: payload.scheme_id,
+              title: payload.title,
+              status: payload.status,
+              confidence: payload.confidence,
+              benefits: payload.benefits
+            }
+          ];
+        });
+        break;
+
+      case "ELIGIBILITY_COMPLETED":
+        setAiState("ELIGIBILITY_COMPLETED");
+        if (payload.results) {
+          setSchemes(payload.results);
+        }
+        break;
+
+      case "REASONING_COMPLETED":
+        setAiState("REASONING_COMPLETED");
         setReasoning(payload.reasoning || []);
         setEvidence(payload.evidence || []);
         setConfidence(payload.confidence || 0);
-        setTopScheme(payload);
-        setAiState("REASONING_COMPLETE");
+        setTopSchemeName(payload.top_scheme || "");
+        break;
+
+      case "DOCUMENT_ADVISOR_READY":
+        setAiState("DOCUMENT_ADVISOR_READY");
+        setDocumentGuidance(payload as DocumentGuidance);
         break;
 
       case "VOICE_RESPONSE_STARTED":
-        setVoiceText(payload.text || "");
         setAiState("VOICE_RESPONSE");
+        setVoiceText(payload.text || "");
         break;
 
       case "TRANSCRIPT_UPDATED":
         setTranscript((prev) => [
           ...prev,
-          { role: payload.role, text: payload.text, timestamp: lastEvent.timestamp },
+          { role: payload.role, text: payload.text, timestamp: payload.timestamp || lastEvent.timestamp },
         ]);
         break;
 
       case "CALL_COMPLETED":
         setAiState("CALL_COMPLETED");
         setElapsedMs(payload.duration_ms || 0);
-        setTimeout(() => setCallActive(false), 5000);
+        setTimeout(() => setCallActive(false), 8000);
+        break;
+
+      case "CALL_ERROR":
+        setAiState("ERROR");
+        setErrorMsg(payload.error || "An unexpected call error occurred.");
+        setElapsedMs(payload.elapsed_ms || 0);
+        break;
+
+      case "ERROR_RECOVERY_STARTED":
+        setAiState("ERROR_RECOVERY");
+        setRecoveryAction(payload.recovery_action || "escalating");
+        setVoiceText(payload.message || "An error occurred, escalating call.");
         break;
 
       case "DEMO_STARTED":
@@ -232,9 +312,27 @@ export default function MissionControl() {
         setAiState("DEMO_RUNNING");
         break;
 
+      case "DEMO_PROGRESS":
+        setAiState(`DEMO: Farmer ${payload.current}/${payload.total}`);
+        break;
+
       case "DEMO_COMPLETED":
         setIsDemoRunning(false);
         setAiState("DEMO_COMPLETE");
+        break;
+
+      case "MISSION_CONTROL_DISCONNECTED":
+        setReconnects((prev) => prev + 1);
+        break;
+
+      case "MISSION_CONTROL_RECONNECTED":
+        if (payload.reconnect_count !== undefined) {
+          setReconnects(payload.reconnect_count);
+        }
+        break;
+        
+      case "CONNECTED":
+        setAiState("READY");
         break;
     }
   }, [lastEvent]);
@@ -261,18 +359,52 @@ export default function MissionControl() {
 
   const aiStateColor: Record<string, string> = {
     IDLE: "text-slate-500",
-    CONNECTING: "text-sky-400",
-    CALL_STARTED: "text-emerald-400",
-    FARMER_IDENTIFIED: "text-teal-400",
-    SCHEME_MATCHING: "text-amber-400",
-    ELIGIBILITY_COMPLETE: "text-purple-400",
-    REASONING_COMPLETE: "text-indigo-400",
-    VOICE_RESPONSE: "text-pink-400",
-    CALL_COMPLETED: "text-emerald-400",
-    DEMO_RUNNING: "text-amber-400",
-    DEMO_COMPLETE: "text-emerald-400",
-    ERROR: "text-red-400",
+    READY: "text-emerald-400 border-emerald-500/20",
+    CONNECTING: "text-sky-400 border-sky-500/20",
+    CALL_STARTED: "text-emerald-400 border-emerald-500/30 bg-emerald-500/5",
+    CALLER_IDENTIFIED: "text-teal-400 border-teal-500/30 bg-teal-500/5",
+    DIGITAL_TWIN_LOADED: "text-cyan-400 border-cyan-500/30 bg-cyan-500/5",
+    SCHEME_SEARCH_STARTED: "text-amber-400 border-amber-500/30",
+    SCHEME_EVALUATING: "text-amber-400 border-amber-500/30 bg-amber-500/5 animate-pulse",
+    ELIGIBILITY_COMPLETED: "text-purple-400 border-purple-500/30 bg-purple-500/5",
+    REASONING_COMPLETED: "text-indigo-400 border-indigo-500/30 bg-indigo-500/5",
+    DOCUMENT_ADVISOR_READY: "text-orange-400 border-orange-500/30 bg-orange-500/5",
+    VOICE_RESPONSE: "text-pink-400 border-pink-500/30 bg-pink-500/5",
+    CALL_COMPLETED: "text-emerald-400 border-emerald-500/40 bg-emerald-500/10",
+    DEMO_RUNNING: "text-amber-500 border-amber-500/30 bg-amber-500/5",
+    DEMO_COMPLETE: "text-emerald-400 border-emerald-500/30",
+    ERROR: "text-red-400 border-red-500/40 bg-red-500/10",
+    ERROR_RECOVERY: "text-red-400 border-red-500/40 bg-red-500/10 animate-pulse",
   };
+
+  // E2E 9-Stage Workflow Canvas States
+  const stages = [
+    { key: "CALL_STARTED", label: "Call Started" },
+    { key: "CALLER_IDENTIFIED", label: "Caller ID" },
+    { key: "DIGITAL_TWIN_LOADED", label: "Digital Twin" },
+    { key: "SCHEME_SEARCH_STARTED", label: "Scheme Search" },
+    { key: "SCHEME_EVALUATING", label: "Evaluating" },
+    { key: "REASONING_COMPLETED", label: "AI Reasoning" },
+    { key: "DOCUMENT_ADVISOR_READY", label: "Docs Ready" },
+    { key: "VOICE_RESPONSE", label: "Voice Playback" },
+    { key: "CALL_COMPLETED", label: "Completed" },
+  ];
+
+  const getStageIndex = (state: string) => {
+    if (state === "CALL_COMPLETED") return 8;
+    if (state === "VOICE_RESPONSE") return 7;
+    if (state === "DOCUMENT_ADVISOR_READY") return 6;
+    if (state === "REASONING_COMPLETED") return 5;
+    if (state === "ELIGIBILITY_COMPLETED") return 5;
+    if (state === "SCHEME_EVALUATING") return 4;
+    if (state === "SCHEME_SEARCH_STARTED") return 3;
+    if (state === "DIGITAL_TWIN_LOADED") return 2;
+    if (state === "CALLER_IDENTIFIED") return 1;
+    if (state === "CALL_STARTED") return 0;
+    return -1;
+  };
+
+  const activeStageIndex = getStageIndex(aiState);
 
   return (
     <div className="flex flex-col gap-5">
@@ -284,10 +416,18 @@ export default function MissionControl() {
             Mission Control — Live Operations
           </h2>
           <p className="text-[11px] text-slate-500 mt-0.5">
-            Government Scheme Intelligence • Real-time IVR Dashboard
+            Government Scheme Intelligence Platform • Real-time Telephony & Reasoning Dashboard
           </p>
         </div>
         <div className="flex items-center gap-3">
+          {/* Reconnect Metrics */}
+          {reconnects > 0 && (
+            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-amber-500/20 bg-amber-500/5 text-[10px] font-bold text-amber-400 uppercase tracking-wider">
+              <RefreshCw className="w-3 h-3 animate-spin" />
+              Reconnects: {reconnects}
+            </div>
+          )}
+
           {/* Connection Status */}
           <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-[10px] font-bold uppercase tracking-wider ${
             isConnected
@@ -295,13 +435,41 @@ export default function MissionControl() {
               : "bg-red-500/10 text-red-400 border-red-500/20"
           }`}>
             {isConnected ? <Wifi className="w-3 h-3" /> : <WifiOff className="w-3 h-3" />}
-            {isConnected ? "Live Connected" : "Offline"}
+            {isConnected ? `Live Connected (${clientCount})` : "Offline"}
           </div>
 
           {/* AI State */}
-          <div className={`px-3 py-1.5 rounded-full border border-slate-800 text-[10px] font-bold ${aiStateColor[aiState] || "text-slate-400"}`}>
-            AI: {aiState.replace(/_/g, " ")}
+          <div className={`px-3 py-1.5 rounded-full border text-[10px] font-bold uppercase ${aiStateColor[aiState] || "text-slate-400 border-slate-800"}`}>
+            AI State: {aiState.replace(/_/g, " ")}
           </div>
+        </div>
+      </div>
+
+      {/* ── WORKFLOW CANVAS ────────────────────────────────────────────────── */}
+      <div className="mc-panel bg-slate-950/40 border border-slate-900 rounded-2xl p-4">
+        <div className="flex items-center gap-2 mb-3">
+          <Layers className="w-4 h-4 text-emerald-400" />
+          <span className="text-[11px] font-bold text-slate-300 uppercase tracking-wider">Workflow Stage Canvas</span>
+        </div>
+        <div className="grid grid-cols-9 gap-2 relative">
+          {stages.map((st, idx) => {
+            const isPassed = idx < activeStageIndex;
+            const isActive = idx === activeStageIndex;
+            
+            let bgClass = "bg-slate-900 border-slate-850 text-slate-500";
+            if (isPassed) bgClass = "bg-emerald-500/10 border-emerald-500/40 text-emerald-400";
+            if (isActive) bgClass = "bg-sky-500/20 border-sky-500/50 text-sky-400 shadow-md shadow-sky-500/5";
+            if (aiState.startsWith("ERROR") && isActive) bgClass = "bg-red-500/20 border-red-500/50 text-red-400 animate-pulse";
+
+            return (
+              <div key={st.key} className={`flex flex-col items-center p-2 rounded-xl border text-center transition-all ${bgClass}`}>
+                <div className="w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold mb-1 border border-current">
+                  {isPassed ? "✓" : idx + 1}
+                </div>
+                <span className="text-[9px] font-semibold uppercase tracking-tight truncate w-full">{st.label}</span>
+              </div>
+            );
+          })}
         </div>
       </div>
 
@@ -316,7 +484,8 @@ export default function MissionControl() {
           <select
             value={selectedFarmer}
             onChange={(e) => setSelectedFarmer(e.target.value)}
-            className="bg-slate-950 text-slate-200 border border-slate-700 rounded-lg px-3 py-1.5 text-xs focus:outline-none focus:border-emerald-500 min-w-[220px]"
+            disabled={callActive || isDemoRunning}
+            className="bg-slate-950 text-slate-200 border border-slate-700 rounded-lg px-3 py-1.5 text-xs focus:outline-none focus:border-emerald-500 min-w-[220px] disabled:opacity-40"
           >
             <option value="">Select a demo farmer...</option>
             {demoFarmers.map((f) => (
@@ -328,7 +497,7 @@ export default function MissionControl() {
 
           <button
             onClick={() => handleSimulateCall(selectedFarmer)}
-            disabled={!selectedFarmer || callActive}
+            disabled={!selectedFarmer || callActive || isDemoRunning}
             className="px-4 py-1.5 bg-gradient-to-r from-emerald-500 to-teal-500 text-slate-950 rounded-lg text-xs font-bold hover:shadow-lg hover:shadow-emerald-500/20 transition-all disabled:opacity-40 disabled:pointer-events-none flex items-center gap-1.5 cursor-pointer"
           >
             <Play className="w-3 h-3 fill-current" />
@@ -339,7 +508,7 @@ export default function MissionControl() {
 
           <button
             onClick={handleStartDemo}
-            disabled={isDemoRunning}
+            disabled={isDemoRunning || callActive}
             className="px-4 py-1.5 bg-gradient-to-r from-amber-500 to-orange-500 text-slate-950 rounded-lg text-xs font-bold hover:shadow-lg hover:shadow-amber-500/20 transition-all disabled:opacity-40 disabled:pointer-events-none flex items-center gap-1.5 cursor-pointer"
           >
             {isDemoRunning ? (
@@ -357,10 +526,10 @@ export default function MissionControl() {
         {/* Column 1: Call & Transcript */}
         <div className="flex flex-col gap-4">
 
-          {/* 📞 Live Call */}
+          {/* 📞 Live Call / Errors */}
           <PanelCard
             icon={<Phone className="w-4 h-4 text-emerald-400" />}
-            title="Live Call"
+            title="Live Call Status"
             badge={callActive ? (
               <span className="mc-live-badge flex items-center gap-1 text-[9px] font-bold text-emerald-400">
                 <span className="relative flex h-2 w-2">
@@ -371,7 +540,19 @@ export default function MissionControl() {
               </span>
             ) : null}
           >
-            {callActive ? (
+            {errorMsg ? (
+              <div className="flex flex-col gap-2 p-2 bg-red-500/10 border border-red-500/25 rounded-xl text-red-400">
+                <div className="flex items-center gap-1.5 text-xs font-bold">
+                  <AlertCircle className="w-4 h-4" /> Pipeline Error Occurred
+                </div>
+                <p className="text-[11px] leading-relaxed text-slate-300">{errorMsg}</p>
+                {recoveryAction && (
+                  <div className="text-[10px] text-amber-400 mt-1 font-semibold">
+                    Recovery: {recoveryAction.replace(/_/g, " ")}
+                  </div>
+                )}
+              </div>
+            ) : callActive ? (
               <div className="flex flex-col gap-2">
                 <div className="text-xs text-slate-300">
                   <span className="text-slate-500">Call ID:</span> <span className="font-mono">{callId}</span>
@@ -382,7 +563,7 @@ export default function MissionControl() {
                       <span className="text-slate-500">Caller:</span> {farmer.name} ({farmer.phone})
                     </div>
                     <div className="text-xs text-slate-300">
-                      <span className="text-slate-500">Location:</span> {farmer.district}, {farmer.state}
+                      <span className="text-slate-500">Language:</span> <span className="uppercase text-emerald-400 font-bold">{farmer.language || "Calculating..."}</span>
                     </div>
                   </>
                 )}
@@ -403,23 +584,28 @@ export default function MissionControl() {
             title="Live Transcript"
             className="flex-1"
           >
-            <div className="flex flex-col gap-2 max-h-[320px] overflow-y-auto pr-1 mc-scrollbar">
+            <div ref={scrollRef} className="flex flex-col gap-2 max-h-[300px] overflow-y-auto pr-1 mc-scrollbar">
               {transcript.length === 0 ? (
                 <p className="text-xs text-slate-600 italic">Waiting for conversation...</p>
               ) : (
                 transcript.map((t, i) => (
-                  <div key={i} className={`text-xs leading-relaxed rounded-lg px-3 py-2 ${
+                  <div key={i} className={`text-xs leading-relaxed rounded-lg px-3 py-2 mc-transcript-in ${
                     t.role === "farmer"
                       ? "bg-sky-500/10 border-l-2 border-sky-500/40 text-slate-200"
                       : t.role === "assistant"
                       ? "bg-emerald-500/10 border-l-2 border-emerald-500/40 text-slate-200"
                       : "bg-slate-800/40 border-l-2 border-slate-700 text-slate-400 text-[10px]"
                   }`}>
-                    <span className={`font-bold uppercase text-[9px] mr-1 ${
-                      t.role === "farmer" ? "text-sky-400" : t.role === "assistant" ? "text-emerald-400" : "text-slate-500"
-                    }`}>
-                      {t.role === "farmer" ? "👨‍🌾 Farmer" : t.role === "assistant" ? "🤖 AI" : "⚙ System"}:
-                    </span>
+                    <div className="flex justify-between items-center mb-0.5">
+                      <span className={`font-bold uppercase text-[9px] ${
+                        t.role === "farmer" ? "text-sky-400" : t.role === "assistant" ? "text-emerald-400" : "text-slate-500"
+                      }`}>
+                        {t.role === "farmer" ? "👨‍🌾 Farmer" : t.role === "assistant" ? "🤖 AI Advisor" : "⚙ System"}:
+                      </span>
+                      <span className="text-[8px] text-slate-600 font-mono">
+                        {new Date(t.timestamp * 1000).toLocaleTimeString()}
+                      </span>
+                    </div>
                     {t.text}
                   </div>
                 ))
@@ -428,48 +614,81 @@ export default function MissionControl() {
           </PanelCard>
         </div>
 
-        {/* Column 2: Profile, Schemes, Eligibility */}
+        {/* Column 2: Profile & Schemes */}
         <div className="flex flex-col gap-4">
 
-          {/* 👤 Farmer Profile */}
+          {/* 👤 Farmer Digital Twin */}
           <PanelCard
             icon={<User className="w-4 h-4 text-teal-400" />}
-            title="Farmer Profile"
+            title="Digital Twin Snapshot"
+            badge={farmer?.digital_twin_version ? (
+              <span className="text-[9px] font-mono font-bold bg-teal-500/10 text-teal-400 border border-teal-500/20 px-2 py-0.5 rounded">
+                {farmer.digital_twin_version}
+              </span>
+            ) : null}
           >
             {farmer ? (
-              <div className="grid grid-cols-2 gap-x-4 gap-y-1.5 text-[11px]">
-                <div><span className="text-slate-500">Name:</span> <span className="text-slate-200 font-semibold">{farmer.name}</span></div>
-                <div><span className="text-slate-500">Category:</span> <span className="text-amber-400 font-semibold">{farmer.category}</span></div>
-                <div><span className="text-slate-500">Land:</span> <span className="text-slate-200">{farmer.land_hectares} ha</span></div>
-                <div><span className="text-slate-500">Gender:</span> <span className="text-slate-200">{farmer.gender}</span></div>
-                <div><span className="text-slate-500">Crops:</span> <span className="text-emerald-400">{farmer.crops?.join(", ")}</span></div>
-                <div><span className="text-slate-500">Caste:</span> <span className="text-slate-200">{farmer.caste}</span></div>
-                <div><span className="text-slate-500">District:</span> <span className="text-slate-200">{farmer.district}</span></div>
-                <div><span className="text-slate-500">State:</span> <span className="text-slate-200">{farmer.state}</span></div>
-                {farmer.is_organic && <div className="col-span-2"><span className="text-green-400 font-bold">🌿 Organic Farmer</span></div>}
-                {farmer.is_tenant && <div className="col-span-2"><span className="text-amber-400 font-bold">📋 Tenant Farmer</span></div>}
-                {farmer.recent_damage && <div className="col-span-2"><span className="text-red-400 font-bold">⚠ Recent Damage: {farmer.recent_damage}</span></div>}
+              <div className="flex flex-col gap-3">
+                <div className="grid grid-cols-2 gap-x-4 gap-y-1.5 text-[11px]">
+                  <div><span className="text-slate-500">Name:</span> <span className="text-slate-200 font-semibold">{farmer.name}</span></div>
+                  <div><span className="text-slate-500">Category:</span> <span className="text-amber-400 font-semibold">{farmer.category || "N/A"}</span></div>
+                  <div><span className="text-slate-500">Land:</span> <span className="text-slate-200">{farmer.land_hectares} ha</span></div>
+                  <div><span className="text-slate-500">Gender:</span> <span className="text-slate-200">{farmer.gender}</span></div>
+                  <div><span className="text-slate-500">Crops:</span> <span className="text-emerald-400">{farmer.crops?.join(", ")}</span></div>
+                  <div><span className="text-slate-500">Caste:</span> <span className="text-slate-200">{farmer.caste || "N/A"}</span></div>
+                  <div><span className="text-slate-500">District:</span> <span className="text-slate-200">{farmer.district}</span></div>
+                  <div><span className="text-slate-500">State:</span> <span className="text-slate-200">{farmer.state}</span></div>
+                </div>
+                
+                {/* Advanced Digital Twin Metrics */}
+                {farmer.profile_completeness !== undefined && (
+                  <div className="border-t border-slate-800/60 pt-2 flex flex-col gap-1.5 text-[10px]">
+                    <div className="flex justify-between">
+                      <span className="text-slate-500">Profile Completeness:</span>
+                      <span className="text-emerald-400 font-bold">{farmer.profile_completeness}%</span>
+                    </div>
+                    <div className="w-full bg-slate-900 rounded-full h-1">
+                      <div className="bg-emerald-500 h-1 rounded-full" style={{ width: `${farmer.profile_completeness}%` }} />
+                    </div>
+                    
+                    <div className="grid grid-cols-2 gap-2 mt-1">
+                      <div className="bg-slate-950/40 p-1.5 rounded-lg border border-slate-850">
+                        <span className="text-[8px] text-slate-500 block uppercase font-bold">Risk Profile</span>
+                        <span className={`text-[10px] font-bold ${
+                          farmer.risk_profile === "HIGH" ? "text-red-400" :
+                          farmer.risk_profile === "MEDIUM" ? "text-amber-400" :
+                          "text-emerald-400"
+                        }`}>{farmer.risk_profile || "LOW"}</span>
+                      </div>
+                      <div className="bg-slate-950/40 p-1.5 rounded-lg border border-slate-850">
+                        <span className="text-[8px] text-slate-500 block uppercase font-bold">Frequency</span>
+                        <span className="text-[10px] text-slate-300 font-semibold">{farmer.last_interaction || "New Farmer"}</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             ) : (
-              <p className="text-xs text-slate-600 italic">Farmer profile will appear when call begins.</p>
+              <p className="text-xs text-slate-600 italic">Farmer Digital Twin will load when call begins.</p>
             )}
           </PanelCard>
 
-          {/* 🏛 Scheme Search */}
+          {/* 🏛 Government Schemes Evaluation */}
           <PanelCard
             icon={<Building2 className="w-4 h-4 text-purple-400" />}
-            title="Scheme Eligibility"
+            title="Government Schemes Eligibility"
+            badge={<span className="text-[9px] font-mono text-slate-500">{schemes.length} schemes</span>}
           >
             {schemes.length > 0 ? (
-              <div className="flex flex-col gap-2 max-h-[280px] overflow-y-auto pr-1 mc-scrollbar">
+              <div className="flex flex-col gap-1.5 max-h-[220px] overflow-y-auto pr-1 mc-scrollbar">
                 {schemes.map((s, i) => (
-                  <div key={i} className="flex items-center justify-between p-2 bg-slate-950/60 border border-slate-800/40 rounded-xl">
+                  <div key={i} className="flex items-center justify-between p-2 bg-slate-950/60 border border-slate-850/60 rounded-xl mc-timeline-item">
                     <div className="flex-1 min-w-0">
                       <p className="text-[11px] font-semibold text-slate-200 truncate">{s.title}</p>
-                      <p className="text-[9px] text-slate-500 font-mono">{s.scheme_id}</p>
+                      {s.benefits && <p className="text-[9px] text-emerald-400 mt-0.5 font-medium">{s.benefits}</p>}
                     </div>
                     <div className="flex items-center gap-2 ml-2">
-                      <span className="text-[10px] font-bold text-slate-400">{Math.round(s.confidence * 100)}%</span>
+                      <span className="text-[9px] font-mono font-bold text-slate-500">{(s.confidence * 100).toFixed(0)}%</span>
                       <StatusBadge status={s.status} />
                     </div>
                   </div>
@@ -477,9 +696,9 @@ export default function MissionControl() {
               </div>
             ) : (
               <p className="text-xs text-slate-600 italic">
-                {aiState === "SCHEME_MATCHING" ? (
+                {aiState === "SCHEME_SEARCH_STARTED" || aiState === "SCHEME_EVALUATING" ? (
                   <span className="flex items-center gap-2 text-amber-400">
-                    <RefreshCw className="w-3 h-3 animate-spin" /> Evaluating schemes...
+                    <RefreshCw className="w-3 h-3 animate-spin" /> Querying government registries...
                   </span>
                 ) : "Scheme results will appear after eligibility check."}
               </p>
@@ -487,79 +706,94 @@ export default function MissionControl() {
           </PanelCard>
         </div>
 
-        {/* Column 3: Reasoning, Confidence, Voice */}
+        {/* Column 3: Reasoning & Documents */}
         <div className="flex flex-col gap-4">
 
-          {/* 🧠 AI Reasoning */}
+          {/* 🧠 Chief Reasoning Agent */}
           <PanelCard
             icon={<Brain className="w-4 h-4 text-indigo-400" />}
-            title="AI Reasoning"
+            title="Chief Reasoning Engine"
+            badge={topSchemeName ? (
+              <span className="text-[9px] font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded truncate max-w-[120px]">
+                {topSchemeName}
+              </span>
+            ) : null}
           >
             {reasoning.length > 0 ? (
-              <div className="flex flex-col gap-1.5 max-h-[180px] overflow-y-auto pr-1 mc-scrollbar">
+              <div className="flex flex-col gap-1 max-h-[145px] overflow-y-auto pr-1 mc-scrollbar">
                 {reasoning.map((r, i) => (
-                  <div key={i} className={`text-[10px] leading-relaxed px-2 py-1 rounded ${
-                    r.startsWith("✓") ? "text-emerald-400 bg-emerald-500/5" :
-                    r.startsWith("✗") ? "text-red-400 bg-red-500/5" :
-                    r.startsWith("?") ? "text-amber-400 bg-amber-500/5" :
-                    "text-slate-400"
+                  <div key={i} className={`text-[10px] leading-normal px-2.5 py-1 rounded-lg border transition-all ${
+                    r.includes("passes") || r.includes("Eligible") || r.startsWith("✓") ? "text-emerald-400 bg-emerald-500/5 border-emerald-500/10" :
+                    r.includes("fails") || r.includes("ineligible") || r.startsWith("✗") ? "text-red-400 bg-red-500/5 border-red-500/10" :
+                    "text-slate-400 bg-slate-950/20 border-slate-900"
                   }`}>
                     {r}
                   </div>
                 ))}
               </div>
             ) : (
-              <p className="text-xs text-slate-600 italic">Reasoning chain will appear during evaluation.</p>
+              <p className="text-xs text-slate-600 italic">Chief Reasoning Agent pipeline status will appear here.</p>
             )}
           </PanelCard>
 
-          {/* 📈 Confidence + 📚 Evidence */}
-          <div className="grid grid-cols-2 gap-4">
-            <PanelCard icon={<TrendingUp className="w-4 h-4 text-amber-400" />} title="Confidence">
-              <div className="flex justify-center py-2">
-                <ConfidenceGauge value={confidence} />
-              </div>
-            </PanelCard>
-
-            <PanelCard icon={<BookOpen className="w-4 h-4 text-cyan-400" />} title="Evidence">
-              <div className="flex flex-col gap-1 max-h-[100px] overflow-y-auto mc-scrollbar">
-                {evidence.length > 0 ? evidence.map((e, i) => (
-                  <p key={i} className="text-[9px] text-slate-400 leading-relaxed">{e}</p>
-                )) : (
-                  <p className="text-[10px] text-slate-600 italic">No evidence yet.</p>
-                )}
-              </div>
-            </PanelCard>
-          </div>
-
-          {/* 📄 Documents + 🏢 Office */}
-          {topScheme && (
-            <div className="grid grid-cols-1 gap-4">
-              <PanelCard icon={<FileText className="w-4 h-4 text-orange-400" />} title="Documents Required">
-                <p className="text-[10px] text-slate-400 mb-1">{topScheme.top_scheme}</p>
-                <div className="flex flex-col gap-1">
-                  {(schemes.find(s => s.status === "ELIGIBLE") ? ["Aadhaar Card", "Bank Details", "Land Records"] : []).map((d, i) => (
-                    <div key={i} className="flex items-center gap-2 text-[10px]">
-                      <CheckCircle2 className="w-3 h-3 text-emerald-400" />
-                      <span className="text-slate-300">{d}</span>
-                    </div>
-                  ))}
+          {/* 📄 Document Advisor Panel */}
+          <PanelCard
+            icon={<FileText className="w-4 h-4 text-orange-400" />}
+            title="Document Advisor Checklist"
+          >
+            {documentGuidance ? (
+              <div className="flex flex-col gap-2 text-[10px]">
+                <div>
+                  <span className="text-slate-500 uppercase tracking-wider block font-bold text-[8px] mb-1">Required Documents</span>
+                  <div className="flex flex-wrap gap-1.5">
+                    {documentGuidance.required_documents.map((doc, idx) => (
+                      <span key={idx} className="bg-slate-950/80 border border-slate-800 text-slate-300 px-2 py-0.5 rounded flex items-center gap-1 font-medium">
+                        <CheckCircle2 className="w-2.5 h-2.5 text-emerald-500" /> {doc}
+                      </span>
+                    ))}
+                  </div>
                 </div>
-              </PanelCard>
-            </div>
-          )}
 
-          {/* 🗣 Voice Response */}
+                {documentGuidance.missing_documents && documentGuidance.missing_documents.length > 0 && (
+                  <div className="border-t border-slate-800/60 pt-2">
+                    <span className="text-red-400 uppercase tracking-wider block font-bold text-[8px] mb-1">Missing / Unverified Docs</span>
+                    <div className="flex flex-wrap gap-1.5">
+                      {documentGuidance.missing_documents.map((doc, idx) => (
+                        <span key={idx} className="bg-red-500/5 border border-red-500/20 text-red-400 px-2 py-0.5 rounded flex items-center gap-1 font-medium">
+                          <AlertCircle className="w-2.5 h-2.5" /> {doc}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                <div className="border-t border-slate-800/60 pt-2 grid grid-cols-2 gap-2">
+                  <div className="bg-slate-950/40 p-1.5 rounded-lg border border-slate-850">
+                    <span className="text-[8px] text-slate-500 block uppercase font-bold">Nearest Office</span>
+                    <span className="text-[10px] text-slate-300 truncate block font-medium" title={documentGuidance.nearest_office}>{documentGuidance.nearest_office}</span>
+                  </div>
+                  <div className="bg-slate-950/40 p-1.5 rounded-lg border border-slate-850">
+                    <span className="text-[8px] text-slate-500 block uppercase font-bold">Helpline Assistance</span>
+                    <span className="text-[10px] text-emerald-400 font-bold block">{documentGuidance.helpline}</span>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <p className="text-xs text-slate-600 italic">Document Advisor checklist will load once a matching scheme is selected.</p>
+            )}
+          </PanelCard>
+
+          {/* 🎙 Voice Response & Output */}
           <PanelCard
             icon={<Volume2 className="w-4 h-4 text-pink-400" />}
-            title="Voice Response"
+            title="TTS Voice Summary Output"
           >
             {voiceText ? (
-              <div className="bg-slate-950/60 border border-pink-500/20 rounded-xl p-3">
+              <div className="bg-slate-950/60 border border-pink-500/20 rounded-xl p-3 mc-timeline-item">
                 <p className="text-xs text-slate-200 leading-relaxed italic">&ldquo;{voiceText}&rdquo;</p>
               </div>
             ) : (
-              <p className="text-xs text-slate-600 italic">Voice response will appear here.</p>
+              <p className="text-xs text-slate-600 italic">TTS voice summary output text will render here.</p>
             )}
           </PanelCard>
         </div>
@@ -568,20 +802,20 @@ export default function MissionControl() {
       {/* Event Timeline */}
       <PanelCard
         icon={<Clock className="w-4 h-4 text-slate-400" />}
-        title="Event Timeline"
-        badge={<span className="text-[9px] text-slate-500 font-mono">{events.length} events</span>}
+        title="Event Stream Timeline"
+        badge={<span className="text-[9px] text-slate-500 font-mono">{events.length} events logged</span>}
       >
         <div className="flex gap-2 overflow-x-auto pb-2 mc-scrollbar">
-          {events.slice(0, 20).map((evt, i) => (
-            <div key={i} className="flex-shrink-0 px-3 py-2 bg-slate-950/60 border border-slate-800/40 rounded-xl min-w-[140px]">
-              <p className="text-[9px] font-bold text-emerald-400">{evt.type}</p>
-              <p className="text-[8px] text-slate-500 mt-0.5">
+          {events.slice(0, 25).map((evt, i) => (
+            <div key={i} className="flex-shrink-0 px-3 py-2 bg-slate-950/60 border border-slate-850/60 rounded-xl min-w-[150px] mc-timeline-item">
+              <p className="text-[9px] font-bold text-emerald-400 uppercase tracking-tight">{evt.type.replace(/_/g, " ")}</p>
+              <p className="text-[8px] text-slate-500 mt-1 font-mono">
                 {new Date(evt.timestamp * 1000).toLocaleTimeString()}
               </p>
             </div>
           ))}
           {events.length === 0 && (
-            <p className="text-[10px] text-slate-600 italic">Events will stream here during calls.</p>
+            <p className="text-[10px] text-slate-600 italic">WebSocket events will stream here during calls.</p>
           )}
         </div>
       </PanelCard>

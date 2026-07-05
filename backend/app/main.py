@@ -129,7 +129,8 @@ async def add_security_headers(request: Request, call_next):
         "script-src 'self' 'unsafe-inline' 'unsafe-eval'; "
         "style-src 'self' 'unsafe-inline'; "
         "img-src 'self' data:; "
-        "connect-src 'self' http://localhost:8000 http://localhost;"
+        "connect-src 'self' http://localhost:8000 http://localhost "
+        "ws://localhost:8000 ws://localhost wss://localhost:8000 wss://localhost;"
     )
     if request.url.scheme == "https":
         response.headers["Strict-Transport-Security"] = "max-age=63072000; includeSubDomains; preload"

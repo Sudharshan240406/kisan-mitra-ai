@@ -641,3 +641,89 @@ connection to server at "localhost" (127.0.0.1), port 5432 failed: Connection re
 [2026-07-05 08:03:51,940] WARNING  in pipeline [Trace: N/A, Request: N/A, Session: N/A]: Media Validation Failed: Format '.txt' is not supported for media type 'voice'.
 [2026-07-05 08:03:51,941] WARNING  in pipeline [Trace: N/A, Request: N/A, Session: N/A]: Media Validation Failed: File size exceeds maximum threshold of 20971520 bytes.
 [2026-07-05 08:03:52,040] WARNING  in pipeline [Trace: N/A, Request: N/A, Session: N/A]: Policy violation detected in media text: Forbidden term 'illegal pesticide' detected under policy 'default-safety-policy'.
+[2026-07-05 08:03:57,830] ERROR    in health [Trace: N/A, Request: N/A, Session: N/A]: [HEALTH CHECK FAIL] Database connection check failed: connection to server at "localhost" (::1), port 5432 failed: Connection refused (0x0000274D/10061)
+	Is the server running on that host and accepting TCP/IP connections?
+connection to server at "localhost" (127.0.0.1), port 5432 failed: Connection refused (0x0000274D/10061)
+	Is the server running on that host and accepting TCP/IP connections?
+
+[2026-07-05 08:04:01,922] ERROR    in health [Trace: N/A, Request: N/A, Session: N/A]: [HEALTH CHECK FAIL] Redis connection check failed: Error 10061 connecting to localhost:6379. No connection could be made because the target machine actively refused it.
+[2026-07-05 08:04:01,922] ERROR    in health [Trace: N/A, Request: N/A, Session: N/A]: [HEALTH CHECK FAIL] Chroma Vector DB connection check failed: chromadb dependency not installed
+[2026-07-05 08:04:01,925] WARNING  in error_handler [Trace: N/A, Request: N/A, Session: N/A]: [HTTP Exception Handled] 503: {'status': 'degraded', 'service': 'kisan-mitra-backend', 'components': {'database': 'unhealthy', 'cache': 'unhealthy', 'vector_db': 'unhealthy'}}
+[2026-07-05 08:04:02,356] ERROR    in error_handler [Trace: N/A, Request: N/A, Session: N/A]: [Exception Handled] ValidationException: Custom validation failed
+[2026-07-05 08:04:02,493] WARNING  in error_handler [Trace: N/A, Request: N/A, Session: N/A]: [Validation Exception Handled] 400 Bad Request: [{'type': 'missing', 'loc': ('body', 'session_id'), 'msg': 'Field required', 'input': {'query': 12345}}, {'type': 'string_type', 'loc': ('body', 'query'), 'msg': 'Input should be a valid string', 'input': 12345}]
+[2026-07-05 08:04:03,237] WARNING  in consensus [Trace: N/A, Request: N/A, Session: N/A]: [ConflictResolution] Conflict detected: Agent 'Weather' evidence spread=0.500 exceeds divergence threshold=0.3.
+[2026-07-05 08:04:03,260] WARNING  in escalation [Trace: N/A, Request: N/A, Session: N/A]: [EscalationEngine] Escalation #1 triggered for trace=TR-101: Confidence 20.00% is below safety threshold 50.00%.
+[2026-07-05 08:04:03,263] WARNING  in escalation [Trace: N/A, Request: N/A, Session: N/A]: [EscalationEngine] Escalation #1 triggered for trace=TR-102: Safety-critical keyword(s) detected: pesticide overdose.
+[2026-07-05 08:04:03,270] WARNING  in escalation [Trace: N/A, Request: N/A, Session: N/A]: [EscalationEngine] Escalation #1 triggered for trace=TR-103: 3 missing query fields exceed escalation threshold (2).
+[2026-07-05 08:04:03,274] WARNING  in escalation [Trace: N/A, Request: N/A, Session: N/A]: [EscalationEngine] Escalation #1 triggered for trace=TR-104: Evidence count 0 is below minimum threshold (2).
+[2026-07-05 08:04:03,278] WARNING  in escalation [Trace: N/A, Request: N/A, Session: N/A]: [EscalationEngine] Escalation #1 triggered for trace=T: Confidence 10.00% is below safety threshold 90.00%.
+[2026-07-05 08:04:03,279] WARNING  in escalation [Trace: N/A, Request: N/A, Session: N/A]: [EscalationEngine] Escalation #2 triggered for trace=T: Confidence 10.00% is below safety threshold 90.00%.
+[2026-07-05 08:04:03,280] WARNING  in escalation [Trace: N/A, Request: N/A, Session: N/A]: [EscalationEngine] Escalation #3 triggered for trace=T: Confidence 10.00% is below safety threshold 90.00%.
+[2026-07-05 08:04:03,297] WARNING  in escalation [Trace: N/A, Request: N/A, Session: N/A]: [EscalationEngine] Escalation #1 triggered for trace=TR-chief: Confidence 22.00% is below safety threshold 30.00%.
+[2026-07-05 08:04:03,314] ERROR    in telemetry [Trace: N/A, Request: N/A, Session: N/A]: [ReasoningTelemetry] Session FAILED: S3 — Timeout during reasoning
+[2026-07-05 08:04:03,442] WARNING  in pipeline [Trace: N/A, Request: N/A, Session: N/A]: SMS Inbound Validation Failed: Message contains sensitive information fields (PIN/CVV/Password/Card details).
+[2026-07-05 08:04:03,444] WARNING  in pipeline [Trace: N/A, Request: N/A, Session: N/A]: SMS Inbound Validation Failed: Message body length exceeds maximum threshold of 800 characters.
+[2026-07-05 08:04:03,449] WARNING  in router [Trace: N/A, Request: N/A, Session: N/A]: Channel 'sms-01' not registered.
+[2026-07-05 08:04:03,449] WARNING  in pipeline [Trace: N/A, Request: N/A, Session: N/A]: SMS Inbound Validation Failed: Spam filter blocked: Duplicate message within 5 seconds.
+[2026-07-05 08:04:03,456] WARNING  in router [Trace: N/A, Request: N/A, Session: N/A]: Channel 'sms-01' not registered.
+[2026-07-05 08:04:03,464] WARNING  in router [Trace: N/A, Request: N/A, Session: N/A]: Channel 'sms-01' not registered.
+[2026-07-05 08:04:03,466] WARNING  in router [Trace: N/A, Request: N/A, Session: N/A]: Channel 'sms-01' not registered.
+[2026-07-05 08:04:03,473] WARNING  in router [Trace: N/A, Request: N/A, Session: N/A]: Channel 'sms-01' not registered.
+[2026-07-05 08:04:03,481] WARNING  in router [Trace: N/A, Request: N/A, Session: N/A]: Channel 'sms-01' not registered.
+[2026-07-05 08:04:03,482] WARNING  in pipeline [Trace: N/A, Request: N/A, Session: N/A]: SMS Inbound Validation Failed: Spam filter blocked: Rate limit exceeded: max 5 messages per minute.
+[2026-07-05 08:04:04,378] ERROR    in orchestrator [Trace: SMS-TR-6ab6ac4f, Request: 13ca7a3b-b3c9-4253-9821-865f7d1bc70d, Session: CONV-SMS-4d970f36]: [Orchestrator] Execution failed (Trace: SMS-TR-6ab6ac4f): Agent 'Memory' was not found in the registry.
+[2026-07-05 08:34:39,669] ERROR    in platform [Trace: N/A, Request: N/A, Session: N/A]: Adapter execution failed for 'gemini-1.5-pro': Cloud service timeout
+[2026-07-05 08:34:39,670] WARNING  in platform [Trace: N/A, Request: N/A, Session: N/A]: [AI Platform] Primary failed. Cascading fallback to: llama3
+[2026-07-05 08:34:39,917] WARNING  in channels [Trace: N/A, Request: N/A, Session: N/A]: WhatsApp channel 'wa-01' missing 'api_endpoint' configuration.
+[2026-07-05 08:34:39,925] WARNING  in channels [Trace: N/A, Request: N/A, Session: N/A]: Skipping invalid channel config: {'channel_id': 'invalid-cfg', 'channel_type': 'sms'}
+[2026-07-05 08:34:40,253] WARNING  in router [Trace: N/A, Request: N/A, Session: N/A]: Validation failed: Missing conversation_id., Missing sender.
+[2026-07-05 08:34:40,257] WARNING  in router [Trace: N/A, Request: N/A, Session: N/A]: Channel 'unknown-ch' not registered.
+[2026-07-05 08:34:41,673] WARNING  in resilience [Trace: N/A, Request: N/A, Session: N/A]: Attempt 1 failed for 'dummy-weather': Connection refused by dummy server
+[2026-07-05 08:34:41,779] WARNING  in resilience [Trace: N/A, Request: N/A, Session: N/A]: Attempt 2 failed for 'dummy-weather': Connection refused by dummy server
+[2026-07-05 08:34:41,882] WARNING  in resilience [Trace: N/A, Request: N/A, Session: N/A]: Attempt 3 failed for 'dummy-weather': Connection refused by dummy server
+[2026-07-05 08:34:41,887] WARNING  in resilience [Trace: N/A, Request: N/A, Session: N/A]: Attempt 1 failed for 'dummy-weather': Connection refused by dummy server
+[2026-07-05 08:34:41,887] WARNING  in resilience [Trace: N/A, Request: N/A, Session: N/A]: CircuitBreaker state transition: CLOSED -> OPEN (failures: 2)
+[2026-07-05 08:34:41,891] WARNING  in resilience [Trace: N/A, Request: N/A, Session: N/A]: [CircuitBreaker] 'dummy-weather' is OPEN. Failing fast.
+[2026-07-05 08:34:42,730] WARNING  in resilience [Trace: N/A, Request: N/A, Session: N/A]: Attempt 1 failed for 'dummy-weather': 
+[2026-07-05 08:34:42,731] WARNING  in resilience [Trace: N/A, Request: N/A, Session: N/A]: Attempt 1 failed for 'dummy-weather': Connection refused by dummy server
+[2026-07-05 08:34:43,080] WARNING  in error_handler [Trace: N/A, Request: N/A, Session: N/A]: [HTTP Exception Handled] 400: Cannot select 'openweather' as active because its status is 'inactive'.
+[2026-07-05 08:34:46,172] WARNING  in weather [Trace: N/A, Request: N/A, Session: N/A]: [IMDWeatherAdapter] HTTP call failed, falling back: Network Offline
+[2026-07-05 08:34:51,549] WARNING  in market [Trace: N/A, Request: N/A, Session: N/A]: [eNAMMarketAdapter] HTTP call failed, falling back: 
+[2026-07-05 08:34:51,661] WARNING  in authentication [Trace: N/A, Request: N/A, Session: N/A]: JWT Decode failed: Not enough segments
+[2026-07-05 08:34:51,661] WARNING  in authentication [Trace: N/A, Request: N/A, Session: N/A]: JWT Decode failed: Not enough segments
+[2026-07-05 08:34:52,974] ERROR    in validation [Trace: N/A, Request: N/A, Session: N/A]: Policy Violation: Recommendation contains banned chemical: 'endosulfan'
+[2026-07-05 08:34:52,978] WARNING  in validation [Trace: N/A, Request: N/A, Session: N/A]: Knowledge validation: Stale data detected. Age: 744.00 hours
+[2026-07-05 08:34:53,551] WARNING  in pipeline [Trace: N/A, Request: N/A, Session: N/A]: Media Validation Failed: Format '.txt' is not supported for media type 'voice'.
+[2026-07-05 08:34:53,559] WARNING  in pipeline [Trace: N/A, Request: N/A, Session: N/A]: Media Validation Failed: File size exceeds maximum threshold of 20971520 bytes.
+[2026-07-05 08:34:53,889] WARNING  in pipeline [Trace: N/A, Request: N/A, Session: N/A]: Policy violation detected in media text: Forbidden term 'illegal pesticide' detected under policy 'default-safety-policy'.
+[2026-07-05 08:35:02,829] ERROR    in health [Trace: N/A, Request: N/A, Session: N/A]: [HEALTH CHECK FAIL] Database connection check failed: connection to server at "localhost" (::1), port 5432 failed: Connection refused (0x0000274D/10061)
+	Is the server running on that host and accepting TCP/IP connections?
+connection to server at "localhost" (127.0.0.1), port 5432 failed: Connection refused (0x0000274D/10061)
+	Is the server running on that host and accepting TCP/IP connections?
+
+[2026-07-05 08:35:06,893] ERROR    in health [Trace: N/A, Request: N/A, Session: N/A]: [HEALTH CHECK FAIL] Redis connection check failed: Error 10061 connecting to localhost:6379. No connection could be made because the target machine actively refused it.
+[2026-07-05 08:35:06,895] ERROR    in health [Trace: N/A, Request: N/A, Session: N/A]: [HEALTH CHECK FAIL] Chroma Vector DB connection check failed: chromadb dependency not installed
+[2026-07-05 08:35:06,897] WARNING  in error_handler [Trace: N/A, Request: N/A, Session: N/A]: [HTTP Exception Handled] 503: {'status': 'degraded', 'service': 'kisan-mitra-backend', 'components': {'database': 'unhealthy', 'cache': 'unhealthy', 'vector_db': 'unhealthy'}}
+[2026-07-05 08:35:07,471] ERROR    in error_handler [Trace: N/A, Request: N/A, Session: N/A]: [Exception Handled] ValidationException: Custom validation failed
+[2026-07-05 08:35:07,666] WARNING  in error_handler [Trace: N/A, Request: N/A, Session: N/A]: [Validation Exception Handled] 400 Bad Request: [{'type': 'missing', 'loc': ('body', 'session_id'), 'msg': 'Field required', 'input': {'query': 12345}}, {'type': 'string_type', 'loc': ('body', 'query'), 'msg': 'Input should be a valid string', 'input': 12345}]
+[2026-07-05 08:35:08,766] WARNING  in consensus [Trace: N/A, Request: N/A, Session: N/A]: [ConflictResolution] Conflict detected: Agent 'Weather' evidence spread=0.500 exceeds divergence threshold=0.3.
+[2026-07-05 08:35:08,794] WARNING  in escalation [Trace: N/A, Request: N/A, Session: N/A]: [EscalationEngine] Escalation #1 triggered for trace=TR-101: Confidence 20.00% is below safety threshold 50.00%.
+[2026-07-05 08:35:08,799] WARNING  in escalation [Trace: N/A, Request: N/A, Session: N/A]: [EscalationEngine] Escalation #1 triggered for trace=TR-102: Safety-critical keyword(s) detected: pesticide overdose.
+[2026-07-05 08:35:08,805] WARNING  in escalation [Trace: N/A, Request: N/A, Session: N/A]: [EscalationEngine] Escalation #1 triggered for trace=TR-103: 3 missing query fields exceed escalation threshold (2).
+[2026-07-05 08:35:08,810] WARNING  in escalation [Trace: N/A, Request: N/A, Session: N/A]: [EscalationEngine] Escalation #1 triggered for trace=TR-104: Evidence count 0 is below minimum threshold (2).
+[2026-07-05 08:35:08,816] WARNING  in escalation [Trace: N/A, Request: N/A, Session: N/A]: [EscalationEngine] Escalation #1 triggered for trace=T: Confidence 10.00% is below safety threshold 90.00%.
+[2026-07-05 08:35:08,819] WARNING  in escalation [Trace: N/A, Request: N/A, Session: N/A]: [EscalationEngine] Escalation #2 triggered for trace=T: Confidence 10.00% is below safety threshold 90.00%.
+[2026-07-05 08:35:08,820] WARNING  in escalation [Trace: N/A, Request: N/A, Session: N/A]: [EscalationEngine] Escalation #3 triggered for trace=T: Confidence 10.00% is below safety threshold 90.00%.
+[2026-07-05 08:35:08,852] WARNING  in escalation [Trace: N/A, Request: N/A, Session: N/A]: [EscalationEngine] Escalation #1 triggered for trace=TR-chief: Confidence 22.00% is below safety threshold 30.00%.
+[2026-07-05 08:35:08,873] ERROR    in telemetry [Trace: N/A, Request: N/A, Session: N/A]: [ReasoningTelemetry] Session FAILED: S3 — Timeout during reasoning
+[2026-07-05 08:35:09,061] WARNING  in pipeline [Trace: N/A, Request: N/A, Session: N/A]: SMS Inbound Validation Failed: Message contains sensitive information fields (PIN/CVV/Password/Card details).
+[2026-07-05 08:35:09,065] WARNING  in pipeline [Trace: N/A, Request: N/A, Session: N/A]: SMS Inbound Validation Failed: Message body length exceeds maximum threshold of 800 characters.
+[2026-07-05 08:35:09,071] WARNING  in router [Trace: N/A, Request: N/A, Session: N/A]: Channel 'sms-01' not registered.
+[2026-07-05 08:35:09,081] WARNING  in pipeline [Trace: N/A, Request: N/A, Session: N/A]: SMS Inbound Validation Failed: Spam filter blocked: Duplicate message within 5 seconds.
+[2026-07-05 08:35:09,091] WARNING  in router [Trace: N/A, Request: N/A, Session: N/A]: Channel 'sms-01' not registered.
+[2026-07-05 08:35:09,101] WARNING  in router [Trace: N/A, Request: N/A, Session: N/A]: Channel 'sms-01' not registered.
+[2026-07-05 08:35:09,109] WARNING  in router [Trace: N/A, Request: N/A, Session: N/A]: Channel 'sms-01' not registered.
+[2026-07-05 08:35:09,118] WARNING  in router [Trace: N/A, Request: N/A, Session: N/A]: Channel 'sms-01' not registered.
+[2026-07-05 08:35:09,129] WARNING  in router [Trace: N/A, Request: N/A, Session: N/A]: Channel 'sms-01' not registered.
+[2026-07-05 08:35:09,138] WARNING  in pipeline [Trace: N/A, Request: N/A, Session: N/A]: SMS Inbound Validation Failed: Spam filter blocked: Rate limit exceeded: max 5 messages per minute.
+[2026-07-05 08:35:11,205] ERROR    in orchestrator [Trace: SMS-TR-8076985b, Request: fd11e799-1cca-4a6f-9b6e-ff6190d4cd1c, Session: CONV-SMS-906a7978]: [Orchestrator] Execution failed (Trace: SMS-TR-8076985b): Agent 'Memory' was not found in the registry.
