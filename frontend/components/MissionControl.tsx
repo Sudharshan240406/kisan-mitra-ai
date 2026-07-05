@@ -67,9 +67,15 @@ interface TranscriptLine {
   timestamp: number;
 }
 
+interface DocumentItem {
+  name: string;
+  description: string;
+  status: "available" | "needed";
+}
+
 interface DocumentGuidance {
   scheme_id: string;
-  required_documents: string[];
+  required_documents: DocumentItem[];
   missing_documents: string[];
   tips: string[];
   nearest_office: string;
@@ -757,8 +763,8 @@ export default function MissionControl() {
                   <span className="text-slate-500 uppercase tracking-wider block font-bold text-[8px] mb-1">Required Documents</span>
                   <div className="flex flex-wrap gap-1.5">
                     {documentGuidance.required_documents.map((doc, idx) => (
-                      <span key={idx} className="bg-slate-950/80 border border-slate-800 text-slate-300 px-2 py-0.5 rounded flex items-center gap-1 font-medium">
-                        <CheckCircle2 className="w-2.5 h-2.5 text-emerald-500" /> {doc}
+                      <span key={idx} className="bg-slate-950/80 border border-slate-800 text-slate-300 px-2 py-0.5 rounded flex items-center gap-1 font-medium" title={doc.description}>
+                        <CheckCircle2 className={`w-2.5 h-2.5 ${doc.status === "available" ? "text-emerald-500" : "text-amber-500"}`} /> {doc.name}
                       </span>
                     ))}
                   </div>
