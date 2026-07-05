@@ -76,3 +76,13 @@ sms/logs/*
 .env.development.local
 .env.test.local
 .env.production.local
+
+# Run Logs
+logs/
+backend/logs/
+*.log
+*.log.*
+
+# Caches and DBs
+backend/data/
+data/
