@@ -20,6 +20,7 @@ interface UseWebSocketReturn {
   lastEvent: WSEvent | null;
   isConnected: boolean;
   clientCount: number;
+  reconnectCount: number;
   clearEvents: () => void;
   sendMessage: (msg: string) => void;
 }
@@ -29,13 +30,14 @@ export function useWebSocket(options: UseWebSocketOptions): UseWebSocketReturn {
     url,
     autoReconnect = true,
     reconnectInterval = 3000,
-    maxReconnectAttempts = 10,
+    maxReconnectAttempts = 100, // Safe window for Render cold boots
   } = options;
 
   const [events, setEvents] = useState<WSEvent[]>([]);
   const [lastEvent, setLastEvent] = useState<WSEvent | null>(null);
   const [isConnected, setIsConnected] = useState(false);
   const [clientCount, setClientCount] = useState(0);
+  const [reconnectCount, setReconnectCount] = useState(0);
   const wsRef = useRef<WebSocket | null>(null);
   const reconnectCountRef = useRef(0);
   const reconnectTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -48,16 +50,20 @@ export function useWebSocket(options: UseWebSocketOptions): UseWebSocketReturn {
       ws.onopen = () => {
         setIsConnected(true);
         reconnectCountRef.current = 0;
+        setReconnectCount(0);
       };
 
       ws.onmessage = (event) => {
         try {
           const data: WSEvent = JSON.parse(event.data);
 
-          // Handle heartbeat separately
+          // Handle heartbeat and lifecycle client counts
           if (data.type === "HEARTBEAT") {
             setClientCount(data.payload?.clients ?? 0);
             return;
+          }
+          if (data.type === "CONNECTED" || data.type === "MISSION_CONTROL_RECONNECTED" || data.type === "MISSION_CONTROL_DISCONNECTED") {
+            setClientCount(data.payload?.connected_clients ?? 1);
           }
           if (data.type === "PONG") return;
 
@@ -75,6 +81,7 @@ export function useWebSocket(options: UseWebSocketOptions): UseWebSocketReturn {
         if (autoReconnect && reconnectCountRef.current < maxReconnectAttempts) {
           reconnectTimerRef.current = setTimeout(() => {
             reconnectCountRef.current += 1;
+            setReconnectCount(reconnectCountRef.current);
             connect();
           }, reconnectInterval);
         }
@@ -107,5 +114,5 @@ export function useWebSocket(options: UseWebSocketOptions): UseWebSocketReturn {
     }
   }, []);
 
-  return { events, lastEvent, isConnected, clientCount, clearEvents, sendMessage };
+  return { events, lastEvent, isConnected, clientCount, reconnectCount, clearEvents, sendMessage };
 }

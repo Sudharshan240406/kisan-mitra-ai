@@ -134,7 +134,7 @@ const WS_BASE = API_BASE.replace(/^http/, "ws");
 
 export default function MissionControl() {
   // WebSocket
-  const { events, lastEvent, isConnected, clientCount } = useWebSocket({
+  const { events, lastEvent, isConnected, clientCount, reconnectCount } = useWebSocket({
     url: `${WS_BASE}/ws/live`,
   });
 
@@ -158,6 +158,13 @@ export default function MissionControl() {
   
   // Reconnect count
   const [reconnects, setReconnects] = useState(0);
+
+  // Sync hook reconnectCount to local state
+  useEffect(() => {
+    if (reconnectCount > 0) {
+      setReconnects(reconnectCount);
+    }
+  }, [reconnectCount]);
   
   // Error handling state
   const [errorMsg, setErrorMsg] = useState("");
