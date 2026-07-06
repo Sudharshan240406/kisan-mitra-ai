@@ -2,6 +2,13 @@
 
 Kisan Mitra AI is an enterprise-grade multi-agent agricultural platform designed to empower farmers with real-time, actionable insights. By orchestrating specialized agents (market, weather, disease diagnosis, schemes, soil, and irrigation), the system provides seamless agronomic advisory through chat, voice (STT/TTS/IVR), and SMS interfaces.
 
+## Premium Solve for Tomorrow Portals
+
+*   **Welfare Schemes AI Experience**: Auto-eligibility checker auditing farmer parameters, showing required/missing document checklists, and application timelines.
+*   **AI Explainability & Trust Center**: Deep-dive trace logging showing Helped (+) vs Limited (-) factors, decision trees, and agent execution times.
+*   **Analytics & Operations Center**: Central command dashboard displaying executive KPIs, MLOps telemetry charts, and live WebSocket activity feeds.
+*   **Solve for Tomorrow Demo Deck**: Guided storyboard walk-throughs supporting auto-play, manual step controls, elapsed timers, and fullscreen modes.
+
 ---
 
 ## Technical Stack
