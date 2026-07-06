@@ -15,6 +15,7 @@ import { BackgroundFX } from "@/components/kisan/BackgroundFX";
 import WelfareSchemes from "@/components/WelfareSchemes";
 import AIExplainability from "@/components/AIExplainability";
 import AnalyticsCenter from "@/components/AnalyticsCenter";
+import PresentationDemo from "@/components/PresentationDemo";
 import { Users, MessageCircle, Landmark, Sparkles, Bot, MapPin } from "lucide-react";
 
 const MissionControl = dynamic(() => import("@/components/MissionControl"), { ssr: false });
@@ -406,6 +407,13 @@ function DashboardContent() {
           {activeTab === "schemes" && (
             <Suspense fallback={<div className="text-slate-500 text-sm p-8">Loading Welfare Schemes Advisor...</div>}>
               <WelfareSchemes />
+            </Suspense>
+          )}
+
+          {/* TAB 1.1: PRESENTATION DEMO CENTER */}
+          {activeTab === "demo" && (
+            <Suspense fallback={<div className="text-slate-500 text-sm p-8">Loading Presentation Deck...</div>}>
+              <PresentationDemo />
             </Suspense>
           )}
 
