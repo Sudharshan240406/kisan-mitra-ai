@@ -247,7 +247,7 @@ const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 const WS_BASE = API_BASE.replace(/^http/, "ws");
 
 export function DashboardProvider({ children }: { children: React.ReactNode }) {
-  const [activeTab, setActiveTab] = useState<string>("mission-control");
+  const [activeTab, setActiveTab] = useState<string>("overview");
   const [query, setQuery] = useState("");
   const [sessionId, setSessionId] = useState("SES-DEFAULT");
   const [isLoading, setIsLoading] = useState(false);

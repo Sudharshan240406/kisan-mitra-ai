@@ -6,6 +6,13 @@ import { DashboardProvider, useDashboard } from "@/components/DashboardContext";
 import TopNavigation from "@/components/TopNavigation";
 import LeftSidebar from "@/components/LeftSidebar";
 import RightThinkingPanel from "@/components/RightThinkingPanel";
+import { Hero } from "@/components/kisan/Hero";
+import { KpiCard } from "@/components/kisan/KpiCard";
+import { AgentGrid } from "@/components/kisan/AgentGrid";
+import { IndiaMap } from "@/components/kisan/IndiaMap";
+import { WeatherPanel, MarketPanel, SchemesPanel, CommsPanel, AlertsPanel } from "@/components/kisan/Panels";
+import { BackgroundFX } from "@/components/kisan/BackgroundFX";
+import { Users, MessageCircle, Landmark, Sparkles, Bot, MapPin } from "lucide-react";
 
 const MissionControl = dynamic(() => import("@/components/MissionControl"), { ssr: false });
 import {
@@ -298,8 +305,82 @@ function DashboardContent() {
   };
 
   const activeMetrics = metrics || fallbackMetrics;
+  const budgetUsedPercent = aiSummary?.budget_utilization_percent ?? 0;
+  const accumulatedCost = aiSummary?.accumulated_cost_usd ?? 0.0;
+  
+  const kpis: any[] = [
+    { 
+      label: "Active Farmers", 
+      value: calls.filter(c => c.status !== "completed").length + smsSessions.filter(s => s.state !== "closed").length, 
+      delta: 12, 
+      icon: Users,
+      tone: "lime", 
+      data: [3, 5, 8, 4, 9, 12, 14, 11, 13, 10, 12, calls.filter(c => c.status !== "completed").length + smsSessions.filter(s => s.state !== "closed").length] 
+    },
+    { 
+      label: "AI Requests · 24h", 
+      value: activeMetrics?.channel_metrics?.messages_processed ?? 12, 
+      delta: 8, 
+      icon: Bot, 
+      tone: "sky", 
+      data: [8, 12, 10, 15, 20, 18, 22, 25, 24, 28, 30, activeMetrics?.channel_metrics?.messages_processed ?? 12] 
+    },
+    { 
+      label: "Voice Calls Today", 
+      value: activeMetrics?.telephony_metrics?.total_calls ?? 7, 
+      delta: 15, 
+      icon: Phone, 
+      tone: "wheat", 
+      data: [2, 4, 3, 5, 8, 6, 7, 9, 10, 12, 11, activeMetrics?.telephony_metrics?.total_calls ?? 7] 
+    },
+    { 
+      label: "SMS Dispatched", 
+      value: activeMetrics?.sms_metrics?.sent_count ?? 5, 
+      delta: 5, 
+      icon: MessageCircle, 
+      tone: "leaf", 
+      data: [1, 2, 4, 3, 5, 6, 8, 7, 9, 11, 10, activeMetrics?.sms_metrics?.sent_count ?? 5] 
+    },
+    { 
+      label: "Welfare Schemes", 
+      value: activeMetrics?.sms_metrics?.received_count ?? 8, 
+      delta: 24, 
+      icon: Landmark, 
+      tone: "wheat", 
+      data: [10, 15, 12, 18, 22, 20, 24, 28, 30, 32, 35, activeMetrics?.sms_metrics?.received_count ?? 8] 
+    },
+    { 
+      label: "Active Providers", 
+      value: integrations.filter(i => i.status === "active").length, 
+      delta: 0, 
+      icon: MapPin, 
+      tone: "leaf", 
+      data: [6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, integrations.filter(i => i.status === "active").length] 
+    },
+    { 
+      label: "Avg Latency", 
+      value: activeMetrics?.workflow_latency?.avg_ms ?? 145.2, 
+      suffix: " ms",
+      delta: -4, 
+      icon: CloudSun, 
+      tone: "sky", 
+      data: [180, 165, 175, 160, 155, 150, 148, 142, 145, 140, 138, activeMetrics?.workflow_latency?.avg_ms ?? 145.2] 
+    },
+    { 
+      label: "AI Cost Today", 
+      prefix: "$",
+      value: accumulatedCost, 
+      delta: 18, 
+      icon: Sparkles, 
+      tone: "lime", 
+      data: [0.05, 0.08, 0.12, 0.18, 0.22, 0.28, 0.35, 0.42, 0.48, 0.52, 0.58, accumulatedCost] 
+    },
+  ];
+
+
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans select-none selection:bg-emerald-500 selection:text-slate-950">
+      <BackgroundFX />
       
       <TopNavigation />
 
@@ -320,72 +401,47 @@ function DashboardContent() {
 
           {/* TAB 1: OVERVIEW */}
           {activeTab === "overview" && (
-            <div className="flex flex-col gap-6">
-              <h2 className="text-lg font-bold text-slate-200 flex items-center gap-2">
-                <Server className="w-5 h-5 text-emerald-400" /> Operations Overview
-              </h2>
+            <div className="space-y-6">
+              <Hero />
 
-              {/* Status metrics grid */}
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <div className="bg-slate-900/40 border border-slate-850 p-4 rounded-2xl flex flex-col justify-between">
-                  <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Processed Messages</span>
-                  <span className="text-3xl font-black text-emerald-400 mt-2">{activeMetrics.channel_metrics.messages_processed + activeMetrics.sms_metrics.received_count}</span>
-                  <span className="text-[9px] text-slate-500 mt-1">Omnichannel & SMS total</span>
-                </div>
-                <div className="bg-slate-900/40 border border-slate-850 p-4 rounded-2xl flex flex-col justify-between">
-                  <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Avg Latency</span>
-                  <span className="text-3xl font-black text-sky-400 mt-2">{(activeMetrics.workflow_latency.avg_ms).toFixed(1)} ms</span>
-                  <span className="text-[9px] text-slate-500 mt-1">Worker compilation & scheduling</span>
-                </div>
-                <div className="bg-slate-900/40 border border-slate-850 p-4 rounded-2xl flex flex-col justify-between">
-                  <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Active Telephony Calls</span>
-                  <span className="text-3xl font-black text-indigo-400 mt-2">{calls.filter(c => c.status !== "completed").length}</span>
-                  <span className="text-[9px] text-slate-500 mt-1">Live IVR navigation sessions</span>
-                </div>
-                <div className="bg-slate-900/40 border border-slate-850 p-4 rounded-2xl flex flex-col justify-between">
-                  <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">SMS Delivery Rate</span>
-                  <span className="text-3xl font-black text-teal-400 mt-2">{(activeMetrics.sms_metrics.delivery_rate * 100).toFixed(0)}%</span>
-                  <span className="text-[9px] text-slate-500 mt-1">Total success/fail ratio</span>
-                </div>
-              </div>
-
-              {/* Subsystems Health */}
-              <div className="bg-slate-900/30 border border-slate-900 rounded-2xl p-5">
-                <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4">Core Platform Subsystems Health</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {systemComponents.map((c) => (
-                    <div key={c.name} className="flex items-center justify-between p-3 bg-slate-950/70 border border-slate-900 rounded-xl">
-                      <div>
-                        <h4 className="text-xs font-bold text-slate-200">{c.name}</h4>
-                        <p className="text-[10px] text-slate-500 mt-0.5">{c.desc}</p>
-                      </div>
-                      <span className="text-[9px] px-2 py-0.5 rounded-full font-mono bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                        {c.status}
-                      </span>
+              <section aria-label="Key metrics" className="mt-6 z-10 relative">
+                <div className="mb-3 flex items-end justify-between px-1">
+                  <div>
+                    <div className="text-[9px] font-black uppercase tracking-[0.18em] text-[var(--lime-glow)]">
+                      Realtime metrics
                     </div>
-                  ))}
+                    <h2 className="mt-0.5 font-display text-base font-bold sm:text-lg">Operations pulse</h2>
+                  </div>
+                  <div className="hidden items-center gap-1.5 text-[9px] font-black uppercase tracking-wider text-white/50 sm:flex">
+                    <span className="size-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                    Live connected
+                  </div>
                 </div>
-              </div>
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                  {kpis.map((k, i) => <KpiCard key={k.label} kpi={k} index={i} />)}
+                </div>
+              </section>
 
-              {/* Live Metric Graphs */}
-              <div className="bg-slate-900/30 border border-slate-900 rounded-2xl p-5">
-                <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4">Live Performance Telemetry</h3>
-                <div className="h-44 w-full flex items-end gap-1 px-4 border-b border-l border-slate-800 pb-2">
-                  {[12, 18, 15, 24, 30, 20, 16, 28, 35, 45, 12, 10, 24, 30, 28, 48, 55, 62, 40, 30].map((val, idx) => (
-                    <div 
-                      key={idx} 
-                      className="bg-emerald-500/80 hover:bg-emerald-400 w-full transition-all duration-300 rounded-t-sm" 
-                      style={{ height: `${val * 2}%` }}
-                      title={`Time point: ${idx}, Value: ${val}`}
-                    />
-                  ))}
+              <section className="grid grid-cols-1 gap-6 xl:grid-cols-12 z-10 relative">
+                <div className="xl:col-span-8 space-y-6">
+                  <IndiaMap />
+                  <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                    <WeatherPanel />
+                    <MarketPanel />
+                  </div>
                 </div>
-                <div className="flex justify-between text-[9px] text-slate-500 mt-2 px-1">
-                  <span>-60 seconds</span>
-                  <span>Active Query Resolution Latency</span>
-                  <span>Now</span>
+                <div className="xl:col-span-4 space-y-6">
+                  <AgentGrid />
+                  <AlertsPanel />
                 </div>
-              </div>
+              </section>
+
+              <section className="grid grid-cols-1 gap-6 lg:grid-cols-3 z-10 relative">
+                <div className="lg:col-span-2">
+                  <CommsPanel />
+                </div>
+                <SchemesPanel />
+              </section>
             </div>
           )}
 
