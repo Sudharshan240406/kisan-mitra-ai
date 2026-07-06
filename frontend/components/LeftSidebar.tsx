@@ -16,7 +16,8 @@ import {
   BookOpen, 
   Terminal, 
   Settings,
-  Menu
+  Menu,
+  Landmark
 } from "lucide-react";
 
 export default function LeftSidebar() {
@@ -28,6 +29,7 @@ export default function LeftSidebar() {
       items: [
         { id: "mission-control", label: "Mission Control", icon: <Radio className="w-4 h-4" /> },
         { id: "overview", label: "Digital Twin", icon: <Server className="w-4 h-4" /> },
+        { id: "schemes", label: "Welfare Schemes", icon: <Landmark className="w-4 h-4" /> },
         { id: "platform", label: "Reasoning", icon: <MessageSquare className="w-4 h-4" /> },
         { id: "knowledge", label: "Knowledge", icon: <BookOpen className="w-4 h-4" /> }
       ]

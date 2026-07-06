@@ -12,6 +12,7 @@ import { AgentGrid } from "@/components/kisan/AgentGrid";
 import { IndiaMap } from "@/components/kisan/IndiaMap";
 import { WeatherPanel, MarketPanel, SchemesPanel, CommsPanel, AlertsPanel } from "@/components/kisan/Panels";
 import { BackgroundFX } from "@/components/kisan/BackgroundFX";
+import WelfareSchemes from "@/components/WelfareSchemes";
 import { Users, MessageCircle, Landmark, Sparkles, Bot, MapPin } from "lucide-react";
 
 const MissionControl = dynamic(() => import("@/components/MissionControl"), { ssr: false });
@@ -396,6 +397,13 @@ function DashboardContent() {
           {activeTab === "mission-control" && (
             <Suspense fallback={<div className="text-slate-500 text-sm p-8">Loading Mission Control...</div>}>
               <MissionControl />
+            </Suspense>
+          )}
+
+          {/* TAB 1.2: WELFARE SCHEMES */}
+          {activeTab === "schemes" && (
+            <Suspense fallback={<div className="text-slate-500 text-sm p-8">Loading Welfare Schemes Advisor...</div>}>
+              <WelfareSchemes />
             </Suspense>
           )}
 
