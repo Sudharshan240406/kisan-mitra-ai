@@ -14,6 +14,7 @@ import { WeatherPanel, MarketPanel, SchemesPanel, CommsPanel, AlertsPanel } from
 import { BackgroundFX } from "@/components/kisan/BackgroundFX";
 import WelfareSchemes from "@/components/WelfareSchemes";
 import AIExplainability from "@/components/AIExplainability";
+import AnalyticsCenter from "@/components/AnalyticsCenter";
 import { Users, MessageCircle, Landmark, Sparkles, Bot, MapPin } from "lucide-react";
 
 const MissionControl = dynamic(() => import("@/components/MissionControl"), { ssr: false });
@@ -1305,28 +1306,11 @@ function DashboardContent() {
             </div>
           )}
 
-          {/* TAB 9: TELEMETRY & LOGS */}
+          {/* TAB 9: ANALYTICS & OPERATIONS CENTER */}
           {activeTab === "telemetry" && (
-            <div className="flex flex-col gap-6">
-              <h2 className="text-lg font-bold text-slate-200 flex items-center gap-2">
-                <Terminal className="w-5 h-5 text-emerald-400" /> Live Platform Logs Console
-              </h2>
-              <p className="text-xs text-slate-400">
-                Audits trace loops, graph compilers, and active API response transactions.
-              </p>
-
-              <div className="bg-slate-950 border border-slate-900 rounded-2xl p-5 font-mono text-[11px] leading-relaxed text-slate-300 h-96 overflow-y-auto flex flex-col-reverse gap-2">
-                {systemLogs.length === 0 ? (
-                  <span className="text-slate-600">Console listening. Execute query to see logs stream...</span>
-                ) : (
-                  systemLogs.map((log, idx) => (
-                    <div key={idx} className="border-b border-slate-900 pb-1.5">
-                      {log}
-                    </div>
-                  ))
-                )}
-              </div>
-            </div>
+            <Suspense fallback={<div className="text-slate-500 text-sm p-8">Loading Analytics Center...</div>}>
+              <AnalyticsCenter />
+            </Suspense>
           )}
 
           {/* TAB 10: CONFIGURATION FLAGS */}
