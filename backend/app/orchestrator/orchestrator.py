@@ -1,28 +1,30 @@
+import asyncio
 import logging
 import time
 import uuid
-import asyncio
-from typing import Any, Dict, List
+from typing import TYPE_CHECKING, Any
+
+if TYPE_CHECKING:
+    from app.core.container import Container
 
 from app.channels.envelope import MessageEnvelope, ResponseEnvelope
-from app.core.container import Container
 from app.core.context import AgentContext
 from app.core.event_bus import Event
 from app.core.exceptions import OrchestratorException
 
-# Orchestrator Core Modules
-from app.orchestrator.router import IntentRouter
-from app.orchestrator.planner import DynamicPlanner
-from app.orchestrator.validator import ResponseValidator
-from app.orchestrator.response_builder import ResponseBuilder
-
 # Memory Engine Integration
 from app.memory.memory_engine import FarmerMemoryEngine
+from app.orchestrator.planner import DynamicPlanner
+from app.orchestrator.response_builder import ResponseBuilder
+
+# Orchestrator Core Modules
+from app.orchestrator.router import IntentRouter
+from app.orchestrator.validator import ResponseValidator
+from app.schemas.evidence import BaseEvidence
 
 # Schemas
-from app.schemas.requests import ExecutionRequest, AgentRequest
-from app.schemas.responses import StandardResponse, TrustedRecommendation, AgentResult
-from app.schemas.evidence import BaseEvidence
+from app.schemas.requests import AgentRequest, ExecutionRequest
+from app.schemas.responses import StandardResponse, TrustedRecommendation
 from app.utils.id import generate_trace_id, generate_uuid
 
 logger = logging.getLogger("kisan_mitra_ai")
@@ -33,17 +35,19 @@ class AgentOrchestrator:
     Performs intent detection, dynamically selects agents, executes them in parallel,
     runs response validation, and returns structured recommendations.
     """
-    def __init__(self, container: Container) -> None:
+    def __init__(self, container: "Container") -> None:
         self.container = container
         self.router = IntentRouter()
         self.planner = DynamicPlanner()
         self.validator = ResponseValidator()
         self.builder = ResponseBuilder()
         self.memory_engine = FarmerMemoryEngine()
+        from app.knowledge_engine.knowledge_engine import KnowledgeEngine
+        self.knowledge_engine = KnowledgeEngine()
 
         logger.info("AgentOrchestrator initialized with intent-routing and dynamic planner.")
 
-    async def execute_query(self, request: ExecutionRequest) -> StandardResponse:
+    async def execute_query(self, request: ExecutionRequest) -> StandardResponse:  # noqa: PLR0912
         start_time = time.time()
         trace_id = generate_trace_id()
         request_id = generate_uuid()
@@ -54,11 +58,11 @@ class AgentOrchestrator:
             if request.session_id in ("farmer_ramesh", "farmer_siddappa")
             else None
         )
-        
+
         lang = "en"
         location = "Punjab"
         crop = "Wheat"
-        
+
         if farmer_id:
             try:
                 # Retrieve from memory engine (Task 6)
@@ -99,6 +103,14 @@ class AgentOrchestrator:
             intent_data = self.router.detect_intent(request.query)
             logger.info(f"[IntentDetection] Intent: {intent_data['intent']} | Confidence: {intent_data['confidence']}")
 
+            # 2.5. Knowledge Retrieval and Re-ranking (Task 9)
+            knowledge_docs = []
+            try:
+                knowledge_docs = await self.knowledge_engine.retrieve(request.query, context=context)
+                logger.info(f"[KnowledgeRetrieval] Retrieved and reranked {len(knowledge_docs)} documents.")
+            except Exception as ke_err:
+                logger.error(f"[KnowledgeRetrieval] Failed: {ke_err}")
+
             # 3. Dynamic Agent Selection (Task 4)
             selected_agents = self.planner.select_agents(intent_data["intent"])
             logger.info(f"[Planner] Selected agents for task execution: {selected_agents}")
@@ -114,7 +126,7 @@ class AgentOrchestrator:
             # 4. Parallel Execution (Task 5)
             agent_tasks = []
             active_called_agents = []
-            
+
             for agent_name in selected_agents:
                 # LLM is invoked during Reasoning, we execute specific specialists
                 if agent_name == "LLM":
@@ -123,7 +135,7 @@ class AgentOrchestrator:
                     agent = self.container.registry.get(agent_name)
                 except Exception:
                     agent = None
-                
+
                 if agent:
                     req = AgentRequest(query=request.query)
                     agent_tasks.append(agent.execute(req, context))
@@ -133,7 +145,7 @@ class AgentOrchestrator:
 
             # 5. Compile Evidence & Call Chief Reasoning Agent
             evidence_items = []
-            
+
             # Inject memory evidence
             if farmer_id:
                 try:
@@ -143,11 +155,48 @@ class AgentOrchestrator:
                 except Exception as mem_err:
                     logger.warning(f"Memory evidence injection failed: {mem_err}")
 
-            for agent_name, result in zip(active_called_agents, results):
-                if isinstance(result, Exception):
+            # Inject Knowledge Engine evidence (Task 9)
+            from app.schemas.evidence import GovernmentSchemeEvidence, KnowledgeEvidence
+            for doc in knowledge_docs:
+                meta = doc.get("metadata", {})
+                doc_id = doc.get("document_id") or meta.get("document_id", "doc-ref")
+                title = doc.get("title") or meta.get("title", "Reference Library")
+                category = doc.get("category") or meta.get("source_type") or "knowledge"
+
+                if category == "government_scheme":
+                    evidence_items.append(GovernmentSchemeEvidence(
+                        id=f"EV-KE-{doc_id}",
+                        source="KnowledgeEngine",
+                        agent="KnowledgeEngine",
+                        timestamp=time.time(),
+                        confidence=doc.get("confidence", 0.9),
+                        weight=1.0,
+                        reasoning=doc.get("explanation", ""),
+                        ontology_references=[doc_id],
+                        metadata=meta,
+                        scheme_title=title,
+                        eligibility_matched=True
+                    ))
+                else:
+                    evidence_items.append(KnowledgeEvidence(
+                        id=f"EV-KE-{doc_id}",
+                        source="KnowledgeEngine",
+                        agent="KnowledgeEngine",
+                        timestamp=time.time(),
+                        confidence=doc.get("confidence", 0.9),
+                        weight=1.0,
+                        reasoning=doc.get("explanation", ""),
+                        ontology_references=[doc_id],
+                        metadata=meta,
+                        citation=doc.get("citation", ""),
+                        document_title=title
+                    ))
+
+            for agent_name, result in zip(active_called_agents, results, strict=True):
+                if isinstance(result, BaseException):
                     logger.error(f"Agent {agent_name} execution threw exception: {result}")
                     continue
-                
+
                 # Parse to BaseEvidence
                 if result.evidence:
                     for ev_dict in result.evidence:
@@ -213,7 +262,7 @@ class AgentOrchestrator:
 
             # 7. Tracing & Telemetry (Task 8)
             duration_ms = (time.time() - start_time) * 1000.0
-            
+
             logger.info(
                 f"[ExecutionTrace] ID: {request_id} | Agents Called: {active_called_agents} | "
                 f"Latency: {duration_ms:.1f}ms | Errors: None"
@@ -287,13 +336,13 @@ class AgentOrchestrator:
         Executes messaging envelopes while preserving full schema structures.
         """
         query_text = envelope.payload.get("text") or envelope.payload.get("query") or ""
-        
+
         exec_req = ExecutionRequest(
             session_id=envelope.conversation_id,
             query=query_text,
             farmer_id=envelope.sender if envelope.sender != "system" else None
         )
-        
+
         try:
             std_res = await self.execute_query(exec_req)
             return ResponseEnvelope(
