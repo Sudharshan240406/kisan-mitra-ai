@@ -14,6 +14,7 @@ from app.core.exceptions import OrchestratorException
 
 # Memory Engine Integration
 from app.memory.memory_engine import FarmerMemoryEngine
+from app.observability import trace_span
 from app.orchestrator.planner import DynamicPlanner
 from app.orchestrator.response_builder import ResponseBuilder
 
@@ -54,6 +55,7 @@ class AgentOrchestrator:
         start_time = time.time()
         trace_id = generate_trace_id()
         request_id = generate_uuid()
+        obs_mgr = getattr(self.container, "observability_manager", None)
 
         # 1. Memory Retrieval (Task 3 / Task 6)
         farmer_id = request.farmer_id or (
@@ -68,8 +70,15 @@ class AgentOrchestrator:
 
         if farmer_id:
             try:
-                # Retrieve from memory engine (Task 6)
-                mem_data = self.memory_engine.retrieve_memory(farmer_id)
+                mem_start = time.time()
+                if obs_mgr:
+                    with trace_span("Memory Engine", obs_mgr.tracing_engine, trace_id=trace_id, execution_id=request_id):
+                        mem_data = self.memory_engine.retrieve_memory(farmer_id)
+                else:
+                    mem_data = self.memory_engine.retrieve_memory(farmer_id)
+                mem_latency = (time.time() - mem_start) * 1000.0
+                if obs_mgr:
+                    obs_mgr.metrics_engine.record("memory_retrieval", mem_latency)
                 profile = mem_data.get("profile")
                 if profile:
                     lang = profile.get("preferred_language", "en")
@@ -102,17 +111,30 @@ class AgentOrchestrator:
         ))
 
         try:
-            # 2. Intent Detection (Task 2)
-            intent_data = self.router.detect_intent(request.query)
-            logger.info(f"[IntentDetection] Intent: {intent_data['intent']} | Confidence: {intent_data['confidence']}")
+            import contextlib
+            stack = contextlib.ExitStack()
+            if obs_mgr:
+                stack.enter_context(trace_span("AI Orchestrator", obs_mgr.tracing_engine, trace_id=trace_id, execution_id=request_id))
+            with stack:
+                # 2. Intent Detection (Task 2)
+                intent_data = self.router.detect_intent(request.query)
+                logger.info(f"[IntentDetection] Intent: {intent_data['intent']} | Confidence: {intent_data['confidence']}")
 
-            # 2.5. Knowledge Retrieval and Re-ranking (Task 9)
-            knowledge_docs = []
-            try:
-                knowledge_docs = await self.knowledge_engine.retrieve(request.query, context=context)
-                logger.info(f"[KnowledgeRetrieval] Retrieved and reranked {len(knowledge_docs)} documents.")
-            except Exception as ke_err:
-                logger.error(f"[KnowledgeRetrieval] Failed: {ke_err}")
+                # 2.5. Knowledge Retrieval and Re-ranking (Task 9)
+                knowledge_docs = []
+                try:
+                    ke_start = time.time()
+                    if obs_mgr:
+                        with trace_span("Knowledge Engine", obs_mgr.tracing_engine, trace_id=trace_id, execution_id=request_id):
+                            knowledge_docs = await self.knowledge_engine.retrieve(request.query, context=context)
+                    else:
+                        knowledge_docs = await self.knowledge_engine.retrieve(request.query, context=context)
+                    ke_latency = (time.time() - ke_start) * 1000.0
+                    if obs_mgr:
+                        obs_mgr.metrics_engine.record("knowledge_retrieval", ke_latency)
+                    logger.info(f"[KnowledgeRetrieval] Retrieved and reranked {len(knowledge_docs)} documents.")
+                except Exception as ke_err:
+                    logger.error(f"[KnowledgeRetrieval] Failed: {ke_err}")
 
             # 3. Dynamic Agent Selection (Task 4)
             selected_agents = self.planner.select_agents(intent_data["intent"])
@@ -134,15 +156,40 @@ class AgentOrchestrator:
                 agent_start = time.time()
                 success = False
                 retries = 0
+                error_msg = None
                 try:
-                    res = await a_obj.execute(a_req, a_ctx)
+                    if obs_mgr:
+                        with trace_span(a_name, obs_mgr.tracing_engine, trace_id=trace_id, execution_id=request_id):
+                            res = await a_obj.execute(a_req, a_ctx)
+                    else:
+                        res = await a_obj.execute(a_req, a_ctx)
                     success = True
                     return res
                 except Exception as ex:
+                    error_msg = str(ex)
                     logger.warning(f"Agent {a_name} execution failed: {ex}")
+                    if obs_mgr:
+                        obs_mgr.monitoring_engine.check_alert_rules(
+                            event_type="agent_failure",
+                            trace_id=trace_id,
+                            execution_id=request_id,
+                            metadata={"agent_name": a_name, "error": error_msg}
+                        )
                     raise ex
                 finally:
                     agent_latency = (time.time() - agent_start) * 1000.0
+                    if obs_mgr:
+                        obs_mgr.metrics_engine.record("agent_latency", agent_latency, {"agent": a_name})
+                        obs_mgr.logging_engine.log(
+                            level=logging.INFO if success else logging.ERROR,
+                            message=f"Agent {a_name} executed",
+                            trace_id=trace_id,
+                            execution_id=request_id,
+                            agent=a_name,
+                            latency_ms=agent_latency,
+                            error=error_msg,
+                            confidence=None
+                        )
                     try:
                         self.learning_manager.feedback_engine.record_agent_feedback(
                             agent_name=a_name,
@@ -175,15 +222,29 @@ class AgentOrchestrator:
             # Load Digital Twin, Run Predictions & Risks (Task 8)
             if farmer_id:
                 try:
-                    twin = self.twin_manager.get_twin(farmer_id)
+                    dt_start = time.time()
+                    twin = None
+                    predictions = {}
+                    risks = {}
+                    if obs_mgr:
+                        with trace_span("Digital Twin", obs_mgr.tracing_engine, trace_id=trace_id, execution_id=request_id):
+                            twin = self.twin_manager.get_twin(farmer_id)
+                            if twin:
+                                predictions = self.twin_manager.predict(farmer_id)
+                                risks = self.twin_manager.calculate_risk(farmer_id)
+                                self.twin_manager.generate_recommendations(farmer_id)
+                    else:
+                        twin = self.twin_manager.get_twin(farmer_id)
+                        if twin:
+                            predictions = self.twin_manager.predict(farmer_id)
+                            risks = self.twin_manager.calculate_risk(farmer_id)
+                            self.twin_manager.generate_recommendations(farmer_id)
+
+                    dt_latency = (time.time() - dt_start) * 1000.0
+                    if obs_mgr:
+                        obs_mgr.metrics_engine.record("prediction_latency", dt_latency)
+
                     if twin:
-                        # Re-run prediction & risk engine pipelines
-                        predictions = self.twin_manager.predict(farmer_id)
-                        risks = self.twin_manager.calculate_risk(farmer_id)
-
-                        # Generate proactive recommendations
-                        self.twin_manager.generate_recommendations(farmer_id)
-
                         # Inject DigitalTwinEvidence
                         from app.digital_twin import DigitalTwinEvidence
                         evidence_items.append(DigitalTwinEvidence(
@@ -280,23 +341,45 @@ class AgentOrchestrator:
                     ))
 
             # Trigger reasoning consensus
-            reasoning_result = await self.container.chief_agent.reason(
-                query=request.query,
-                trace_id=trace_id,
-                request_id=request_id,
-                parsed_evidence=evidence_items,
-                missing_fields=intent_data["entities"],
-                agent_context=context,
-                language=lang,
-                crop=crop,
-                location=location
-            )
+            if obs_mgr:
+                with trace_span("Chief Reasoning Agent", obs_mgr.tracing_engine, trace_id=trace_id, execution_id=request_id):
+                    reasoning_result = await self.container.chief_agent.reason(
+                        query=request.query,
+                        trace_id=trace_id,
+                        request_id=request_id,
+                        parsed_evidence=evidence_items,
+                        missing_fields=intent_data["entities"],
+                        agent_context=context,
+                        language=lang,
+                        crop=crop,
+                        location=location
+                    )
+            else:
+                reasoning_result = await self.container.chief_agent.reason(
+                    query=request.query,
+                    trace_id=trace_id,
+                    request_id=request_id,
+                    parsed_evidence=evidence_items,
+                    missing_fields=intent_data["entities"],
+                    agent_context=context,
+                    language=lang,
+                    crop=crop,
+                    location=location
+                )
              # Apply optimized confidence (Task 7)
-            opt_confidence = self.learning_manager.confidence_optimizer.get_optimized_confidence(
-                base_confidence=reasoning_result.overall_confidence,
-                crop=crop,
-                region=location
-            )
+            if obs_mgr:
+                with trace_span("Learning Engine", obs_mgr.tracing_engine, trace_id=trace_id, execution_id=request_id):
+                    opt_confidence = self.learning_manager.confidence_optimizer.get_optimized_confidence(
+                        base_confidence=reasoning_result.overall_confidence,
+                        crop=crop,
+                        region=location
+                    )
+            else:
+                opt_confidence = self.learning_manager.confidence_optimizer.get_optimized_confidence(
+                    base_confidence=reasoning_result.overall_confidence,
+                    crop=crop,
+                    region=location
+                )
 
             # Record knowledge feedback (Task 5 / Task 8)
             used_doc_ids = set()
@@ -362,6 +445,18 @@ class AgentOrchestrator:
                 session_id=request.session_id
             )
 
+            if obs_mgr:
+                obs_mgr.record_execution(
+                    event_type="query_completed",
+                    trace_id=trace_id,
+                    execution_id=request_id,
+                    agent=None,
+                    latency_ms=duration_ms,
+                    error=None,
+                    confidence=opt_confidence,
+                    metadata={"agents_called": active_called_agents}
+                )
+
             # Update Persistent Memory Engine (Task 10)
             if farmer_id:
                 try:
@@ -412,7 +507,11 @@ class AgentOrchestrator:
             # Run autonomous monitoring cycle after conversation updates (Sprint 15 Task 8)
             if farmer_id:
                 try:
-                    self.autonomous_manager.run_monitoring_cycle(farmer_id)
+                    if obs_mgr:
+                        with trace_span("Autonomous Engine", obs_mgr.tracing_engine, trace_id=trace_id, execution_id=request_id):
+                            self.autonomous_manager.run_monitoring_cycle(farmer_id)
+                    else:
+                        self.autonomous_manager.run_monitoring_cycle(farmer_id)
                 except Exception as auto_err:
                     logger.warning(f"Autonomous cycle trigger failed: {auto_err}")
 
@@ -432,6 +531,17 @@ class AgentOrchestrator:
                 trace_id=trace_id,
                 session_id=request.session_id
             )
+
+            if obs_mgr:
+                obs_mgr.record_execution(
+                    event_type="query_failed",
+                    trace_id=trace_id,
+                    execution_id=request_id,
+                    agent=None,
+                    latency_ms=duration_ms,
+                    error=str(e),
+                    confidence=None
+                )
 
             logger.error(f"[OrchestratorException] Trace: {trace_id} | Error: {e}")
             raise OrchestratorException(f"Orchestration failure: {e!s}")

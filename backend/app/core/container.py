@@ -41,24 +41,6 @@ from app.intelligence.policy import PolicyEngine
 
 # Agricultural Knowledge Platform Imports
 from app.knowledge.core import KnowledgePlatform
-
-# AI Reasoning & Decision Intelligence Platform Imports
-from app.reasoning.chief import ChiefReasoningAgent
-from app.reasoning.core import ReasoningPlatform
-from app.reasoning.telemetry import ReasoningTelemetry
-
-# Personalization Platform Imports
-from app.personalization.platform import PersonalizationPlatform
-from app.personalization.services import (
-    ProfileManagerService,
-    DigitalTwinService,
-    LongTermMemoryService,
-    ReminderSchedulerService,
-    ContinuousLearningService,
-    PrivacyConsentService,
-)
-from app.personalization.regional import RegionalIntelligenceService
-from app.personalization.recommender import AdaptiveRecommendationEngine
 from app.knowledge.graph import KnowledgeGraph
 from app.knowledge.modules.crop import CropKnowledgeProvider
 from app.knowledge.modules.disease import DiseaseKnowledgeProvider
@@ -79,6 +61,24 @@ from app.multimodal.core import MultimodalPlatform, VisionManager, VoiceManager
 from app.multimodal.telemetry import MultimodalTelemetry
 from app.orchestrator.capability import CapabilityRegistry
 from app.orchestrator.registry import AgentRegistry
+
+# Personalization Platform Imports
+from app.personalization.platform import PersonalizationPlatform
+from app.personalization.recommender import AdaptiveRecommendationEngine
+from app.personalization.regional import RegionalIntelligenceService
+from app.personalization.services import (
+    ContinuousLearningService,
+    DigitalTwinService,
+    LongTermMemoryService,
+    PrivacyConsentService,
+    ProfileManagerService,
+    ReminderSchedulerService,
+)
+
+# AI Reasoning & Decision Intelligence Platform Imports
+from app.reasoning.chief import ChiefReasoningAgent
+from app.reasoning.core import ReasoningPlatform
+from app.reasoning.telemetry import ReasoningTelemetry
 from app.services import (
     GovernmentSchemeService,
     KnowledgeService,
@@ -280,7 +280,7 @@ class Container:
 
         # Personalization Platform
         self.personalization_platform = PersonalizationPlatform()
-        
+
         # Instantiate personalization services
         self.profile_manager_service = ProfileManagerService(self.personalization_platform)
         self.digital_twin_service = DigitalTwinService(self.personalization_platform)
@@ -290,7 +290,7 @@ class Container:
         self.privacy_consent_service = PrivacyConsentService(self.personalization_platform)
         self.regional_intelligence_service = RegionalIntelligenceService()
         self.adaptive_recommender = AdaptiveRecommendationEngine(self.personalization_platform)
-        
+
         # Register personalization services
         self.personalization_platform.registry.register("profile_manager", self.profile_manager_service)
         self.personalization_platform.registry.register("digital_twin", self.digital_twin_service)
@@ -314,6 +314,9 @@ class Container:
 
         from app.autonomous.autonomous_manager import AutonomousManager
         self.autonomous_manager = AutonomousManager(self)
+
+        from app.observability import ObservabilityManager
+        self.observability_manager = ObservabilityManager(self)
 
         logger.info("Container services loaded successfully.")
 
@@ -408,11 +411,11 @@ class Container:
             SMSNotificationAdapter,
         )
         from app.core.integrations.adapters.storage import (
+            CloudStorageAdapter,
             LocalStorageAdapter,
             PostgreSQLStorageAdapter,
             RedisStorageAdapter,
             VectorDBStorageAdapter,
-            CloudStorageAdapter,
         )
         from app.core.integrations.adapters.weather import (
             IMDWeatherAdapter,

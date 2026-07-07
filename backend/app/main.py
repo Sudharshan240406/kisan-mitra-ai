@@ -1,6 +1,7 @@
 import json
-from collections.abc import AsyncGenerator
+from collections.abc import AsyncGenerator, Callable
 from contextlib import asynccontextmanager
+from typing import Any
 
 from agents.disease.disease import KnowledgeAgent
 from agents.market.market import MarketAgent
@@ -11,38 +12,39 @@ from agents.planner.planner import PlannerAgent
 from agents.schemes.schemes import GovernmentSchemeAgent
 from agents.verifier.verifier import VerifierAgent
 from agents.weather.weather import WeatherAgent
+from app.api.v1.admin import router as admin_router
 from app.api.v1.ai import router as ai_router
 from app.api.v1.channels import router as channels_router
+from app.api.v1.demo import router as demo_router
 from app.api.v1.health import router as health_router
 from app.api.v1.integrations import router as integrations_router
 from app.api.v1.knowledge import router as knowledge_router
 from app.api.v1.media import router as media_router
+from app.api.v1.observability import router as observability_router
+from app.api.v1.personalization import router as personalization_router
 from app.api.v1.sms import router as sms_router
 from app.api.v1.telemetry import router as telemetry_router
 from app.api.v1.telephony import router as telephony_router
-from app.api.v1.personalization import router as personalization_router
-from app.api.v1.admin import router as admin_router
 from app.api.v1.websocket import router as websocket_router
-from app.api.v1.demo import router as demo_router
 from app.core.config import settings, validate_production_config
 from app.core.container import Container
+from app.core.exceptions import KisanMitraException
 from app.core.logging_config import setup_logging
 from app.dependencies.container import get_container
+from app.middleware.error_handler import (
+    general_exception_handler,
+    http_exception_handler,
+    kisan_mitra_exception_handler,
+    validation_exception_handler,
+)
 from app.orchestrator.orchestrator import AgentOrchestrator
 from app.schemas.requests import ExecutionRequest
 from app.schemas.responses import HealthResponse, StandardResponse
 from fastapi import Depends, FastAPI, Request
+from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
-from fastapi.exceptions import RequestValidationError
 from starlette.exceptions import HTTPException as StarletteHTTPException
-from app.core.exceptions import KisanMitraException
-from app.middleware.error_handler import (
-    kisan_mitra_exception_handler,
-    http_exception_handler,
-    validation_exception_handler,
-    general_exception_handler,
-)
 
 # Setup centralized logging
 logger = setup_logging()
@@ -118,7 +120,7 @@ app.add_middleware(GZipMiddleware, minimum_size=1000)
 
 # Configure Custom Security Headers Middleware
 @app.middleware("http")
-async def add_security_headers(request: Request, call_next):
+async def add_security_headers(request: Request, call_next: Callable[[Request], Any]) -> Any:
     response = await call_next(request)
     response.headers["X-Frame-Options"] = "DENY"
     response.headers["X-Content-Type-Options"] = "nosniff"
@@ -156,6 +158,7 @@ app.include_router(personalization_router)
 app.include_router(admin_router)
 app.include_router(websocket_router)
 app.include_router(demo_router)
+app.include_router(observability_router)
 
 
 

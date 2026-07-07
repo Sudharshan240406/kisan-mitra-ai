@@ -42,6 +42,7 @@ class NotificationEngine:
         """
         Builds templates for all 4 notification channels and logs dispatch action.
         """
+        start_time = time.time()
         # SMS payload
         sms_payload = {
             "to": farmer_id,
@@ -98,6 +99,11 @@ class NotificationEngine:
             sms_provider.send_sms("+919999999999", sms_payload["body"])
         except Exception as e:
             logger.debug(f"[NotificationEngine] SMS dispatch skipped/failed: {e}")
+
+        latency_ms = (time.time() - start_time) * 1000.0
+        obs_mgr = getattr(self.container, "observability_manager", None)
+        if obs_mgr:
+            obs_mgr.metrics_engine.record("notification_latency", latency_ms)
 
         logger.info(f"[NotificationEngine] Dispatched priority '{reminder.priority}' notification {reminder.reminder_id}")
         return dispatch_log
