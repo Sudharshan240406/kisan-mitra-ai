@@ -16,6 +16,9 @@ from app.orchestrator.planner import DynamicPlanner
 from app.orchestrator.validator import ResponseValidator
 from app.orchestrator.response_builder import ResponseBuilder
 
+# Memory Engine Integration
+from app.memory.memory_engine import FarmerMemoryEngine
+
 # Schemas
 from app.schemas.requests import ExecutionRequest, AgentRequest
 from app.schemas.responses import StandardResponse, TrustedRecommendation, AgentResult
@@ -36,6 +39,7 @@ class AgentOrchestrator:
         self.planner = DynamicPlanner()
         self.validator = ResponseValidator()
         self.builder = ResponseBuilder()
+        self.memory_engine = FarmerMemoryEngine()
 
         logger.info("AgentOrchestrator initialized with intent-routing and dynamic planner.")
 
@@ -44,7 +48,7 @@ class AgentOrchestrator:
         trace_id = generate_trace_id()
         request_id = generate_uuid()
 
-        # 1. Memory Retrieval (Task 3)
+        # 1. Memory Retrieval (Task 3 / Task 6)
         farmer_id = request.farmer_id or (
             request.session_id
             if request.session_id in ("farmer_ramesh", "farmer_siddappa")
@@ -57,14 +61,17 @@ class AgentOrchestrator:
         
         if farmer_id:
             try:
-                profile = self.container.personalization_platform.profiles.get(farmer_id)
+                # Retrieve from memory engine (Task 6)
+                mem_data = self.memory_engine.retrieve_memory(farmer_id)
+                profile = mem_data.get("profile")
                 if profile:
-                    lang = profile.preferred_language
-                    location = f"{profile.district}, {profile.state}"
-                    if profile.crops:
-                        crop = profile.crops[0]
+                    lang = profile.get("preferred_language", "en")
+                    location = f"{profile.get('district', 'Ludhiana')}, {profile.get('state', 'Punjab')}"
+                    crop_hist = profile.get("crop_history", [])
+                    if crop_hist:
+                        crop = crop_hist[0]
             except Exception as e:
-                logger.warning(f"[MemoryRetrieval] Profile fetch failed: {e}")
+                logger.warning(f"[MemoryRetrieval] Profile fetch failed from memory engine: {e}")
 
         context = AgentContext(
             request_id=request_id,
@@ -218,6 +225,30 @@ class AgentOrchestrator:
                 trace_id=trace_id,
                 session_id=request.session_id
             )
+
+            # Update Persistent Memory Engine (Task 10)
+            if farmer_id:
+                try:
+                    recommended_schemes = []
+                    if "pm-kisan" in reasoning_result.primary_recommendation.lower() or "scheme" in reasoning_result.primary_recommendation.lower():
+                        recommended_schemes = ["pm-kisan"]
+                    self.memory_engine.save_memory(
+                        farmer_id=farmer_id,
+                        question=request.query,
+                        intent=intent_data["intent"],
+                        response=reasoning_result.primary_recommendation,
+                        confidence=reasoning_result.overall_confidence,
+                        execution_id=request_id,
+                        recommended_schemes=recommended_schemes,
+                        applied_schemes=None,
+                        rejected_schemes=None,
+                        completed_schemes=None,
+                        documents_requested=reasoning_result.missing_information,
+                        documents_submitted=None
+                    )
+                    logger.info(f"[Orchestrator] Saved interaction turn to Persistent Memory Engine for: {farmer_id}")
+                except Exception as mem_err:
+                    logger.warning(f"[Orchestrator] Failed to save turn to memory engine: {mem_err}")
 
             # Append memory log
             if farmer_id:
