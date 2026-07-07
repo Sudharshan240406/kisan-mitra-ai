@@ -45,6 +45,7 @@ class AgentOrchestrator:
         from app.knowledge_engine.knowledge_engine import KnowledgeEngine
         self.knowledge_engine = KnowledgeEngine()
         self.learning_manager = container.learning_manager
+        self.twin_manager = container.twin_manager
 
         logger.info("AgentOrchestrator initialized with intent-routing and dynamic planner.")
 
@@ -168,7 +169,39 @@ class AgentOrchestrator:
             results = await asyncio.gather(*agent_tasks, return_exceptions=True)
 
             # 5. Compile Evidence & Call Chief Reasoning Agent
-            evidence_items = []
+            evidence_items: list[BaseEvidence] = []
+
+            # Load Digital Twin, Run Predictions & Risks (Task 8)
+            if farmer_id:
+                try:
+                    twin = self.twin_manager.get_twin(farmer_id)
+                    if twin:
+                        # Re-run prediction & risk engine pipelines
+                        predictions = self.twin_manager.predict(farmer_id)
+                        risks = self.twin_manager.calculate_risk(farmer_id)
+
+                        # Generate proactive recommendations
+                        self.twin_manager.generate_recommendations(farmer_id)
+
+                        # Inject DigitalTwinEvidence
+                        from app.digital_twin import DigitalTwinEvidence
+                        evidence_items.append(DigitalTwinEvidence(
+                            id=f"EV-DT-{farmer_id}",
+                            source="PredictiveDigitalTwin",
+                            agent="DigitalTwinEngine",
+                            timestamp=time.time(),
+                            confidence=0.4,
+                            weight=0.1,
+                            reasoning=f"Proactive Next Crop: {predictions.get('next_crop')}. "
+                                      f"Water Demand: {predictions.get('water_demand_liters')}L. "
+                                      f"Disease Risk: {risks.get('disease_risk')} on predicted {predictions.get('disease_probability', {}).get('disease')}. "
+                                      f"Crop Failure Risk: {risks.get('crop_failure_risk')}.",
+                            farmer_id=farmer_id,
+                            predictions=predictions,
+                            risks=risks
+                        ))
+                except Exception as twin_err:
+                    logger.warning(f"[TwinManager] Failed to load/run predictive twin models: {twin_err}")
 
             # Inject memory evidence
             if farmer_id:
@@ -363,6 +396,17 @@ class AgentOrchestrator:
                     )
                 except Exception as mem_log_err:
                     logger.warning(f"Memory logging failed: {mem_log_err}")
+
+            # Auto-update twin after conversation (Task 6 / Task 8)
+            if farmer_id:
+                try:
+                    self.twin_manager.update_twin_from_interaction(
+                        farmer_id=farmer_id,
+                        query=request.query,
+                        response=reasoning_result.primary_recommendation
+                    )
+                except Exception as twin_up_err:
+                    logger.warning(f"Twin auto-update from interaction failed: {twin_up_err}")
 
             recommendation = TrustedRecommendation.model_validate(rec_dict)
 

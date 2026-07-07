@@ -309,6 +309,9 @@ class Container:
         from app.learning.learning_manager import LearningManager
         self.learning_manager = LearningManager()
 
+        from app.digital_twin.twin_manager import TwinManager
+        self.twin_manager = TwinManager(self)
+
         logger.info("Container services loaded successfully.")
 
     def _load_default_media_providers(self) -> None:

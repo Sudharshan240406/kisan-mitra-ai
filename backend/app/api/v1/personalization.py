@@ -292,3 +292,41 @@ def get_learning_analytics(container: Container = Depends(get_container)) -> dic
     Exposes continuous learning engine metrics and analytics.
     """
     return container.learning_manager.get_analytics()
+
+
+@router.get("/twin/{farmer_id}/predictive")
+def get_predictive_twin(farmer_id: str, container: Container = Depends(get_container)) -> dict[str, Any]:
+    """
+    Retrieves the full Predictive Digital Twin state.
+    """
+    twin = container.twin_manager.get_twin(farmer_id)
+    if not twin:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Predictive Twin for '{farmer_id}' not found."
+        )
+    return twin.model_dump()
+
+
+@router.get("/twin/{farmer_id}/predict")
+def run_twin_predictions(farmer_id: str, container: Container = Depends(get_container)) -> dict[str, Any]:
+    """
+    Runs and returns digital twin forecasts.
+    """
+    return container.twin_manager.predict(farmer_id)
+
+
+@router.get("/twin/{farmer_id}/risk")
+def run_twin_risks(farmer_id: str, container: Container = Depends(get_container)) -> dict[str, Any]:
+    """
+    Runs and returns digital twin risk assessments.
+    """
+    return container.twin_manager.calculate_risk(farmer_id)
+
+
+@router.get("/twin/{farmer_id}/recommendations")
+def get_proactive_recommendations(farmer_id: str, container: Container = Depends(get_container)) -> list[dict[str, Any]]:
+    """
+    Retrieves proactive recommendations generated from the digital twin forecasting.
+    """
+    return container.twin_manager.generate_recommendations(farmer_id)
