@@ -141,6 +141,45 @@ async def websocket_live(websocket: WebSocket) -> None:
     - On disconnect → MISSION_CONTROL_DISCONNECTED fired to remaining clients
     - On reconnect → MISSION_CONTROL_RECONNECTED fired to all clients
     """
+    # Extract token
+    token = websocket.query_params.get("token")
+    auth_header = websocket.headers.get("Authorization")
+    if auth_header and auth_header.startswith("Bearer "):
+        token = auth_header.split("Bearer ")[-1]
+
+    container = getattr(websocket.app.state, "container", None)
+    security_mgr = getattr(container, "security_manager", None) if container else None
+
+    if security_mgr and token:
+        try:
+            claims = security_mgr.verify_request_token(token)
+            security_mgr.audit_engine.log_audit(
+                event_type="authz",
+                user_id=claims.get("sub", "unknown"),
+                action="websocket_handshake",
+                status="success"
+            )
+        except Exception as e:
+            security_mgr.audit_engine.log_audit(
+                event_type="authz",
+                user_id="anonymous",
+                action="websocket_handshake",
+                status="failure",
+                metadata={"reason": f"Invalid token: {e}"}
+            )
+            # Close connection with Policy Violation code
+            await websocket.close(code=1008, reason=f"Authorization failure: {e}")
+            return
+    elif security_mgr:
+        # Fallback compatibility logging
+        security_mgr.audit_engine.log_audit(
+            event_type="authz",
+            user_id="anonymous",
+            action="websocket_handshake",
+            status="success",
+            metadata={"warning": "Unauthenticated connection accepted for backward compatibility"}
+        )
+
     accepted = await ws_manager.connect(websocket)
     if not accepted:
         return

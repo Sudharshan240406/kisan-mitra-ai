@@ -318,6 +318,9 @@ class Container:
         from app.observability import ObservabilityManager
         self.observability_manager = ObservabilityManager(self)
 
+        from app.security import SecurityManager
+        self.security_manager = SecurityManager(self)
+
         logger.info("Container services loaded successfully.")
 
     def _load_default_media_providers(self) -> None:

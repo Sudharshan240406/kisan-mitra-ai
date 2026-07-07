@@ -27,3 +27,5 @@ class ExecutionRequest(BaseModel):
     query: str = Field(..., description="Main user prompt text.")
     trace_enabled: bool = Field(default=False, description="Flag to enable tracing / details log print.")
     farmer_id: str | None = Field(default=None, description="Optional associated farmer profile ID.")
+    user_id: str | None = Field(default=None, description="Authenticated user ID")
+    user_role: str | None = Field(default=None, description="Authenticated user role")

@@ -1,7 +1,7 @@
 import json
 from collections.abc import AsyncGenerator, Callable
 from contextlib import asynccontextmanager
-from typing import Any
+from typing import Any, Optional
 
 from agents.disease.disease import KnowledgeAgent
 from agents.market.market import MarketAgent
@@ -22,6 +22,7 @@ from app.api.v1.knowledge import router as knowledge_router
 from app.api.v1.media import router as media_router
 from app.api.v1.observability import router as observability_router
 from app.api.v1.personalization import router as personalization_router
+from app.api.v1.security import router as security_router
 from app.api.v1.sms import router as sms_router
 from app.api.v1.telemetry import router as telemetry_router
 from app.api.v1.telephony import router as telephony_router
@@ -40,7 +41,12 @@ from app.middleware.error_handler import (
 from app.orchestrator.orchestrator import AgentOrchestrator
 from app.schemas.requests import ExecutionRequest
 from app.schemas.responses import HealthResponse, StandardResponse
-from fastapi import Depends, FastAPI, Request
+from app.security.security_manager import (
+    PermissionRequirement,
+    RoleRequirement,
+    bearer_scheme,
+)
+from fastapi import Depends, FastAPI, HTTPException, Request, status
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
@@ -155,10 +161,11 @@ app.include_router(knowledge_router)
 app.include_router(health_router, prefix="/api/v1/health", tags=["Health"])
 app.include_router(ai_router, prefix="/api/v1/ai", tags=["AI Platform"])
 app.include_router(personalization_router)
-app.include_router(admin_router)
+app.include_router(security_router)
+app.include_router(admin_router, dependencies=[Depends(RoleRequirement("Admin"))])
 app.include_router(websocket_router)
 app.include_router(demo_router)
-app.include_router(observability_router)
+app.include_router(observability_router, dependencies=[Depends(PermissionRequirement("api:observability"))])
 
 
 
@@ -200,10 +207,24 @@ async def health(container: Container = Depends(get_container)) -> HealthRespons
 @app.post("/api/v1/query", response_model=StandardResponse, tags=["Orchestration"])
 async def query(
     request: ExecutionRequest,
-    container: Container = Depends(get_container)
+    container: Container = Depends(get_container),
+    credentials: Optional[Any] = Depends(bearer_scheme)
 ) -> StandardResponse:
     """
     Execute user query through the multi-agent orchestration framework.
     """
+    if credentials:
+        try:
+            security_mgr = getattr(container, "security_manager", None)
+            if security_mgr:
+                claims = security_mgr.verify_request_token(credentials.credentials)
+                request.user_id = claims.get("sub")
+                request.user_role = claims.get("role")
+        except Exception as e:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail=f"Authentication failed: {e!s}"
+            )
+
     orchestrator = AgentOrchestrator(container)
     return await orchestrator.execute_query(request)

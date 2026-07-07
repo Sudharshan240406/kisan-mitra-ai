@@ -56,6 +56,19 @@ class AgentOrchestrator:
         trace_id = generate_trace_id()
         request_id = generate_uuid()
         obs_mgr = getattr(self.container, "observability_manager", None)
+        security_mgr = getattr(self.container, "security_manager", None)
+
+        user_id = request.user_id or "anonymous"
+        user_role = request.user_role or "Farmer"
+
+        if security_mgr:
+            security_mgr.audit_engine.log_audit(
+                event_type="authz",
+                user_id=user_id,
+                action="orchestrator_query_start",
+                status="success",
+                metadata={"query": request.query[:50]}
+            )
 
         # 1. Memory Retrieval (Task 3 / Task 6)
         farmer_id = request.farmer_id or (
@@ -99,6 +112,8 @@ class AgentOrchestrator:
         context.metadata["container"] = self.container
         context.metadata["crop"] = crop
         context.metadata["location"] = location
+        context.metadata["user_id"] = user_id
+        context.metadata["user_role"] = user_role
 
         logger.info(f"[Orchestrator] Query received: '{request.query[:35]}'")
 
@@ -204,6 +219,19 @@ class AgentOrchestrator:
                 # LLM is invoked during Reasoning, we execute specific specialists
                 if agent_name == "LLM":
                     continue
+
+                if security_mgr:
+                    if not security_mgr.permission_engine.can_call_agent(user_role, agent_name):
+                        security_mgr.audit_engine.log_audit(
+                            event_type="authz",
+                            user_id=user_id,
+                            action=f"execute_agent:{agent_name}",
+                            status="failure",
+                            metadata={"reason": "Unauthorized agent scope"}
+                        )
+                        logger.warning(f"[Security] User '{user_id}' role '{user_role}' denied execution of agent '{agent_name}'.")
+                        continue
+
                 try:
                     agent = self.container.registry.get(agent_name)
                 except Exception:
@@ -517,6 +545,14 @@ class AgentOrchestrator:
 
             recommendation = TrustedRecommendation.model_validate(rec_dict)
 
+            if security_mgr:
+                security_mgr.audit_engine.log_audit(
+                    event_type="authz",
+                    user_id=user_id,
+                    action="orchestrator_query_complete",
+                    status="success"
+                )
+
             return StandardResponse(
                 status="success",
                 data=recommendation.model_dump(),
@@ -541,6 +577,15 @@ class AgentOrchestrator:
                     latency_ms=duration_ms,
                     error=str(e),
                     confidence=None
+                )
+
+            if security_mgr:
+                security_mgr.audit_engine.log_audit(
+                    event_type="authz",
+                    user_id=user_id,
+                    action="orchestrator_query_complete",
+                    status="failure",
+                    metadata={"error": str(e)}
                 )
 
             logger.error(f"[OrchestratorException] Trace: {trace_id} | Error: {e}")
