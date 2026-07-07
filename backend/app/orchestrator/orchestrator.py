@@ -46,6 +46,7 @@ class AgentOrchestrator:
         self.knowledge_engine = KnowledgeEngine()
         self.learning_manager = container.learning_manager
         self.twin_manager = container.twin_manager
+        self.autonomous_manager = container.autonomous_manager
 
         logger.info("AgentOrchestrator initialized with intent-routing and dynamic planner.")
 
@@ -407,6 +408,13 @@ class AgentOrchestrator:
                     )
                 except Exception as twin_up_err:
                     logger.warning(f"Twin auto-update from interaction failed: {twin_up_err}")
+
+            # Run autonomous monitoring cycle after conversation updates (Sprint 15 Task 8)
+            if farmer_id:
+                try:
+                    self.autonomous_manager.run_monitoring_cycle(farmer_id)
+                except Exception as auto_err:
+                    logger.warning(f"Autonomous cycle trigger failed: {auto_err}")
 
             recommendation = TrustedRecommendation.model_validate(rec_dict)
 

@@ -330,3 +330,19 @@ def get_proactive_recommendations(farmer_id: str, container: Container = Depends
     Retrieves proactive recommendations generated from the digital twin forecasting.
     """
     return container.twin_manager.generate_recommendations(farmer_id)
+
+
+@router.get("/autonomous/history")
+def get_notification_history(container: Container = Depends(get_container)) -> list[dict[str, Any]]:
+    """
+    Retrieves the complete dispatched notification logs history.
+    """
+    return container.autonomous_manager.notification_engine.history
+
+
+@router.post("/autonomous/trigger/{farmer_id}")
+def trigger_autonomous_cycle(farmer_id: str, container: Container = Depends(get_container)) -> dict[str, Any]:
+    """
+    Manually triggers an autonomous monitoring cycle for a target farmer.
+    """
+    return container.autonomous_manager.run_monitoring_cycle(farmer_id)

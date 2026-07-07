@@ -312,6 +312,9 @@ class Container:
         from app.digital_twin.twin_manager import TwinManager
         self.twin_manager = TwinManager(self)
 
+        from app.autonomous.autonomous_manager import AutonomousManager
+        self.autonomous_manager = AutonomousManager(self)
+
         logger.info("Container services loaded successfully.")
 
     def _load_default_media_providers(self) -> None:
