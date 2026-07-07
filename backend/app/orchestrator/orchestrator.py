@@ -44,6 +44,7 @@ class AgentOrchestrator:
         self.memory_engine = FarmerMemoryEngine()
         from app.knowledge_engine.knowledge_engine import KnowledgeEngine
         self.knowledge_engine = KnowledgeEngine()
+        self.learning_manager = container.learning_manager
 
         logger.info("AgentOrchestrator initialized with intent-routing and dynamic planner.")
 
@@ -127,6 +128,29 @@ class AgentOrchestrator:
             agent_tasks = []
             active_called_agents = []
 
+            async def execute_agent_with_telemetry(a_name: str, a_obj: Any, a_req: Any, a_ctx: Any) -> Any:
+                agent_start = time.time()
+                success = False
+                retries = 0
+                try:
+                    res = await a_obj.execute(a_req, a_ctx)
+                    success = True
+                    return res
+                except Exception as ex:
+                    logger.warning(f"Agent {a_name} execution failed: {ex}")
+                    raise ex
+                finally:
+                    agent_latency = (time.time() - agent_start) * 1000.0
+                    try:
+                        self.learning_manager.feedback_engine.record_agent_feedback(
+                            agent_name=a_name,
+                            success=success,
+                            latency_ms=agent_latency,
+                            retry_count=retries
+                        )
+                    except Exception as le_err:
+                        logger.warning(f"Failed to log agent feedback for {a_name}: {le_err}")
+
             for agent_name in selected_agents:
                 # LLM is invoked during Reasoning, we execute specific specialists
                 if agent_name == "LLM":
@@ -138,7 +162,7 @@ class AgentOrchestrator:
 
                 if agent:
                     req = AgentRequest(query=request.query)
-                    agent_tasks.append(agent.execute(req, context))
+                    agent_tasks.append(execute_agent_with_telemetry(agent_name, agent, req, context))
                     active_called_agents.append(agent_name)
 
             results = await asyncio.gather(*agent_tasks, return_exceptions=True)
@@ -233,6 +257,35 @@ class AgentOrchestrator:
                 crop=crop,
                 location=location
             )
+             # Apply optimized confidence (Task 7)
+            opt_confidence = self.learning_manager.confidence_optimizer.get_optimized_confidence(
+                base_confidence=reasoning_result.overall_confidence,
+                crop=crop,
+                region=location
+            )
+
+            # Record knowledge feedback (Task 5 / Task 8)
+            used_doc_ids = set()
+            for ev in reasoning_result.evidence_used:
+                if isinstance(ev, dict):
+                    ev_id = ev.get("id")
+                    if isinstance(ev_id, str) and ev_id.startswith("EV-KE-"):
+                        used_doc_ids.add(ev_id[6:])
+            for doc in knowledge_docs:
+                meta = doc.get("metadata", {})
+                doc_id = doc.get("document_id") or meta.get("document_id")
+                if doc_id:
+                    action = "cited" if doc_id in used_doc_ids else "ignored"
+                    quality = meta.get("document_quality", 1.0)
+                    if quality < 0.5:
+                        try:
+                            self.learning_manager.feedback_engine.record_knowledge_feedback(doc_id, "low_quality")
+                        except Exception:
+                            pass
+                    try:
+                        self.learning_manager.feedback_engine.record_knowledge_feedback(doc_id, action)
+                    except Exception:
+                        pass
 
             risk_score = reasoning_result.risk_assessment.risk_score if hasattr(reasoning_result.risk_assessment, "risk_score") else 0.0
 
@@ -240,7 +293,7 @@ class AgentOrchestrator:
             rec_dict = self.builder.build_trusted_recommendation(
                 summary=reasoning_result.summary,
                 recommendation=reasoning_result.primary_recommendation,
-                confidence=reasoning_result.overall_confidence,
+                confidence=opt_confidence,
                 reasoning=reasoning_result.reasoning_path,
                 sources=list({ev.get("source", "") for ev in reasoning_result.evidence_used}),
                 evidence=reasoning_result.evidence_used,

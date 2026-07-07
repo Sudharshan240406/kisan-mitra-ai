@@ -306,6 +306,9 @@ class Container:
         self.db: Any | None = None
         self.cache: Any | None = None
 
+        from app.learning.learning_manager import LearningManager
+        self.learning_manager = LearningManager()
+
         logger.info("Container services loaded successfully.")
 
     def _load_default_media_providers(self) -> None:

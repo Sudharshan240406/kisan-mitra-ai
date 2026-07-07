@@ -99,6 +99,49 @@ def log_feedback_and_learn(request: FeedbackRequest, container: Container = Depe
 
     # 2. Trigger learning adjustment loop
     learning_result = learning_svc.run_learning_iteration(request.farmer_id)
+
+    # 3. Trigger new LearningManager updates (Task 8)
+    try:
+        accepted = request.rating >= 4
+        rejected = request.rating <= 2
+        ignored = request.rating == 3
+
+        profile_svc = container.personalization_platform.registry.get("profile_manager")
+        profile = profile_svc.get_profile(request.farmer_id)
+        
+        crop = None
+        region = None
+        lang = "en"
+        
+        if profile:
+            lang = profile.preferred_language or "en"
+            region = f"{profile.district}, {profile.state}" if profile.district else profile.state
+            crop_hist = profile.crop_history
+            if crop_hist:
+                crop = crop_hist[0]
+
+        context_data = {
+            "crop": crop,
+            "region": region,
+            "language": lang
+        }
+
+        feedback_data = {
+            "accepted": accepted,
+            "rejected": rejected,
+            "ignored": ignored,
+            "manual_correction": request.comment if rejected else None
+        }
+
+        container.learning_manager.process_interaction(
+            farmer_id=request.farmer_id,
+            recommendation_id=request.recommendation_id,
+            context=context_data,
+            feedback_data=feedback_data
+        )
+    except Exception as le_err:
+        logger.warning(f"Failed to process learning iteration: {le_err}")
+
     return {
         "status": "success",
         "feedback_saved": True,
@@ -241,3 +284,11 @@ def onboard_farmer(request: OnboardingRequest, container: Container = Depends(ge
         "farmer_id": farmer_id,
         "message": f"Farmer '{request.name}' successfully onboarded with ID '{farmer_id}'."
     }
+
+
+@router.get("/learning/analytics")
+def get_learning_analytics(container: Container = Depends(get_container)) -> dict[str, Any]:
+    """
+    Exposes continuous learning engine metrics and analytics.
+    """
+    return container.learning_manager.get_analytics()
