@@ -27,3 +27,5 @@ class AgentContext(BaseModel):
         default_factory=dict,
         description="Arbitrary execution context tags."
     )
+    tenant_id: str | None = Field(default=None, description="Active tenant identifier")
+    organization_id: str | None = Field(default=None, description="Active organization identifier")

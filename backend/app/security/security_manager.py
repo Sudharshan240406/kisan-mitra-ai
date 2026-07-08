@@ -37,7 +37,7 @@ class SecurityManager:
             "developer": {"password": "password123", "role": "Developer"}
         }
 
-    def authenticate_user(self, username: str, secret: str) -> Optional[Dict[str, Any]]:
+    def authenticate_user(self, username: str, secret: str, tenant_id: Optional[str] = None, organization_id: Optional[str] = None) -> Optional[Dict[str, Any]]:
         """
         Authenticates a user, checks password validation, generates JWT tokens,
         creates an active session, and logs the audit event.
@@ -73,7 +73,12 @@ class SecurityManager:
             return None
 
         role = user_info["role"]
-        access_token = self.auth_engine.generate_jwt({"sub": username, "role": role})
+        claims = {"sub": username, "role": role}
+        if tenant_id:
+            claims["tenant_id"] = tenant_id
+        if organization_id:
+            claims["organization_id"] = organization_id
+        access_token = self.auth_engine.generate_jwt(claims)
         refresh_token = self.auth_engine.generate_refresh_token(username)
 
         # Register in session manager
@@ -102,9 +107,15 @@ class SecurityManager:
         """
         # 1. API Key or Service Token bypass session checks
         if token.startswith("km_api_"):
-            return {"sub": "api_user", "role": "Farmer"}
+            parts = token.split("_")
+            tenant = parts[2] if len(parts) > 2 else None
+            org = parts[3] if len(parts) > 3 else None
+            return {"sub": "api_user", "role": "Farmer", "tenant_id": tenant, "organization_id": org}
         if token.startswith("km_svc_"):
-            return {"sub": "service_client", "role": "Developer"}
+            parts = token.split("_")
+            tenant = parts[2] if len(parts) > 2 else None
+            org = parts[3] if len(parts) > 3 else None
+            return {"sub": "service_client", "role": "Developer", "tenant_id": tenant, "organization_id": org}
 
         # 2. Standard JWT Validation
         try:

@@ -55,7 +55,13 @@ class JobRunner:
                 logger.info(f"[JobRunner-Worker-{worker_id}] Processing job '{job.id}' (type: {job.job_type}, attempt: {job.attempts})")
 
                 try:
-                    await self._execute_job(job)
+                    tenant_id = job.payload.get("tenant_id")
+                    org_id = job.payload.get("organization_id")
+                    exec_id = job.payload.get("execution_id") or job.id
+
+                    from app.tenancy.tenant_context import set_tenant_context
+                    with set_tenant_context(tenant_id, org_id, exec_id):
+                        await self._execute_job(job)
                     job.status = "completed"
                     job.completed_at = time.time()
                     logger.info(f"[JobRunner-Worker-{worker_id}] Job '{job.id}' completed successfully")

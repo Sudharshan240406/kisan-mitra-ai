@@ -15,12 +15,15 @@ class RBACEngine:
     def __init__(self) -> None:
         # Define hierarchical structure where keys inherit values
         self._hierarchy: Dict[str, List[str]] = {
-            "Super Admin": ["Admin", "Operator", "Support", "Farmer", "Developer"],
+            "Super Admin": ["Tenant Admin", "Admin", "Operator", "Support", "Farmer", "Developer"],
+            "Tenant Admin": ["Organization Admin", "Admin", "Operator", "Support", "Farmer", "Viewer"],
+            "Organization Admin": ["Operator", "Support", "Farmer", "Viewer"],
             "Admin": ["Operator", "Support", "Farmer"],
-            "Operator": ["Support", "Farmer"],
-            "Support": ["Farmer"],
-            "Farmer": [],
-            "Developer": ["Support"]
+            "Operator": ["Support", "Farmer", "Viewer"],
+            "Support": ["Farmer", "Viewer"],
+            "Developer": ["Support"],
+            "Farmer": ["Viewer"],
+            "Viewer": []
         }
 
     def get_role_hierarchy(self, role: str) -> Set[str]:

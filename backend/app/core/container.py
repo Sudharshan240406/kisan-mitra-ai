@@ -330,6 +330,11 @@ class Container:
         from app.performance import PerformanceManager
         self.performance_manager = PerformanceManager(self)
 
+        from app.tenancy.tenant_manager import TenantManager
+        from app.tenancy.isolation_engine import IsolationEngine
+        self.tenant_manager = TenantManager(self)
+        IsolationEngine.initialize()
+
         logger.info("Container services loaded successfully.")
 
     def _load_default_media_providers(self) -> None:

@@ -3,6 +3,13 @@ from typing import Any, Dict, Set
 # Mappings of Role to direct scopes and capabilities
 ROLE_PERMISSIONS: Dict[str, Set[str]] = {
     "Super Admin": {"*"},
+    "Tenant Admin": {"*"},
+    "Organization Admin": {
+        "page:dashboard", "page:analytics", "page:farmer",
+        "api:query", "api:observability", "api:telemetry",
+        "agent:*",
+        "knowledge:*"
+    },
     "Admin": {
         "page:dashboard", "page:analytics", "page:farmer", "page:admin",
         "api:query", "api:observability", "api:admin", "api:telemetry",
@@ -33,6 +40,12 @@ ROLE_PERMISSIONS: Dict[str, Set[str]] = {
         "api:observability", "api:telemetry",
         "agent:Verifier", "agent:Planner",
         "knowledge:*"
+    },
+    "Viewer": {
+        "page:dashboard", "page:farmer",
+        "api:query",
+        "agent:Weather", "agent:Market",
+        "knowledge:weather", "knowledge:market"
     }
 }
 

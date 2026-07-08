@@ -37,6 +37,12 @@ class QueueManager:
         """
         import uuid
         job_id = str(uuid.uuid4())
+
+        from app.tenancy.tenant_context import get_current_tenant_id, get_current_organization_id, get_current_execution_id
+        payload.setdefault("tenant_id", get_current_tenant_id())
+        payload.setdefault("organization_id", get_current_organization_id())
+        payload.setdefault("execution_id", get_current_execution_id() or job_id)
+
         job = Job(id=job_id, job_type=job_type, payload=payload, priority=priority)
         self.jobs[job_id] = job
         await self.queue.put(job_id)

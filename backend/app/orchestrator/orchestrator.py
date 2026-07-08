@@ -23,6 +23,9 @@ from app.orchestrator.router import IntentRouter
 from app.orchestrator.validator import ResponseValidator
 from app.schemas.evidence import BaseEvidence
 
+# Tenancy
+from app.tenancy.tenant_context import set_tenant_context
+
 # Schemas
 from app.schemas.requests import AgentRequest, ExecutionRequest
 from app.schemas.responses import StandardResponse, TrustedRecommendation
@@ -77,8 +80,16 @@ class AgentOrchestrator:
                 perf_mgr.record_latency(latency_ms)
                 return cached_res
 
+        tenant_id = getattr(request, "tenant_id", None)
+        organization_id = getattr(request, "organization_id", None)
+
         trace_id = generate_trace_id()
         request_id = generate_uuid()
+
+        # Enter tenant context
+        context_mgr = set_tenant_context(tenant_id, organization_id, request_id)
+        context_mgr.__enter__()
+
         obs_mgr = getattr(self.container, "observability_manager", None)
         security_mgr = getattr(self.container, "security_manager", None)
 
@@ -131,7 +142,9 @@ class AgentOrchestrator:
             trace_id=trace_id,
             session_id=request.session_id,
             farmer_id=farmer_id,
-            language=lang
+            language=lang,
+            tenant_id=tenant_id,
+            organization_id=organization_id
         )
         context.metadata["container"] = self.container
         context.metadata["crop"] = crop
@@ -631,6 +644,7 @@ class AgentOrchestrator:
             raise OrchestratorException(f"Orchestration failure: {e!s}")
 
         finally:
+            context_mgr.__exit__(None, None, None)
             if perf_mgr:
                 if llm_lease:
                     await perf_mgr.llm_pool.release(llm_lease.resource)
@@ -642,11 +656,15 @@ class AgentOrchestrator:
         Executes messaging envelopes while preserving full schema structures.
         """
         query_text = envelope.payload.get("text") or envelope.payload.get("query") or ""
+        tenant_id = envelope.payload.get("tenant_id")
+        organization_id = envelope.payload.get("organization_id")
 
         exec_req = ExecutionRequest(
             session_id=envelope.conversation_id,
             query=query_text,
-            farmer_id=envelope.sender if envelope.sender != "system" else None
+            farmer_id=envelope.sender if envelope.sender != "system" else None,
+            tenant_id=tenant_id,
+            organization_id=organization_id
         )
 
         try:

@@ -228,6 +228,14 @@ async def query(
         api_key = http_request.headers.get("X-API-Key")
         limit_key = f"apikey:{api_key}" if api_key else f"ip:{client_ip}"
 
+    # Extract header overrides
+    tenant_hdr = http_request.headers.get("X-Tenant-ID")
+    org_hdr = http_request.headers.get("X-Organization-ID")
+    if tenant_hdr:
+        request.tenant_id = tenant_hdr
+    if org_hdr:
+        request.organization_id = org_hdr
+
     if credentials:
         try:
             security_mgr = getattr(container, "security_manager", None)
@@ -235,6 +243,10 @@ async def query(
                 claims = security_mgr.verify_request_token(credentials.credentials)
                 request.user_id = claims.get("sub")
                 request.user_role = claims.get("role")
+                if "tenant_id" in claims and claims["tenant_id"]:
+                    request.tenant_id = claims["tenant_id"]
+                if "organization_id" in claims and claims["organization_id"]:
+                    request.organization_id = claims["organization_id"]
                 if perf_mgr and request.user_id:
                     limit_key = f"user:{request.user_id}"
         except Exception as e:

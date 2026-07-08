@@ -30,3 +30,5 @@ class ExecutionRequest(BaseModel):
     user_id: str | None = Field(default=None, description="Authenticated user ID")
     user_role: str | None = Field(default=None, description="Authenticated user role")
     background: bool = Field(default=False, description="Flag to run query asynchronously in background queue")
+    tenant_id: str | None = Field(default=None, description="Active tenant identifier")
+    organization_id: str | None = Field(default=None, description="Active organization identifier")
