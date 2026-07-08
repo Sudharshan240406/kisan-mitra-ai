@@ -324,6 +324,9 @@ class Container:
         from app.workflows import WorkflowManager
         self.workflow_manager = WorkflowManager(self)
 
+        from app.knowledge_pipeline import PipelineManager
+        self.pipeline_manager = PipelineManager(self)
+
         logger.info("Container services loaded successfully.")
 
     def _load_default_media_providers(self) -> None:
