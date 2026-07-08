@@ -96,6 +96,34 @@ class AgentOrchestrator:
         user_id = request.user_id or "anonymous"
         user_role = request.user_role or "Farmer"
 
+        # Governance: Pre-Execution policy and rule checks
+        gov_mgr = getattr(self.container, "governance_manager", None)
+        pre_checks = None
+        if gov_mgr:
+            pre_checks = gov_mgr.run_pre_execution_checks(
+                query=request.query,
+                tenant_id=tenant_id,
+                organization_id=organization_id,
+                model_id=None
+            )
+            if not pre_checks["passed"]:
+                violation_msgs = [v.message for v in pre_checks["policy_violations"]] + [r.message for r in pre_checks["rule_results"] if not r.passed]
+                error_msg = f"Governance Policy Violation: {'; '.join(violation_msgs)}"
+                gov_mgr.run_post_execution_checks(
+                    execution_id=request_id,
+                    query=request.query,
+                    response_text="",
+                    confidence=0.0,
+                    pre_checks=pre_checks,
+                    user_id=user_id,
+                    tenant_id=tenant_id,
+                    organization_id=organization_id,
+                    model_id=None,
+                    risk_score=1.0,
+                    evidence_chain=[]
+                )
+                raise OrchestratorException(error_msg)
+
         if security_mgr:
             security_mgr.audit_engine.log_audit(
                 event_type="authz",
@@ -592,6 +620,34 @@ class AgentOrchestrator:
                     logger.warning(f"Autonomous cycle trigger failed: {auto_err}")
 
             recommendation = TrustedRecommendation.model_validate(rec_dict)
+
+            # Governance: Post-Execution compliance verification, explainability, audit logging
+            if gov_mgr and pre_checks:
+                resolved_model_id = "llama3"
+                evidence_chain = []
+                if recommendation.evidence:
+                    for ev in recommendation.evidence:
+                        evidence_chain.append(getattr(ev, "title", str(ev)))
+                
+                audit_record = gov_mgr.run_post_execution_checks(
+                    execution_id=request_id,
+                    query=request.query,
+                    response_text=recommendation.recommendation,
+                    confidence=recommendation.confidence,
+                    pre_checks=pre_checks,
+                    user_id=user_id,
+                    tenant_id=tenant_id,
+                    organization_id=organization_id,
+                    model_id=resolved_model_id,
+                    risk_score=0.0,
+                    evidence_chain=evidence_chain
+                )
+                
+                if not recommendation.safety_assessment:
+                    recommendation.safety_assessment = {}
+                recommendation.safety_assessment["governance_compliance"] = audit_record.compliance.status
+                recommendation.safety_assessment["policy_violations_count"] = len(audit_record.compliance.policy_violations)
+                recommendation.safety_assessment["confidence_explanation"] = audit_record.explanation.confidence_explanation
 
             if security_mgr:
                 security_mgr.audit_engine.log_audit(

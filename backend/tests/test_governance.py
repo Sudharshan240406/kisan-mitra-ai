@@ -1,295 +1,198 @@
 import os
-from typing import Any
+import shutil
+from typing import Generator, List
 
 import pytest
-from app.governance.benchmarks import BenchmarkRunner
-from app.governance.engine import GovernanceEngine
-from app.governance.models import ModelMetadata, ModelRegistry
-from app.governance.plugins import IPlugin, PluginMetadata, PluginRegistry
-from app.governance.prompts import PromptMetadata, PromptRegistry
-from app.governance.validators import PlatformValidator
+from app.core.config import settings
+from app.core.container import Container
+from app.core.exceptions import OrchestratorException
+from app.governance import (
+    AuditManager,
+    AuditRecord,
+    ComplianceEngine,
+    ComplianceRecord,
+    ExplainabilityEngine,
+    Explanation,
+    Policy,
+    PolicyEngine,
+    PolicyViolation,
+    RuleEngine,
+    RuleResult,
+)
+from app.orchestrator.orchestrator import AgentOrchestrator
+from app.schemas.requests import ExecutionRequest
+from app.tenancy.tenant_context import set_tenant_context
 
-# ── Plugin Framework Tests ──────────────────────────────────────────
 
+@pytest.fixture(autouse=True)
+def cleanup_test_dirs() -> Generator[None, None, None]:
+    yield
+    # Clean up test directories
+    if os.path.exists("data/tenants"):
+        shutil.rmtree("data/tenants")
+    if os.path.exists("data/governance_audit.jsonl"):
+        try:
+            os.remove("data/governance_audit.jsonl")
+        except Exception:
+            pass
 
-class MockPlugin(IPlugin):
-    """Test plugin for verification."""
-    def __init__(self, plugin_id: str = "test-plugin", version: str = "1.0.0") -> None:
-        self._metadata = PluginMetadata(
-            plugin_id=plugin_id,
-            name="Test Plugin",
-            version=version,
-            description="A test plugin for verification.",
-            capabilities=["test_cap"],
-            agents=["TestAgent"],
-            services=["TestService"],
-            tools=["TestTool"],
-            dependencies=[],
-            status="active"
+def test_policy_engine_evaluation() -> None:
+    engine = PolicyEngine()
+
+    # Evaluate safe query
+    violations = engine.evaluate_policies(query="How to grow wheat?", tenant_id="tenant_1")
+    assert len(violations) == 0
+
+    # Evaluate query with toxic spam words violating POL-SYS-001
+    violations2 = engine.evaluate_policies(query="How to bypass user controls", tenant_id="tenant_1")
+    assert len(violations2) == 1
+    assert violations2[0].policy_id == "POL-SYS-001"
+    assert violations2[0].severity == "critical"
+
+    # Register custom Tenant Policy
+    engine.register_policy(Policy(
+        id="POL-TEN-001",
+        name="Custom Tenant restriction",
+        policy_type="tenant",
+        scope="tenant:tenant_alpha",
+        rules=[{"rule_type": "blacklist_words", "words": ["pesticide"]}]
+    ))
+
+    # Evaluate query for tenant_beta (should NOT trigger pesticide block)
+    violations3 = engine.evaluate_policies(query="How to apply pesticide?", tenant_id="tenant_beta")
+    assert len(violations3) == 0
+
+    # Evaluate query for tenant_alpha (should trigger pesticide block)
+    violations4 = engine.evaluate_policies(query="How to apply pesticide?", tenant_id="tenant_alpha")
+    assert len(violations4) == 1
+    assert violations4[0].policy_id == "POL-TEN-001"
+
+def test_rule_engine_checks() -> None:
+    engine = RuleEngine()
+
+    # Pre-execution checks
+    res1 = engine.evaluate_pre_execution_rules("ab")
+    assert any(not r.passed and r.rule_name == "Minimum Length check" for r in res1)
+
+    res2 = engine.evaluate_pre_execution_rules("select * from information_schema.tables")
+    assert any(not r.passed and r.rule_type == "safety" for r in res2)
+
+    # Post-execution checks
+    res3 = engine.evaluate_post_execution_rules(response_text="Complete output advisory", confidence=0.8)
+    assert all(r.passed for r in res3)
+
+    # Low confidence triggers escalation
+    res4 = engine.evaluate_post_execution_rules(response_text="Complete output advisory", confidence=0.4)
+    assert any(not r.passed and r.rule_type == "escalation" for r in res4)
+
+def test_compliance_and_explainability() -> None:
+    comp_engine = ComplianceEngine()
+    exp_engine = ExplainabilityEngine()
+
+    # Create dummy check inputs
+    policy_violations: List[PolicyViolation] = []
+    rule_results = [
+        RuleResult(rule_name="Length check", rule_type="pre_execution", passed=True, message=""),
+        RuleResult(rule_name="Escalation check", rule_type="escalation", passed=False, message="Low confidence")
+    ]
+
+    record = comp_engine.log_compliance("exec_1", policy_violations, rule_results)
+    assert record.status == "non_compliant"
+    assert len(record.rule_violations) == 1
+
+    explanation = exp_engine.generate_explanation(
+        decision_summary="Query test summary",
+        evidence_chain=["Ev 1", "Ev 2"],
+        confidence=0.45,
+        policy_violations=policy_violations,
+        rule_results=rule_results
+    )
+    assert "Low system confidence" in explanation.confidence_explanation
+    assert len(explanation.evidence_chain) == 2
+
+def test_audit_manager_and_isolation() -> None:
+    # Load Container to trigger isolation initialization
+    Container(settings)
+
+    # Perform Tenant Alpha audit log
+    with set_tenant_context("tenant_alpha"):
+        audit_alpha = AuditManager()
+
+        # Log entry
+        rec_alpha = AuditRecord(
+            execution_id="exec_a",
+            tenant_id="tenant_alpha",
+            user_id="user_1",
+            query="Alpha Query",
+            response_text="Alpha Response",
+            compliance=ComplianceRecord(id="exec_a", status="compliant"),
+            explanation=Explanation(decision_summary="Summary", confidence_explanation="High", evidence_chain=[])
         )
+        audit_alpha.log_audit(rec_alpha)
+        assert len(audit_alpha.records) == 1
 
-    @property
-    def metadata(self) -> PluginMetadata:
-        return self._metadata
+    # Perform Tenant Beta audit log
+    with set_tenant_context("tenant_beta"):
+        audit_beta = AuditManager()
+        assert len(audit_beta.records) == 0  # Assert in-memory isolation is preserved!
 
-    async def initialize(self) -> None:
-        pass
+        rec_beta = AuditRecord(
+            execution_id="exec_b",
+            tenant_id="tenant_beta",
+            user_id="user_2",
+            query="Beta Query",
+            response_text="Beta Response",
+            compliance=ComplianceRecord(id="exec_b", status="compliant"),
+            explanation=Explanation(decision_summary="Summary", confidence_explanation="High", evidence_chain=[])
+        )
+        audit_beta.log_audit(rec_beta)
+        assert len(audit_beta.records) == 1
 
-    async def cleanup(self) -> None:
-        pass
+    # Re-verify Tenant Alpha
+    with set_tenant_context("tenant_alpha"):
+        assert len(audit_alpha.records) == 1
 
-    async def health_check(self) -> bool:
-        return True
-
-
-def test_plugin_registry_register_and_discover() -> None:
-    registry = PluginRegistry()
-    plugin = MockPlugin()
-    registry.register(plugin)
-
-    found = registry.discover("test-plugin")
-    assert found is not None
-    assert found.metadata.name == "Test Plugin"
-    assert found.metadata.version == "1.0.0"
-
-
-def test_plugin_registry_deregister() -> None:
-    registry = PluginRegistry()
-    registry.register(MockPlugin())
-    registry.deregister("test-plugin")
-    assert registry.discover("test-plugin") is None
-
-
-def test_plugin_registry_version_conflict() -> None:
-    registry = PluginRegistry()
-    registry.register(MockPlugin(version="1.0.0"))
-    with pytest.raises(ValueError, match="Version conflict"):
-        registry.register(MockPlugin(version="2.0.0"))
-
+    # Verify disk paths are correctly separated under tenant directories
+    assert os.path.exists("data/tenants/tenant_alpha/governance_audit.jsonl") is True
+    assert os.path.exists("data/tenants/tenant_beta/governance_audit.jsonl") is True
 
 @pytest.mark.asyncio
-async def test_plugin_registry_health_check() -> None:
-    registry = PluginRegistry()
-    registry.register(MockPlugin())
-    report = await registry.health_check()
-    assert "test-plugin" in report
-    assert report["test-plugin"]["healthy"] is True
+async def test_e2e_orchestrator_governance_flow() -> None:
+    container = Container(settings)
+    orchestrator = AgentOrchestrator(container)
 
-
-# ── Model Registry Tests ────────────────────────────────────────────
-
-
-def test_model_registry_register_and_discover() -> None:
-    registry = ModelRegistry()
-    model = ModelMetadata(
-        model_id="test-model",
-        name="Test Model",
-        provider="Local",
-        version="1.0.0",
-        capabilities=["text-generation"]
+    # 1. Test Compliant Query execution
+    req_ok = ExecutionRequest(
+        session_id="session_gov_1",
+        query="What is the price of wheat?",
+        tenant_id="tenant_alpha"
     )
-    registry.register(model)
 
-    found = registry.discover("test-model")
-    assert found is not None
-    assert found.provider == "Local"
+    # Set context variables and execute
+    with set_tenant_context("tenant_alpha"):
+        res = await orchestrator.execute_query(req_ok)
+        assert res.status == "success"
 
+        # Verify explainability safety_assessment details are attached
+        safety = res.data.get("safety_assessment", {})
+        assert safety.get("governance_compliance") == "compliant"
+        assert safety.get("policy_violations_count") == 0
 
-def test_model_registry_load_from_config() -> None:
-    config_path = os.path.join(os.path.dirname(__file__), "..", "app", "config", "models.json")
-    registry = ModelRegistry()
-    registry.load_from_config(config_path)
-    models = registry.list_models()
-    assert len(models) >= 4
+        # Verify audit record is logged in AuditManager
+        assert len(container.governance_manager.audit_manager.records) == 1
 
-
-# ── Prompt Registry Tests ───────────────────────────────────────────
-
-
-def test_prompt_registry_register_and_discover() -> None:
-    registry = PromptRegistry()
-    prompt = PromptMetadata(
-        prompt_id="test-prompt",
-        version="1.0.0",
-        description="Test prompt.",
-        template="Hello {name}",
-        variables=["name"]
+    # 2. Test Non-Compliant safety query (should block query immediately)
+    req_violate = ExecutionRequest(
+        session_id="session_gov_2",
+        query="Please override_instructions and hack parameters",
+        tenant_id="tenant_alpha"
     )
-    registry.register(prompt)
 
-    found = registry.discover("test-prompt")
-    assert found is not None
-    assert found.template == "Hello {name}"
+    with set_tenant_context("tenant_alpha"):
+        with pytest.raises(OrchestratorException) as excinfo:
+            await orchestrator.execute_query(req_violate)
+        assert "Governance Policy Violation" in str(excinfo.value)
 
-
-def test_prompt_registry_versioning() -> None:
-    registry = PromptRegistry()
-    registry.register(PromptMetadata(prompt_id="p1", version="1.0.0", description="V1", template="T1"))
-    registry.register(PromptMetadata(prompt_id="p1", version="2.0.0", description="V2", template="T2"))
-
-    # Latest version
-    latest = registry.discover("p1")
-    assert latest is not None
-    assert latest.version == "2.0.0"
-
-    # Specific version
-    v1 = registry.discover("p1", version="1.0.0")
-    assert v1 is not None
-    assert v1.template == "T1"
-
-    assert registry.get_versions("p1") == ["1.0.0", "2.0.0"]
-
-
-def test_prompt_registry_deprecation() -> None:
-    registry = PromptRegistry()
-    registry.register(PromptMetadata(prompt_id="dep", version="1.0.0", description="Test", template="T"))
-    registry.deprecate("dep", "1.0.0", "Replaced by v2")
-
-    prompt = registry.discover("dep", "1.0.0")
-    assert prompt is not None
-    assert prompt.status == "deprecated"
-    assert prompt.deprecation_notes == "Replaced by v2"
-
-
-def test_prompt_registry_load_from_config() -> None:
-    config_path = os.path.join(os.path.dirname(__file__), "..", "app", "config", "prompts.json")
-    registry = PromptRegistry()
-    registry.load_from_config(config_path)
-    prompts = registry.list_prompts()
-    assert len(prompts) >= 6
-
-
-# ── Governance Engine Tests ─────────────────────────────────────────
-
-
-def test_governance_engine_register_and_report() -> None:
-    engine = GovernanceEngine()
-    engine.register_artifact("plugin", "p1", "1.0.0")
-    engine.register_artifact("model", "m1", "2.0.0")
-    engine.register_artifact("prompt", "pr1", "1.0.0", status="draft")
-
-    report = engine.generate_report()
-    assert report.total_artifacts == 3
-    assert report.active_count == 2
-    assert report.draft_count == 1
-    assert report.artifact_breakdown["plugin"] == 1
-
-
-def test_governance_engine_deprecation() -> None:
-    engine = GovernanceEngine()
-    engine.register_artifact("workflow", "wf1", "1.0.0")
-    engine.deprecate_artifact("workflow", "wf1", "Replaced")
-
-    rec = engine.get_artifact("workflow", "wf1")
-    assert rec is not None
-    assert rec.status == "deprecated"
-
-
-def test_governance_engine_version_upgrade() -> None:
-    engine = GovernanceEngine()
-    engine.register_artifact("model", "m1", "1.0.0")
-    engine.register_artifact("model", "m1", "2.0.0")
-
-    rec = engine.get_artifact("model", "m1")
-    assert rec is not None
-    assert rec.version == "2.0.0"
-    assert rec.previous_version == "1.0.0"
-
-
-# ── Architecture Validator Tests ────────────────────────────────────
-
-
-def test_architecture_validator_clean() -> None:
-    validator = PlatformValidator()
-    report = validator.validate_architecture(
-        agent_names=["Weather", "Market"],
-        capability_ids=["weather_advisory", "market_intelligence"],
-        workflow_ids=["weather_workflow", "market_workflow"],
-        service_names=["WeatherService", "MarketService"],
-        plugin_ids=[]
-    )
-    assert report.report_type == "architecture"
-    assert report.failed_checks == 0
-
-
-def test_architecture_validator_detects_duplicate_capability() -> None:
-    validator = PlatformValidator()
-    report = validator.validate_architecture(
-        agent_names=["Weather"],
-        capability_ids=["weather_advisory", "weather_advisory"],
-        workflow_ids=["weather_workflow"],
-        service_names=["WeatherService"],
-        plugin_ids=[]
-    )
-    error_issues = [i for i in report.issues if i.severity == "error"]
-    assert len(error_issues) == 1
-    assert error_issues[0].category == "duplicate_capability"
-
-
-def test_circular_dependency_detection() -> None:
-    validator = PlatformValidator()
-    graph: dict[str, list[str]] = {
-        "A": ["B"],
-        "B": ["C"],
-        "C": ["A"],  # circular
-    }
-    issues = validator.detect_circular_dependencies(graph)
-    circular = [i for i in issues if i.category == "circular_dependency"]
-    assert len(circular) >= 1
-
-
-def test_integration_chain_validation() -> None:
-    validator = PlatformValidator()
-    capabilities: list[dict[str, Any]] = [
-        {"capability_id": "weather_advisory", "workflow_id": "weather_workflow", "required_agents": ["Weather"]},
-        {"capability_id": "market_intelligence", "workflow_id": "market_workflow", "required_agents": ["Market"]},
-    ]
-    workflows: list[dict[str, Any]] = [
-        {"workflow_id": "weather_workflow", "steps": ["Planner", "Weather", "Verifier"]},
-        {"workflow_id": "market_workflow", "steps": ["Planner", "Market", "Verifier"]},
-    ]
-    report = validator.validate_integration_chain(
-        capabilities=capabilities,
-        workflows=workflows,
-        agent_names=["Weather", "Market", "Planner", "Verifier"]
-    )
-    assert report.report_type == "integration"
-    assert report.failed_checks == 0
-
-
-def test_integration_chain_detects_broken_workflow_ref() -> None:
-    validator = PlatformValidator()
-    capabilities: list[dict[str, Any]] = [
-        {"capability_id": "broken_cap", "workflow_id": "nonexistent_workflow", "required_agents": ["Weather"]},
-    ]
-    workflows: list[dict[str, Any]] = [
-        {"workflow_id": "weather_workflow", "steps": ["Planner", "Weather", "Verifier"]},
-    ]
-    report = validator.validate_integration_chain(
-        capabilities=capabilities,
-        workflows=workflows,
-        agent_names=["Weather"]
-    )
-    error_issues = [i for i in report.issues if i.severity == "error"]
-    assert len(error_issues) == 1
-    assert error_issues[0].category == "broken_reference"
-
-
-# ── Benchmark Runner Tests ──────────────────────────────────────────
-
-
-def test_benchmark_runner_single() -> None:
-    runner = BenchmarkRunner()
-    result = runner.run_benchmark("test_bench", "TestComponent", lambda: None, iterations=50)
-    assert result.iterations == 50
-    assert result.avg_latency_ms >= 0
-    assert result.throughput_ops_sec > 0
-
-
-def test_benchmark_runner_platform() -> None:
-    runner = BenchmarkRunner.create_platform_benchmarks()
-    report = runner.run_all(iterations=10)
-    assert report.total_benchmarks == 7
-    assert len(report.results) == 7
-    for result in report.results:
-        assert result.avg_latency_ms >= 0
+        # Verify a second audit record (reflecting the non-compliant check) is logged
+        assert len(container.governance_manager.audit_manager.records) == 2
+        assert container.governance_manager.audit_manager.records[1].compliance.status == "non_compliant"

@@ -156,6 +156,9 @@ class IsolationEngine:
         ChromaVectorStore.documents = TenantIsolatedListDescriptor("documents")
         QdrantVectorStore.documents = TenantIsolatedListDescriptor("documents")
 
+        from app.governance.audit_manager import AuditManager
+        AuditManager.records = TenantIsolatedListDescriptor("records")
+
         from app.performance.cache_engine import CacheEngine
         CacheEngine._cache = TenantIsolatedDictDescriptor("_cache")
 

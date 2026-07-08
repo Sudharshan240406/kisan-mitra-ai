@@ -335,6 +335,9 @@ class Container:
         self.tenant_manager = TenantManager(self)
         IsolationEngine.initialize()
 
+        from app.governance.governance_manager import GovernanceManager
+        self.governance_manager = GovernanceManager(self)
+
         logger.info("Container services loaded successfully.")
 
     def _load_default_media_providers(self) -> None:
