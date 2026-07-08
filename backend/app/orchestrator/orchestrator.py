@@ -51,8 +51,21 @@ class AgentOrchestrator:
 
         logger.info("AgentOrchestrator initialized with intent-routing and dynamic planner.")
 
-    async def execute_query(self, request: ExecutionRequest) -> StandardResponse:  # noqa: PLR0912
+    async def execute_query(self, request: ExecutionRequest, background_bypass: bool = False) -> StandardResponse:  # noqa: PLR0912
         start_time = time.time()
+        
+        if getattr(request, "background", False) and not background_bypass:
+            if hasattr(self.container, "workflow_manager"):
+                job_id = await self.container.workflow_manager.queue_manager.enqueue(
+                    "ai_job",
+                    {"request": request.model_dump()}
+                )
+                return StandardResponse(
+                    status="success",
+                    data={"job_id": job_id, "status": "queued"},
+                    execution_time_ms=0.0
+                )
+
         trace_id = generate_trace_id()
         request_id = generate_uuid()
         obs_mgr = getattr(self.container, "observability_manager", None)

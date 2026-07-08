@@ -94,7 +94,13 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     # Bind container to app state
     app.state.container = container
 
+    # Start background workflows
+    container.workflow_manager.start()
+
     yield
+
+    # Stop background workflows
+    await container.workflow_manager.stop()
 
     # Cleanup agents
     logger.info("Cleaning up agent resources...")

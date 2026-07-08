@@ -29,3 +29,4 @@ class ExecutionRequest(BaseModel):
     farmer_id: str | None = Field(default=None, description="Optional associated farmer profile ID.")
     user_id: str | None = Field(default=None, description="Authenticated user ID")
     user_role: str | None = Field(default=None, description="Authenticated user role")
+    background: bool = Field(default=False, description="Flag to run query asynchronously in background queue")

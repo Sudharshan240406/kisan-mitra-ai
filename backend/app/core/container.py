@@ -321,6 +321,9 @@ class Container:
         from app.security import SecurityManager
         self.security_manager = SecurityManager(self)
 
+        from app.workflows import WorkflowManager
+        self.workflow_manager = WorkflowManager(self)
+
         logger.info("Container services loaded successfully.")
 
     def _load_default_media_providers(self) -> None:
