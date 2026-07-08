@@ -66,6 +66,17 @@ class AgentOrchestrator:
                     execution_time_ms=0.0
                 )
 
+        perf_mgr = getattr(self.container, "performance_manager", None)
+        if perf_mgr:
+            cached_res = perf_mgr.memory_cache.get(f"query:{request.query}")
+            if cached_res:
+                logger.info(f"Orchestrator: Serving cached response for query '{request.query}'")
+                if hasattr(self.container, "reasoning_platform") and self.container.reasoning_platform:
+                    self.container.reasoning_platform.cache._hits += 1
+                latency_ms = (time.time() - start_time) * 1000.0
+                perf_mgr.record_latency(latency_ms)
+                return cached_res
+
         trace_id = generate_trace_id()
         request_id = generate_uuid()
         obs_mgr = getattr(self.container, "observability_manager", None)
@@ -138,7 +149,15 @@ class AgentOrchestrator:
             payload={"query": request.query}
         ))
 
+        llm_lease = None
+        db_lease = None
+
         try:
+            if perf_mgr:
+                llm_lease = await perf_mgr.llm_pool.acquire()
+                db_lease = await perf_mgr.db_pool.acquire()
+                logger.debug(f"Orchestrator leased from pool: {llm_lease.resource}, {db_lease.resource}")
+
             import contextlib
             stack = contextlib.ExitStack()
             if obs_mgr:
@@ -255,7 +274,10 @@ class AgentOrchestrator:
                     agent_tasks.append(execute_agent_with_telemetry(agent_name, agent, req, context))
                     active_called_agents.append(agent_name)
 
-            results = await asyncio.gather(*agent_tasks, return_exceptions=True)
+            if perf_mgr:
+                results = await perf_mgr.concurrency_manager.execute_parallel(agent_tasks)
+            else:
+                results = await asyncio.gather(*agent_tasks, return_exceptions=True)
 
             # 5. Compile Evidence & Call Chief Reasoning Agent
             evidence_items: list[BaseEvidence] = []
@@ -566,11 +588,15 @@ class AgentOrchestrator:
                     status="success"
                 )
 
-            return StandardResponse(
+            response = StandardResponse(
                 status="success",
                 data=recommendation.model_dump(),
                 execution_time_ms=duration_ms
             )
+            if perf_mgr:
+                perf_mgr.memory_cache.set(f"query:{request.query}", response)
+                perf_mgr.record_latency(duration_ms)
+            return response
 
         except Exception as e:
             duration_ms = (time.time() - start_time) * 1000.0
@@ -603,6 +629,13 @@ class AgentOrchestrator:
 
             logger.error(f"[OrchestratorException] Trace: {trace_id} | Error: {e}")
             raise OrchestratorException(f"Orchestration failure: {e!s}")
+
+        finally:
+            if perf_mgr:
+                if llm_lease:
+                    await perf_mgr.llm_pool.release(llm_lease.resource)
+                if db_lease:
+                    await perf_mgr.db_pool.release(db_lease.resource)
 
     async def execute_envelope(self, envelope: MessageEnvelope) -> ResponseEnvelope:
         """

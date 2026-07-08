@@ -213,12 +213,21 @@ async def health(container: Container = Depends(get_container)) -> HealthRespons
 @app.post("/api/v1/query", response_model=StandardResponse, tags=["Orchestration"])
 async def query(
     request: ExecutionRequest,
+    http_request: Request,
     container: Container = Depends(get_container),
     credentials: Optional[Any] = Depends(bearer_scheme)
 ) -> StandardResponse:
     """
     Execute user query through the multi-agent orchestration framework.
     """
+    perf_mgr = getattr(container, "performance_manager", None)
+    limit_key = None
+    
+    if perf_mgr:
+        client_ip = http_request.client.host if http_request.client else "127.0.0.1"
+        api_key = http_request.headers.get("X-API-Key")
+        limit_key = f"apikey:{api_key}" if api_key else f"ip:{client_ip}"
+
     if credentials:
         try:
             security_mgr = getattr(container, "security_manager", None)
@@ -226,10 +235,19 @@ async def query(
                 claims = security_mgr.verify_request_token(credentials.credentials)
                 request.user_id = claims.get("sub")
                 request.user_role = claims.get("role")
+                if perf_mgr and request.user_id:
+                    limit_key = f"user:{request.user_id}"
         except Exception as e:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail=f"Authentication failed: {e!s}"
+            )
+
+    if perf_mgr and limit_key:
+        if not perf_mgr.rate_limiter.is_allowed(limit_key):
+            raise HTTPException(
+                status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+                detail="Rate limit exceeded. Please try again later."
             )
 
     orchestrator = AgentOrchestrator(container)

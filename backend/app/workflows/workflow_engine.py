@@ -54,9 +54,10 @@ class WorkflowEngine:
     """
     Core engine parsing and running workflows, logging latency to the metrics collector.
     """
-    def __init__(self, retry_engine: Any = None, obs_mgr: Any = None) -> None:
+    def __init__(self, retry_engine: Any = None, obs_mgr: Any = None, container: Any = None) -> None:
         self.retry_engine = retry_engine
         self.obs_mgr = obs_mgr
+        self.container = container
 
     async def execute_workflow(self, workflow: Workflow, context: Dict[str, Any]) -> Dict[str, Any]:
         """
@@ -84,7 +85,12 @@ class WorkflowEngine:
             await self._execute_task_with_retry(step, context)
         elif isinstance(step, ParallelStep):
             logger.info(f"[WorkflowEngine] Executing {len(step.tasks)} tasks in parallel")
-            await asyncio.gather(*(self._execute_task_with_retry(t, context) for t in step.tasks))
+            perf_mgr = getattr(self.container, "performance_manager", None) if self.container else None
+            if perf_mgr:
+                tasks_coros = [self._execute_task_with_retry(t, context) for t in step.tasks]
+                await perf_mgr.concurrency_manager.execute_parallel(tasks_coros)
+            else:
+                await asyncio.gather(*(self._execute_task_with_retry(t, context) for t in step.tasks))
         elif isinstance(step, ConditionalStep):
             if asyncio.iscoroutinefunction(step.condition_callback):
                 cond = await step.condition_callback(context)

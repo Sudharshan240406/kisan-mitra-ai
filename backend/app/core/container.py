@@ -327,6 +327,9 @@ class Container:
         from app.knowledge_pipeline import PipelineManager
         self.pipeline_manager = PipelineManager(self)
 
+        from app.performance import PerformanceManager
+        self.performance_manager = PerformanceManager(self)
+
         logger.info("Container services loaded successfully.")
 
     def _load_default_media_providers(self) -> None:

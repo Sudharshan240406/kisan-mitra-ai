@@ -22,7 +22,7 @@ class WorkflowManager:
         self.retry_engine = RetryEngine(self.obs_mgr)
         self.queue_manager = QueueManager(self.obs_mgr)
         self.scheduler = Scheduler(self)
-        self.workflow_engine = WorkflowEngine(self.retry_engine, self.obs_mgr)
+        self.workflow_engine = WorkflowEngine(self.retry_engine, self.obs_mgr, container)
         self.registry = WorkflowRegistry(container)
         self.job_runner = JobRunner(container, self.queue_manager, self.retry_engine)
 
