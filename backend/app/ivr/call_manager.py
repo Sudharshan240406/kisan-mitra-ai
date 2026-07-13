@@ -309,14 +309,27 @@ class CallManager:
         # 3. Route transcribed query to AI Orchestrator
         advisory_text = await self._call_router.route_query(session, query_text)
 
-        # 4. Text -> Text-to-Speech Adapter
+        # 4. Text -> Text-to-Speech Platform Manager
         try:
-            tts_provider = self._container.tts_registry.get_active()
-            tts_result = await tts_provider.synthesize(advisory_text, language=session.language)
+            tts_manager = getattr(self._container, "tts_manager", None)
+            if tts_manager:
+                tts_result = await tts_manager.synthesize(advisory_text, language=session.language)
+            else:
+                tts_provider = self._container.tts_registry.get_active()
+                tts_result = await tts_provider.synthesize(advisory_text, language=session.language)
             logger.info(f"Synthesized TTS output of length: {len(tts_result.audio_bytes)} bytes")
         except Exception as e:
             logger.error(f"Text-to-speech synthesis failed: {e}")
-            tts_result = Any
+            from app.tts.provider_base import TTSResult as PlatformTTSResult
+            tts_result = PlatformTTSResult(
+                audio_bytes=advisory_text.encode("utf-8"),
+                format="LINEAR16",
+                sample_rate=8000,
+                duration_ms=0.0,
+                latency_ms=0.0,
+                provider="failed",
+                language=session.language or "hi"
+            )
 
         # 5. Log outgoing speech transcript
         self._transcript_manager.add_entry(

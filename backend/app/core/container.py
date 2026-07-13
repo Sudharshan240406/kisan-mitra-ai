@@ -102,6 +102,15 @@ from app.stt import (
     GoogleProvider,
     FallbackProvider,
 )
+from app.tts import (
+    ProviderRegistry as TTSPlatformRegistry,
+    TTSManager as TTSPlatformManager,
+    AzureProvider as AzureTTSPlatformProvider,
+    GoogleProvider as GoogleTTSPlatformProvider,
+    ElevenLabsProvider,
+    CoquiProvider,
+    FallbackProvider as FallbackTTSPlatformProvider,
+)
 from app.telephony.telephony import TelephonyProviderRegistry
 from app.voice.stt import (
     AzureSTTProvider,
@@ -273,6 +282,15 @@ class Container:
         self.stt_platform_registry.register(AzureProvider())
         self.stt_platform_registry.register(FallbackProvider())
         self.stt_manager = STTPlatformManager(self.stt_platform_registry, self)
+
+        # Sprint 27: New Text-to-Speech Platform
+        self.tts_platform_registry = TTSPlatformRegistry()
+        self.tts_platform_registry.register(GoogleTTSPlatformProvider(api_key=self.settings.GEMINI_API_KEY))
+        self.tts_platform_registry.register(AzureTTSPlatformProvider())
+        self.tts_platform_registry.register(ElevenLabsProvider(api_key=getattr(self.settings, "ELEVENLABS_API_KEY", "")))
+        self.tts_platform_registry.register(CoquiProvider())
+        self.tts_platform_registry.register(FallbackTTSPlatformProvider())
+        self.tts_manager = TTSPlatformManager(self.tts_platform_registry, self)
 
         # Telephony & IVR Platform
         self.telephony_provider_registry = TelephonyProviderRegistry(self.event_bus, self.governance_engine)
