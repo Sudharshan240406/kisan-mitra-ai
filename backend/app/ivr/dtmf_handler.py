@@ -1,7 +1,8 @@
 import logging
 from typing import Any, Tuple
+
 from app.ivr.call_session import CallSession
-from app.ivr.ivr_flow import IVRFlow, IVRState
+from app.ivr.ivr_flow import IVRFlow
 
 logger = logging.getLogger("kisan_mitra_ai.ivr.dtmf_handler")
 

@@ -1,5 +1,6 @@
 import logging
 from typing import Any
+
 from app.channels.envelope import LanguageMetadata, MessageEnvelope, MessagePriority
 
 logger = logging.getLogger("kisan_mitra_ai.ivr.call_router")
@@ -19,7 +20,7 @@ class CallRouter:
             preferred_language=session.language,
             locale=session.language
         )
-        
+
         envelope = MessageEnvelope(
             conversation_id=session.conversation_id,
             channel="ivr-001",  # Standard IVR channel ID

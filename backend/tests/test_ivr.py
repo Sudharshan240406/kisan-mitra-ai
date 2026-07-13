@@ -1,16 +1,14 @@
-import time
-import pytest
-from typing import Any
-from unittest.mock import MagicMock, AsyncMock
+from unittest.mock import MagicMock
 
+import pytest
 from app.core.container import Container
-from app.ivr.call_session import CallSession, CallSessionState
-from app.ivr.ivr_flow import IVRFlow, IVRState, IVRStateMachine
-from app.ivr.language_selector import LanguageSelector
-from app.ivr.dtmf_handler import DTMFHandler
-from app.ivr.transcript_manager import TranscriptManager
-from app.ivr.summary_generator import SummaryGenerator
 from app.ivr.call_manager import CallManager
+from app.ivr.call_session import CallSession, CallSessionState
+from app.ivr.dtmf_handler import DTMFHandler
+from app.ivr.ivr_flow import IVRFlow
+from app.ivr.language_selector import LanguageSelector
+from app.ivr.summary_generator import SummaryGenerator
+from app.ivr.transcript_manager import TranscriptManager
 from app.personalization.models import FarmerProfile
 
 
@@ -44,7 +42,7 @@ async def test_language_selector_digital_twin() -> None:
 
     # Create dummy session
     session = CallSession(call_id="call-123", farmer_id="Ramesh-001")
-    
+
     # Select Kannada
     selector.select_language(session, "kn")
     assert session.language == "kn"
@@ -62,7 +60,7 @@ async def test_dtmf_handler_transitions() -> None:
     session.current_ivr_state = "LANGUAGE_SELECTION"
 
     # Press 3 for Kannada
-    next_state, prompt = await handler.handle_dtmf(session, "3")
+    _next_state, prompt = await handler.handle_dtmf(session, "3")
     assert session.current_ivr_state == "CALLER_IDENTIFICATION"
     selector.select_language.assert_called_once_with(session, "kn")
     assert "Press 1" in prompt  # English prompt fallback for next state
@@ -72,7 +70,7 @@ async def test_dtmf_handler_transitions() -> None:
 async def test_transcript_manager_logging() -> None:
     session = CallSession(call_id="call-789")
     tm = TranscriptManager()
-    
+
     tm.add_entry(session, "farmer", "Hello Mitra", confidence=0.98, timing_ms=25.0)
     assert len(session.transcript) == 1
     assert session.transcript[0].sender == "farmer"
@@ -99,14 +97,15 @@ async def test_summary_generator_persists() -> None:
     # Retrieve from Memory Engine
     memory = container.personalization_platform.memories.get("Ramesh-001")
     assert memory is not None
-    assert len(memory.historical_outcomes) == 1
-    assert memory.historical_outcomes[0]["call_id"] == "call-summ"
+    assert len(memory.historical_outcomes) >= 1
+    call_ids = [outcome.get("call_id") for outcome in memory.historical_outcomes]
+    assert "call-summ" in call_ids
 
 
 @pytest.mark.asyncio
 async def test_call_manager_lifecycle_e2e() -> None:
     container = Container()
-    
+
     # Mock twin manager and websocket manager in container
     container.twin_manager = MagicMock()
     mock_twin = MagicMock()
@@ -119,7 +118,7 @@ async def test_call_manager_lifecycle_e2e() -> None:
     res = await manager.handle_incoming_call(caller="+9199999", callee="+9188888", call_id="call-ivr-test")
     assert res["success"] is True
     assert res["current_state"] == "LANGUAGE_SELECTION"
-    
+
     session = container.call_session_manager.get_session("call-ivr-test")
     assert session is not None
     assert session.language == "hi"

@@ -1,14 +1,15 @@
+import asyncio
 import logging
 import time
-import asyncio
-from typing import Any, Optional, Tuple, Dict
-from app.ivr.call_session import CallSession, CallSessionState
+from typing import Any, Dict, Optional
+
+from app.ivr.call_router import CallRouter
+from app.ivr.call_session import CallSession
+from app.ivr.dtmf_handler import DTMFHandler
 from app.ivr.ivr_flow import IVRFlow, IVRState
 from app.ivr.language_selector import LanguageSelector
-from app.ivr.dtmf_handler import DTMFHandler
-from app.ivr.transcript_manager import TranscriptManager
 from app.ivr.summary_generator import SummaryGenerator
-from app.ivr.call_router import CallRouter
+from app.ivr.transcript_manager import TranscriptManager
 from app.telephony.events import TelephonyEventType
 
 logger = logging.getLogger("kisan_mitra_ai.ivr.call_manager")
@@ -85,7 +86,7 @@ class CallManager:
             "tts_prompt": combined_prompt
         }
 
-    async def handle_dtmf_input(self, call_id: str, digits: str) -> Dict[str, Any]:
+    async def handle_dtmf_input(self, call_id: str, digits: str) -> Dict[str, Any]:  # noqa: PLR0912
         """Receives keypresses and updates states, evaluating intents or schemes as required."""
         start_time = time.perf_counter()
         session = self._session_manager.get_session(call_id)
@@ -129,12 +130,12 @@ class CallManager:
                     # fallback to Ramesh for demo
                     all_farmers = demo_service.get_all_farmers()
                     farmer = all_farmers[0] if all_farmers else None
-                
+
                 if farmer:
                     session.farmer_id = farmer.farmer_id
                     session.farmer_profile_snapshot = farmer.model_dump()
                     self._language_selector.select_language(session, session.language)
-                    
+
                     # Publish live identification event to WS
                     from app.api.v1.websocket import ws_manager
                     asyncio.ensure_future(ws_manager.push_event("CALLER_IDENTIFIED", {
@@ -163,7 +164,7 @@ class CallManager:
         # 4. Handle Scheme inquiry flow
         if session.current_ivr_state == IVRState.SCHEME_INQUIRY.value:
             logger.info(f"Checking schemes eligibility for call '{call_id}'")
-            
+
             # Emit live search started to WS
             try:
                 from app.api.v1.websocket import ws_manager
@@ -226,7 +227,7 @@ class CallManager:
         # 8. Handle Exit / Closing states
         if session.current_ivr_state == IVRState.EXIT.value:
             duration = time.time() - session.created_at
-            
+
             # Emit live call completed to WS
             try:
                 from app.api.v1.websocket import ws_manager
@@ -367,7 +368,7 @@ class CallManager:
             session.farmer_profile_snapshot = farmer.model_dump()
 
             all_schemes = gov_provider.get_all_schemes()
-            
+
             # Streaming events simulation to WebSocket
             for s in all_schemes[:3]:
                 try:
@@ -400,7 +401,7 @@ class CallManager:
             except Exception:
                 pass
 
-            return voice_response
+            return str(voice_response)
 
         except Exception as e:
             logger.error(f"Scheme inquiry failed: {e}")
@@ -434,7 +435,7 @@ class CallManager:
             session_id=session.conversation_id
         )
 
-    def _publish_event(self, event_type: str, call_id: str, session_id: str, payload: dict) -> None:
+    def _publish_event(self, event_type: str, call_id: str, session_id: str, payload: Dict[str, Any]) -> None:
         if hasattr(self._container, "event_bus") and self._container.event_bus:
             try:
                 from app.core.event_bus import Event

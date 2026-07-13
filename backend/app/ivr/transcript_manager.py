@@ -1,6 +1,7 @@
 import logging
 import time
-from typing import Any, Optional
+from typing import Optional
+
 from app.ivr.call_session import CallSession, TranscriptEntry
 
 logger = logging.getLogger("kisan_mitra_ai.ivr.transcript_manager")
@@ -31,14 +32,15 @@ class TranscriptManager:
 
         # Broadcast live transcript event to Mission Control WebSocket
         try:
-            from app.api.v1.websocket import ws_manager
             import asyncio
-            
+
+            from app.api.v1.websocket import ws_manager
+
             # Format display string for Mission Control
             full_transcript_str = "\n".join(
                 f"{e.sender.capitalize()}: {e.text}" for e in session.transcript
             )
-            
+
             event_payload = {
                 "call_id": session.call_id,
                 "conversation_id": session.conversation_id,

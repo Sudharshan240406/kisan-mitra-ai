@@ -1,6 +1,6 @@
 import logging
 from enum import Enum
-from typing import Any, Optional, Dict, Tuple
+from typing import Any, Dict, Optional, Tuple
 
 logger = logging.getLogger("kisan_mitra_ai.ivr.ivr_flow")
 
@@ -215,13 +215,15 @@ class IVRFlow:
         if not state_cfg:
             return ""
         prompts = state_cfg.get("prompts", {})
-        return prompts.get(language, prompts.get("en", ""))
+        res = prompts.get(language, prompts.get("en", ""))
+        return str(res) if res is not None else ""
 
     def get_next_state(self, current_state: str, trigger: str) -> str:
         state_cfg = self.config.get(current_state)
         if not state_cfg:
-            return IVRState.EXIT.value
-        return state_cfg.get("next", IVRState.EXIT.value)
+            return str(IVRState.EXIT.value)
+        res = state_cfg.get("next", IVRState.EXIT.value)
+        return str(res)
 
     async def transition(
         self,
@@ -234,7 +236,7 @@ class IVRFlow:
         if not state_cfg:
             session.current_ivr_state = IVRState.EXIT.value
             return IVRState.EXIT, self.get_prompt(IVRState.EXIT.value, session.language)
-        
+
         next_state_str = state_cfg.get("next", IVRState.EXIT.value)
         session.current_ivr_state = next_state_str
         prompt = self.get_prompt(next_state_str, session.language)
@@ -246,7 +248,7 @@ class IVRFlow:
         if not state_cfg or "dtmf" not in state_cfg:
             prompt = self.get_prompt(curr_state, session.language)
             return IVRState(curr_state), prompt
-        
+
         dtmf_map = state_cfg["dtmf"]
         action = dtmf_map.get(digits)
         if not action:
@@ -254,7 +256,7 @@ class IVRFlow:
             session.current_ivr_state = fallback
             prompt = "Invalid input. " + self.get_prompt(fallback, session.language)
             return IVRState(fallback), prompt
-        
+
         next_state = action["next"]
         if "set_language" in action:
             session.language = action["set_language"]
@@ -262,7 +264,7 @@ class IVRFlow:
             session.metadata["caller_type"] = action["caller_type"]
         if "query" in action:
             session.metadata["intent_query"] = action["query"]
-            
+
         session.current_ivr_state = next_state
         prompt = self.get_prompt(next_state, session.language)
         return IVRState(next_state), prompt

@@ -1,9 +1,10 @@
 import logging
 import time
 from enum import Enum
-from typing import Any, Optional, Dict, List
-from pydantic import BaseModel, Field
+from typing import Any, Dict, List, Optional
+
 from app.utils.id import generate_uuid
+from pydantic import BaseModel, Field
 
 logger = logging.getLogger("kisan_mitra_ai.ivr.call_session")
 

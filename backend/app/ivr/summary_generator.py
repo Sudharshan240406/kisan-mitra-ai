@@ -1,6 +1,7 @@
 import logging
 import time
-from typing import Any, List, Dict
+from typing import Any
+
 from app.ivr.call_session import CallSession, CallSummaryModel
 from app.personalization.models import LongTermMemory
 
@@ -13,12 +14,12 @@ class SummaryGenerator:
     def __init__(self, container: Any) -> None:
         self.container = container
 
-    async def generate_and_store_summary(self, session: CallSession) -> CallSummaryModel:
+    async def generate_and_store_summary(self, session: CallSession) -> CallSummaryModel:  # noqa: PLR0912
         """Analyzes the call transcript and saves the summary in the memory engine."""
         transcript_str = "\n".join(
             f"{entry.sender.upper()}: {entry.text}" for entry in session.transcript
         )
-        
+
         # Heuristics for parsing/summarizing
         conversation_summary = "Call discussing agricultural needs."
         weather_advice = ""
@@ -44,7 +45,7 @@ class SummaryGenerator:
                     response = await llm.generate(prompt)
                 else:
                     response = llm.generate(prompt)
-                
+
                 if response:
                     # Parse JSON safely
                     import json
@@ -54,7 +55,7 @@ class SummaryGenerator:
                         clean_res = clean_res.split("```json")[1].split("```")[0].strip()
                     elif "```" in clean_res:
                         clean_res = clean_res.split("```")[1].split("```")[0].strip()
-                    
+
                     data = json.loads(clean_res)
                     conversation_summary = data.get("summary", conversation_summary)
                     recommended_schemes = data.get("schemes", [])
@@ -96,7 +97,7 @@ class SummaryGenerator:
             if not memory:
                 memory = LongTermMemory(farmer_id=farmer_id)
                 p_platform.memories[farmer_id] = memory
-            
+
             # Append interaction log
             memory.conversations.append({
                 "timestamp": time.time(),
