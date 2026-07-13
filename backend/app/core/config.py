@@ -72,10 +72,15 @@ class Settings(BaseSettings):
     OLLAMA_MODEL: str = "llama3"
     LLM_TEMPERATURE: float = 0.2
 
-    # Voice Integration
+    # Voice Integration — Twilio
     TWILIO_ACCOUNT_SID: str = ""
     TWILIO_AUTH_TOKEN: str = ""
     TWILIO_PHONE_NUMBER: str = ""
+
+    # Voice Integration — Exotel (Sprint 29 demo)
+    EXOTEL_SID: str = ""
+    EXOTEL_TOKEN: str = ""
+    EXOTEL_PHONE: str = ""
 
     # SMS Integration
     SMS_PROVIDER: str = "mock"  # Options: mock, twilio, plivo

@@ -26,6 +26,7 @@ from app.api.v1.security import router as security_router
 from app.api.v1.sms import router as sms_router
 from app.api.v1.telemetry import router as telemetry_router
 from app.api.v1.telephony import router as telephony_router
+from app.ivr.telephony.webhook import router as exotel_router
 from app.api.v1.websocket import router as websocket_router
 from app.core.config import settings, validate_production_config
 from app.core.container import Container
@@ -172,6 +173,7 @@ app.include_router(admin_router, dependencies=[Depends(RoleRequirement("Admin"))
 app.include_router(websocket_router)
 app.include_router(demo_router)
 app.include_router(observability_router, dependencies=[Depends(PermissionRequirement("api:observability"))])
+app.include_router(exotel_router)
 
 
 
