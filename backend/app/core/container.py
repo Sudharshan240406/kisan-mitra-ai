@@ -91,9 +91,9 @@ from app.sms.pipeline import SMSPipeline
 from app.sms.sessions import SMSSessionManager
 from app.sms.sms import SMSProviderRegistry
 from app.sms.templates import SMSTemplateEngine
-from app.telephony.ivr import IVRStateMachine
-from app.telephony.manager import CallManager
-from app.telephony.sessions import CallSessionManager
+from app.ivr.ivr_flow import IVRStateMachine
+from app.ivr.call_manager import CallManager
+from app.ivr.call_session import CallSessionManager
 from app.telephony.telephony import TelephonyProviderRegistry
 from app.voice.stt import (
     AzureSTTProvider,
