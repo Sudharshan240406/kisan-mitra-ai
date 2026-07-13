@@ -378,6 +378,11 @@ class Container:
         from app.governance.governance_manager import GovernanceManager
         self.governance_manager = GovernanceManager(self)
 
+        # Sprint 30: Live Data Platform
+        from app.live_data import LiveWeatherService, LiveMarketService
+        self.live_weather_service = LiveWeatherService()
+        self.live_market_service = LiveMarketService()
+
         logger.info("Container services loaded successfully.")
 
     def _load_default_media_providers(self) -> None:
