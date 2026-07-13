@@ -274,16 +274,27 @@ class CallManager:
             "timestamp": time.time()
         }
 
-        # 1. Speech -> Speech-to-Text Adapter
+        # 1. Speech -> Speech-to-Text Platform Manager
         try:
-            stt_provider = self._container.stt_registry.get_active()
-            stt_result = await stt_provider.transcribe(audio_bytes, language=session.language)
+            stt_manager = getattr(self._container, "stt_manager", None)
+            if stt_manager:
+                stt_result = await stt_manager.transcribe(audio_bytes, language=session.language)
+            else:
+                stt_provider = self._container.stt_registry.get_active()
+                stt_result = await stt_provider.transcribe(audio_bytes, language=session.language)
             query_text = stt_result.transcript
             logger.info(f"Transcribed voice recording: '{query_text}' (Confidence: {stt_result.confidence})")
         except Exception as e:
             logger.error(f"Speech-to-text failed: {e}")
             query_text = "weather query"  # default safe fallback
-            stt_result = Any
+            from app.stt.provider_base import STTResult as PlatformSTTResult
+            stt_result = PlatformSTTResult(
+                transcript=query_text,
+                confidence=0.50,
+                language=session.language or "hi",
+                latency_ms=0.0,
+                provider="failed"
+            )
 
         # 2. Log incoming speech transcript
         self._transcript_manager.add_entry(

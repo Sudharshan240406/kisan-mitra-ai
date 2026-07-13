@@ -94,6 +94,14 @@ from app.sms.templates import SMSTemplateEngine
 from app.ivr.ivr_flow import IVRStateMachine
 from app.ivr.call_manager import CallManager
 from app.ivr.call_session import CallSessionManager
+from app.stt import (
+    ProviderRegistry as STTPlatformRegistry,
+    STTManager as STTPlatformManager,
+    WhisperProvider,
+    AzureProvider,
+    GoogleProvider,
+    FallbackProvider,
+)
 from app.telephony.telephony import TelephonyProviderRegistry
 from app.voice.stt import (
     AzureSTTProvider,
@@ -257,6 +265,14 @@ class Container:
         self.multimodal_telemetry = MultimodalTelemetry(self.telemetry, self.event_bus)
         self.media_pipeline = MediaPipeline(self)
         self._load_default_media_providers()
+
+        # Sprint 26: New Speech-to-Text Platform
+        self.stt_platform_registry = STTPlatformRegistry()
+        self.stt_platform_registry.register(WhisperProvider(api_key=self.settings.OPENAI_API_KEY))
+        self.stt_platform_registry.register(GoogleProvider(api_key=self.settings.GEMINI_API_KEY))
+        self.stt_platform_registry.register(AzureProvider())
+        self.stt_platform_registry.register(FallbackProvider())
+        self.stt_manager = STTPlatformManager(self.stt_platform_registry, self)
 
         # Telephony & IVR Platform
         self.telephony_provider_registry = TelephonyProviderRegistry(self.event_bus, self.governance_engine)
