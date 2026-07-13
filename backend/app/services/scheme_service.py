@@ -65,7 +65,9 @@ class GovernmentSchemeService:
         Evaluate a farmer against all available schemes.
         Returns sorted list of SchemeRecommendations.
         """
-        return self.eligibility_engine.evaluate_all(farmer, schemes)
+        from app.schemes.scheme_service import SchemeService
+        service = SchemeService()
+        return service.get_recommendations(farmer)
 
     def get_document_guidance(
         self,

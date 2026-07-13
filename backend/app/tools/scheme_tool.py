@@ -30,31 +30,47 @@ class GovernmentSchemeTool(BaseTool):
         self._eligibility_engine = EligibilityEngine()
 
     async def run(self, args: dict[str, Any], context: AgentContext) -> str:
-        farmer_id = args.get("farmer_id", "unknown")
         query = args.get("query", "government schemes farmer eligibility")
-
-        # Attempt to retrieve knowledge provider from container
         container = context.metadata.get("container") if context else None
-        schemes: list[dict[str, Any]] = []
 
-        if container and hasattr(container, "knowledge_platform"):
-            gov_provider = container.knowledge_platform.manager.registry.get("government_schemes_db")
-            if gov_provider and hasattr(gov_provider, "get_all_schemes"):
-                schemes = gov_provider.get_all_schemes()
-
-        if not schemes:
-            # Fallback for testing
-            return (
-                "GovernmentSchemeTool output: PM-KISAN provides INR 6,000/year. "
-                "PMFBY provides crop insurance. KCC provides credit at 4%. "
-                "Soil Health Card provides free soil testing."
-            )
+        from app.schemes.scheme_service import SchemeService
+        service = SchemeService()
 
         # Build farmer profile
         farmer = self._build_farmer_profile(args, container)
 
-        # Evaluate all schemes
-        recommendations = self._eligibility_engine.evaluate_all(farmer, schemes)
+        # Match schemes based on AI query (Task 5)
+        matched_schemes = service.route_ai_query(query)
+        if not matched_schemes:
+            return "GovernmentSchemeTool output: No matching schemes found for this farmer profile."
+
+        # Evaluate matched schemes
+        recommendations = []
+        for s in matched_schemes:
+            status, reason, confidence = service.evaluate_eligibility(farmer, s["id"])
+            rec_status = "ELIGIBLE"
+            if status == "Possibly Eligible":
+                rec_status = "POSSIBLY_ELIGIBLE"
+            elif status == "Not Eligible":
+                rec_status = "NOT_ELIGIBLE"
+
+            # Filter documents to only return those required
+            docs = list(s["required_documents"])
+
+            from app.models.scheme import SchemeRecommendation
+            recommendations.append(SchemeRecommendation(
+                scheme_id=s["id"],
+                title=s["title"],
+                status=rec_status,
+                confidence=confidence,
+                reasoning=[reason],
+                benefits=s["benefits"],
+                required_documents=docs,
+                nearest_office=s["nearest_office"],
+                department=s["department"],
+                helpline=s["helpline"],
+                official_url=s["url"]
+            ))
 
         # Format output
         output_parts = []
