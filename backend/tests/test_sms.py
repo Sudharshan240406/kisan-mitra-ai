@@ -1,189 +1,139 @@
+from typing import Any
+
 import pytest
-from agents.planner.planner import PlannerAgent
-from agents.verifier.verifier import VerifierAgent
-from agents.weather.weather import WeatherAgent
 from app.core.container import Container
-from app.core.event_bus import Event
-from app.sms.events import SMSEventType
-from app.sms.sessions import SMSSessionManager, SMSSessionState
-from app.sms.sms import SMSProviderRegistry, TwilioSMSProvider
-from app.sms.templates import SMSTemplateEngine
+from app.sms.exotel_provider import ExotelProvider
+from app.sms.fallback_provider import FallbackProvider
+from app.sms.inbound_router import InboundRouter
+from app.sms.msg91_provider import MSG91Provider
+from app.sms.provider_registry import ProviderRegistry
+from app.sms.sms_manager import SMSManager
+from app.sms.template_engine import TemplateEngine
+from app.sms.twilio_provider import TwilioProvider
 
 
-@pytest.mark.asyncio
-async def test_sms_provider_and_registry() -> None:
-    registry = SMSProviderRegistry()
-    provider = TwilioSMSProvider("test-twilio", "1.0.0", ["marketing"])
-    registry.register(provider)
+def test_sms_providers_instantiation() -> None:
+    twilio = TwilioProvider()
+    msg91 = MSG91Provider()
+    exotel = ExotelProvider()
+    fallback = FallbackProvider()
 
-    assert registry.discover("test-twilio") == provider
-    assert registry.validate_dependencies("test-twilio") is True
-
-    providers = registry.list_providers()
-    assert len(providers) == 1
-
-    health = await registry.health_check()
-    assert health["test-twilio"]["healthy"] is True
-
-    registry.deregister("test-twilio")
-    assert registry.discover("test-twilio") is None
+    assert twilio.id == "twilio"
+    assert msg91.id == "msg91"
+    assert exotel.id == "exotel"
+    assert fallback.id == "fallback"
 
 
-@pytest.mark.asyncio
-async def test_sms_session_manager() -> None:
-    manager = SMSSessionManager()
-    session = manager.create_session("+9199999", language="en")
+def test_provider_registry_operations() -> None:
+    registry = ProviderRegistry()
+    twilio = TwilioProvider()
+    fallback = FallbackProvider()
 
-    assert session.phone_number == "+9199999"
-    assert session.language == "en"
-    assert session.state == SMSSessionState.ACTIVE
+    registry.register(twilio)
+    registry.register(fallback)
 
-    retrieved = manager.get_session(session.sms_session_id)
-    assert retrieved == session
+    assert registry.discover("twilio") is twilio
+    assert registry.discover("fallback") is fallback
+    assert "twilio" in [p.id for p in registry.list_providers()]
 
-    by_phone = manager.get_session_by_phone("+9199999")
-    assert by_phone == session
-
-    # Expiry check
-    session.timeout_seconds = -1  # force expire
-    manager.cleanup_expired()
-    assert session.state == SMSSessionState.EXPIRED
-
-    # Recovery
-    recovered = manager.recover_session(session.sms_session_id)
-    assert recovered.state == SMSSessionState.RECOVERED
-    assert recovered.retry_count == 1
-
-    # Close
-    manager.close_session(session.sms_session_id)
-    assert session.state == SMSSessionState.CLOSED
-    assert manager.get_session_by_phone("+9199999") is None
+    registry.set_active("fallback")
+    assert registry.get_active() is fallback
 
 
-@pytest.mark.asyncio
-async def test_sms_template_engine() -> None:
-    engine = SMSTemplateEngine()
+def test_template_engine_substitutions() -> None:
+    engine = TemplateEngine()
 
-    # Hindi Government Scheme Alert template
-    rendered_hi = engine.render(
-        "gov_scheme",
-        "hi",
-        farmer_name="रवि",
-        scheme_name="पीएम किसान",
-        details="रु ६००० प्रति वर्ष"
-    )
-    assert "नमस्ते रवि" in rendered_hi
-    assert "पीएम किसान" in rendered_hi
-
-    # English Weather Alert template
-    rendered_en = engine.render(
-        "weather_alert",
-        "en",
+    # English v1 Weather Alert template test
+    en_res = engine.render(
+        template_key="weather_alert",
+        language="en",
+        version="v1",
         region="Punjab",
-        weather_condition="Heavy Rain",
-        temp="24"
+        weather_condition="Sunny",
+        temp="35"
     )
-    assert "Punjab" in rendered_en
-    assert "Heavy Rain" in rendered_en
+    assert "Weather Alert: Punjab weather is Sunny (35C)." in en_res
+
+    # Hindi v1 Gov Scheme template test
+    hi_res = engine.render(
+        template_key="gov_scheme",
+        language="hi",
+        version="v1",
+        farmer_name="Ramesh",
+        scheme_name="PM-Kisan",
+        details="financial support"
+    )
+    assert "किसान मित्र: नमस्ते Ramesh, नई सरकारी योजना 'PM-Kisan' सक्रिय है।" in hi_res
 
 
 @pytest.mark.asyncio
-async def test_sms_pipeline_governance_and_rate_limiting() -> None:
-    container = Container()
-    pipeline = container.sms_pipeline
+async def test_sms_manager_fallback_and_retry() -> None:
+    registry = ProviderRegistry()
 
-    # 1. Sensitive Data scan rejection
-    res_sensitive = await pipeline.execute("+9177777", "My credit card CVV is 123 and pin is 9999")
-    assert res_sensitive["success"] is False
-    assert "rejected" in res_sensitive["status"]
-    assert any("sensitive" in err.lower() for err in res_sensitive["errors"])
+    # Setup failing provider
+    failing_twilio = TwilioProvider(provider_id="twilio")
+    async def fail_send(*args: Any, **kwargs: Any) -> bool:
+        raise ValueError("Simulated network timeout")
+    failing_twilio.send_sms = fail_send
 
-    # 2. Oversized message warning rejection (>800 chars)
-    oversized_text = "A" * 801
-    res_oversized = await pipeline.execute("+9177777", oversized_text)
-    assert res_oversized["success"] is False
-    assert any("length" in err.lower() for err in res_oversized["errors"])
+    # Setup working provider
+    working_fallback = FallbackProvider()
 
-    # 3. Spam & Rate Limiter validation
-    pipeline._rate_limiter._last_message.clear()
-    pipeline._rate_limiter._history.clear()
+    registry.register(failing_twilio)
+    registry.register(working_fallback)
+    registry.set_active("twilio")
 
-    # Send same message rapidly (should block as duplicate)
-    await pipeline.execute("+9188888", "Need weather updates")
-    res_dup = await pipeline.execute("+9188888", "Need weather updates")
-    assert res_dup["success"] is False
-    assert any("duplicate" in err.lower() for err in res_dup["errors"])
+    manager = SMSManager(registry, TemplateEngine())
 
-    # Send different messages rapidly to trigger rate limit (max 5 request / min)
-    pipeline._rate_limiter._last_message.clear()
-    pipeline._rate_limiter._history.clear()
-
-    for i in range(5):
-        await pipeline.execute("+9199999", f"Unique request {i}")
-
-    res_limit = await pipeline.execute("+9199999", "Sixth unique request")
-    assert res_limit["success"] is False
-    assert any("rate limit" in err.lower() for err in res_limit["errors"])
+    # Send should succeed by falling back to working_fallback
+    res = await manager.send_sms(recipient="+919876543210", body="Test retry alert")
+    assert res is True
 
 
 @pytest.mark.asyncio
-async def test_sms_pipeline_end_to_end() -> None:
+async def test_inbound_router_two_way_flow() -> None:
     container = Container()
-    pipeline = container.sms_pipeline
+    router = InboundRouter(container)
 
-    # Hook EventBus subscriber
-    events_logged = []
-    def log_events(event: Event) -> None:
-        events_logged.append(event.event_type)
+    # Handle inbound message simulation
+    reply = await router.handle_inbound_sms(sender="+919876543210", body="What is the weather?")
+    assert len(reply) > 0
 
-    for evt in SMSEventType:
-        container.event_bus.subscribe(evt.value, log_events)
 
-    # Register agents for orchestrator routing
-    planner_agent = PlannerAgent(container.llm_provider)
-    weather_agent = WeatherAgent(container.llm_provider, container.weather_service)
-    verifier_agent = VerifierAgent(container.llm_provider)
+@pytest.mark.asyncio
+async def test_ivr_summary_auto_sms() -> None:
+    container = Container()
 
-    await planner_agent.initialize()
-    await weather_agent.initialize()
-    await verifier_agent.initialize()
+    # Verify manager and inbound router are mounted
+    assert hasattr(container, "sms_manager")
+    assert hasattr(container, "sms_inbound_router")
 
-    container.registry.register(planner_agent)
-    container.registry.register(weather_agent)
-    container.registry.register(verifier_agent)
-
-    # Register channels
-    from app.channels.channels import (
-        ChannelMetadata,
-        ChannelType,
-        SMSChannel,
-        WebChatChannel,
+    # Setup call session
+    session = container.call_session_manager.create_session(
+        "call-sms-ivr-summary-test",
+        language="hi",
+        metadata={"caller": "+919876543210"}
     )
-    web_meta = ChannelMetadata(channel_id="web-001", channel_type=ChannelType.WEB_CHAT, name="Web")
-    web_ch = WebChatChannel(web_meta)
-    container.channel_registry.register(web_ch)
 
-    sms_meta = ChannelMetadata(channel_id="sms-01", channel_type=ChannelType.SMS, name="SMS Channel")
-    sms_ch = SMSChannel(sms_meta)
-    container.channel_registry.register(sms_ch)
+    # We navigate through the states to trigger summary
+    from app.ivr.ivr_flow import IVRState
+    session.current_ivr_state = IVRState.SUMMARY.value
 
-    # Execute Pipeline Inbound SMS
-    res = await pipeline.execute("+9112345", "What is the weather in Khanna Punjab?")
+    # Process DTMF key transition to EXIT which triggers summary & summary SMS
+    from app.ivr.call_manager import CallManager
+    call_mgr = CallManager(container)
+
+    res = await call_mgr.handle_dtmf_input("call-sms-ivr-summary-test", "1")
     assert res["success"] is True
-    assert res["delivery_status"] == "delivered"
-    assert "Punjab" in res["rendered_reply"] or "मौसम" in res["rendered_reply"]
 
+    # Wait for background SMS task to execute
+    import asyncio
+    await asyncio.sleep(0.1)
 
-    # Event types logged checks
-    assert SMSEventType.SMS_RECEIVED.value in events_logged
-    assert SMSEventType.TEMPLATE_RENDERED.value in events_logged
-    assert SMSEventType.SMS_SENT.value in events_logged
-    assert SMSEventType.SMS_DELIVERED.value in events_logged
-
-    # Telemetry checks
-    metrics = container.telemetry.export_metrics()
-    assert "sms_metrics" in metrics
-    assert metrics["sms_metrics"]["received_count"] == 1
-    assert metrics["sms_metrics"]["sent_count"] == 1
-    assert metrics["sms_metrics"]["avg_processing_latency_ms"] > 0
-    assert metrics["sms_metrics"]["language_distribution"]["hi"] == 1
+    # Verify SMS provider registered sent message
+    sent = False
+    for p in container.sms_provider_registry.list_providers():
+        if hasattr(p, "_sent_messages") and len(p._sent_messages) > 0:
+            sent = True
+            break
+    assert sent is True

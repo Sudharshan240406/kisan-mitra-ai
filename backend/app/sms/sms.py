@@ -1,10 +1,10 @@
 import logging
 import time
-import httpx
 from abc import ABC, abstractmethod
 from enum import Enum
 from typing import Any, Optional
 
+import httpx
 from app.core.config import settings
 from app.utils.id import generate_uuid
 from pydantic import BaseModel, Field
@@ -196,7 +196,7 @@ class ExotelSMSProvider(BaseSMSProvider):
         start_time = time.perf_counter()
         sid = settings.TWILIO_ACCOUNT_SID
         token = settings.TWILIO_AUTH_TOKEN
-        
+
         if sid and token:
             try:
                 async with httpx.AsyncClient(timeout=4.0) as client:

@@ -219,6 +219,30 @@ class CallManager:
             summary = await self._summary_generator.generate_and_store_summary(session)
             prompt = f"{prompt} {summary.conversation_summary}"
 
+            # Auto-send SMS containing call outcomes
+            try:
+                sms_manager = getattr(self._container, "sms_manager", None)
+                if sms_manager:
+                    caller = session.metadata.get("caller")
+                    if caller:
+                        schemes_str = ", ".join(summary.recommended_schemes) if summary.recommended_schemes else "None"
+                        actions_str = ", ".join(summary.action_items) if summary.action_items else "None"
+                        sms_body = (
+                            f"Kisan Mitra - Call Summary:\n"
+                            f"Summary: {summary.conversation_summary}\n"
+                            f"Schemes: {schemes_str}\n"
+                            f"Weather: {summary.weather_advice or 'N/A'}\n"
+                            f"Market: {summary.market_advice or 'N/A'}\n"
+                            f"Actions: {actions_str}"
+                        )
+                        asyncio.ensure_future(sms_manager.send_sms(
+                            recipient=caller,
+                            body=sms_body,
+                            language=session.language
+                        ))
+            except Exception as sms_err:
+                logger.error(f"Failed to auto-send call summary SMS: {sms_err}")
+
             # Transition directly to exit
             session.current_ivr_state = IVRState.EXIT.value
             exit_prompt = self._ivr_flow.get_prompt(IVRState.EXIT.value, session.language)

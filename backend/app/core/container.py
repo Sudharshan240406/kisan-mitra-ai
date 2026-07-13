@@ -89,8 +89,12 @@ from app.services import (
 )
 from app.sms.pipeline import SMSPipeline
 from app.sms.sessions import SMSSessionManager
-from app.sms.sms import SMSProviderRegistry
-from app.sms.templates import SMSTemplateEngine
+from app.sms import (
+    SMSProviderRegistry,
+    SMSTemplateEngine,
+    SMSManager,
+    InboundRouter as SMSInboundRouter,
+)
 from app.ivr.ivr_flow import IVRStateMachine
 from app.ivr.call_manager import CallManager
 from app.ivr.call_session import CallSessionManager
@@ -305,6 +309,8 @@ class Container:
         self.sms_template_engine = SMSTemplateEngine()
         self.sms_pipeline = SMSPipeline(self)
         self._load_default_sms_providers()
+        self.sms_manager = SMSManager(self.sms_provider_registry, self.sms_template_engine, self)
+        self.sms_inbound_router = SMSInboundRouter(self)
 
         self.platform_validator = PlatformValidator()
         self.benchmark_runner = BenchmarkRunner.create_platform_benchmarks()
@@ -431,17 +437,30 @@ class Container:
         from app.sms.sms import (
             AWSSNSSMSProvider,
             BSNLSMSProvider,
-            ExotelSMSProvider,
+            ExotelSMSProvider as LegacyExotel,
             GovSMSProvider,
-            MSG91SMSProvider,
-            TwilioSMSProvider,
+            MSG91SMSProvider as LegacyMSG91,
+            TwilioSMSProvider as LegacyTwilio,
         )
-        self.sms_provider_registry.register(TwilioSMSProvider("twilio-sms-mock", "1.0.0", ["marketing_sms"]))
-        self.sms_provider_registry.register(ExotelSMSProvider("exotel-sms-mock", "1.0.0", ["transactional_sms"]))
-        self.sms_provider_registry.register(MSG91SMSProvider("msg91-sms-mock", "1.0.0", ["otp_sms"]))
+        self.sms_provider_registry.register(LegacyTwilio("twilio-sms-mock", "1.0.0", ["marketing_sms"]))
+        self.sms_provider_registry.register(LegacyExotel("exotel-sms-mock", "1.0.0", ["transactional_sms"]))
+        self.sms_provider_registry.register(LegacyMSG91("msg91-sms-mock", "1.0.0", ["otp_sms"]))
         self.sms_provider_registry.register(AWSSNSSMSProvider("aws-sns-sms-mock", "1.0.0", ["bulk_sms"]))
         self.sms_provider_registry.register(BSNLSMSProvider("bsnl-sms-mock", "1.0.0", ["sip_sms"]))
         self.sms_provider_registry.register(GovSMSProvider("gov-sms-mock", "1.0.0", ["alerts_sms"]))
+
+        # Sprint 28 SMS providers
+        from app.sms import (
+            TwilioProvider,
+            ExotelProvider,
+            MSG91Provider,
+            FallbackProvider as FallbackSMSProvider,
+        )
+        self.sms_provider_registry.register(TwilioProvider("twilio", "1.0.0", ["transactional_sms", "otp_sms", "alerts_sms"]))
+        self.sms_provider_registry.register(ExotelProvider("exotel", "1.0.0", ["transactional_sms", "alerts_sms"]))
+        self.sms_provider_registry.register(MSG91Provider("msg91", "1.0.0", ["transactional_sms", "otp_sms"]))
+        self.sms_provider_registry.register(FallbackSMSProvider("fallback", "1.0.0", ["transactional_sms", "alerts_sms"]))
+        self.sms_provider_registry.set_active("twilio")
 
     def _load_default_integrations(self) -> None:
         """Loads and registers default external integration adapters."""
