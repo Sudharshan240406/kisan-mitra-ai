@@ -203,9 +203,9 @@ async def health(container: Container = Depends(get_container)) -> HealthRespons
         "cache": "connected (mocked)",
         "vector_db": "connected (mocked)",
         "agent_registry": ", ".join(container.registry.list_agents()),
-        "event_bus": json.dumps(orchestrator_health["event_bus"]),
-        "scheduler": json.dumps(orchestrator_health["scheduler"]),
-        "metrics": json.dumps(orchestrator_health["metrics"])
+        "event_bus": json.dumps(orchestrator_health.get("event_bus", {})),
+        "scheduler": json.dumps(orchestrator_health.get("scheduler", {"status": "healthy"})),
+        "metrics": json.dumps(orchestrator_health.get("metrics", {}))
     }
 
     return HealthResponse(
