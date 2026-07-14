@@ -19,6 +19,7 @@ from app.api.v1.demo import router as demo_router
 from app.api.v1.health import router as health_router
 from app.api.v1.integrations import router as integrations_router
 from app.api.v1.knowledge import router as knowledge_router
+from app.api.v1.live_data import router as live_data_router
 from app.api.v1.media import router as media_router
 from app.api.v1.observability import router as observability_router
 from app.api.v1.personalization import router as personalization_router
@@ -26,14 +27,13 @@ from app.api.v1.security import router as security_router
 from app.api.v1.sms import router as sms_router
 from app.api.v1.telemetry import router as telemetry_router
 from app.api.v1.telephony import router as telephony_router
-from app.api.v1.live_data import router as live_data_router
-from app.ivr.telephony.webhook import router as exotel_router
 from app.api.v1.websocket import router as websocket_router
 from app.core.config import settings, validate_production_config
 from app.core.container import Container
 from app.core.exceptions import KisanMitraException
 from app.core.logging_config import setup_logging
 from app.dependencies.container import get_container
+from app.ivr.telephony.webhook import router as exotel_router
 from app.middleware.error_handler import (
     general_exception_handler,
     http_exception_handler,
@@ -142,9 +142,9 @@ async def add_security_headers(request: Request, call_next: Callable[[Request], 
     response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
     response.headers["Content-Security-Policy"] = (
         "default-src 'self'; "
-        "script-src 'self' 'unsafe-inline' 'unsafe-eval'; "
-        "style-src 'self' 'unsafe-inline'; "
-        "img-src 'self' data:; "
+        "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net; "
+        "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; "
+        "img-src 'self' data: https://cdn.jsdelivr.net https://fastapi.tiangolo.com; "
         "connect-src 'self' http://localhost:8000 http://localhost "
         "ws://localhost:8000 ws://localhost wss://localhost:8000 wss://localhost;"
     )
@@ -226,7 +226,7 @@ async def query(
     """
     perf_mgr = getattr(container, "performance_manager", None)
     limit_key = None
-    
+
     if perf_mgr:
         client_ip = http_request.client.host if http_request.client else "127.0.0.1"
         api_key = http_request.headers.get("X-API-Key")
@@ -247,9 +247,9 @@ async def query(
                 claims = security_mgr.verify_request_token(credentials.credentials)
                 request.user_id = claims.get("sub")
                 request.user_role = claims.get("role")
-                if "tenant_id" in claims and claims["tenant_id"]:
+                if claims.get("tenant_id"):
                     request.tenant_id = claims["tenant_id"]
-                if "organization_id" in claims and claims["organization_id"]:
+                if claims.get("organization_id"):
                     request.organization_id = claims["organization_id"]
                 if perf_mgr and request.user_id:
                     limit_key = f"user:{request.user_id}"
