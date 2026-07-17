@@ -43,7 +43,7 @@ class CallManager:
         # 2. Create the call session
         session = self._session_manager.create_session(
             call_id=cid,
-            language="hi",  # Default starting language
+            language="en",  # Default starting language
             metadata={"caller": caller, "callee": callee, "trace_id": trace_id}
         )
 

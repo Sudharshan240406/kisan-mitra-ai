@@ -25,23 +25,23 @@ class IVRState(str, Enum):
 DEFAULT_IVR_FLOW_CONFIG: Dict[str, Dict[str, Any]] = {
     "GREETING": {
         "prompts": {
-            "hi": "नमस्ते, किसान मित्र एआई में आपका स्वागत है। मैं आपकी सरकारी योजनाओं और खेती की समस्याओं में मदद करूंगा।",
-            "en": "Hello, welcome to Kisan Mitra AI. I will help you with government schemes and farming assistance.",
-            "kn": "ನಮಸ್ಕಾರ, ಕಿಸಾನ್ ಮಿತ್ರ ಐ ಗೆ ಸುಸ್ವಾಗತ. ನಾನು ನಿಮಗೆ ಸರ್ಕಾರಿ ಯೋಜನೆಗಳು ಮತ್ತು ಕೃಷಿ ಸಹಾಯಕ್ಕೆ ಸಹಾಯ ಮಾಡುತ್ತೇನೆ.",
-            "te": "నమస్కారం, కిసాన్ మిత్ర ఐ కి స్వాగతం. ప్రభుత్వ పథకాలు మరియు వ్యవసాయ సహాయంలో నేను మీకు సహాయం చేస్తాను.",
-            "ta": "வணக்கம், கிசான் மித்ரா ஐ-க்கு உங்களை வரவேற்கிறோம். அரசு திட்டங்கள் மற்றும் விவசாய உதவிக்கு நான் உங்களுக்கு உதவுவேன்.",
-            "pa": "ਸਤਿ ਸ੍ਰੀ ਅਕਾਲ, ਕਿਸਾਨ ਮਿੱਤਰ ਏਆਈ ਵਿੱਚ ਤੁਹਾਡਾ ਸੁਆਗਤ ਹੈ। ਮੈਂ ਤੁਹਾਡੀ ਸਰਕਾਰੀ ਯੋਜਨਾਵਾਂ ਅਤੇ ਖੇਤੀਬਾੜੀ ਸਮੱਸਿਆਵਾਂ ਵਿੱਚ ਮਦਦ ਕਰਾਂਗਾ।"
+            "hi": "Welcome to Kisan Mitra AI.",
+            "en": "Welcome to Kisan Mitra AI.",
+            "kn": "Welcome to Kisan Mitra AI.",
+            "te": "Welcome to Kisan Mitra AI.",
+            "ta": "Welcome to Kisan Mitra AI.",
+            "pa": "Welcome to Kisan Mitra AI."
         },
         "next": "LANGUAGE_SELECTION"
     },
     "LANGUAGE_SELECTION": {
         "prompts": {
-            "hi": "भाषा चुनने के लिए: हिंदी के लिए 1 दबाएं, For English press 2, ಕನ್ನಡಕ್ಕಾಗಿ 3 ಒತ್ತಿರಿ, తెలుగు కోసం 4 నొక్కండి, தமிழுக்கு 5 அழுத்தவும், ਪੰਜਾਬੀ ਲਈ 6 ਦਬਾਓ।",
-            "en": "To select language: Press 1 for Hindi, 2 for English, 3 for Kannada, 4 for Telugu, 5 for Tamil, 6 for Punjabi.",
-            "kn": "ಭಾಷೆಯನ್ನು ಆಯ್ಕೆ ಮಾಡಲು: ಹಿಂದಿಗಾಗಿ 1 ಒತ್ತಿರಿ, ಇಂಗ್ಲಿಷ್‌ಗಾಗಿ 2 ಒತ್ತಿರಿ, ಕನ್ನಡಕ್ಕಾಗಿ 3 ಒತ್ತಿರಿ, ತೆಲುಗುಗಾಗಿ 4 ನೊಕ್ಕಿ, ತಮಿಳಿಗಾಗಿ 5 ಒತ್ತಿರಿ.",
-            "te": "భాషను ఎంచుకోవడానికి: హిందీ కోసం 1 నొక్కండి, ఇంగ్లీష్ కోసం 2 నొక్కండి, కన్నడ కోసం 3 నొక్కండి, తెలుగు కోసం 4 నొక్కండి, తమిళం కోసం 5 నొక్కండి.",
-            "ta": "மொழியைத் தேர்ந்தெடுக்க: இந்திக்கு 1 அழுத்தவும், ஆங்கிலத்திற்கு 2 அழுத்தவும், கன்னடத்திற்கு 3 அழுத்தவும், தெலுங்கிற்கு 4 அழுத்தவும், தமிழிற்கு 5 அழுத்தவும்.",
-            "pa": "ਭਾਸ਼ਾ ਚੁਣਨ ਲਈ: ਹਿੰਦੀ ਲਈ 1 ਦਬਾਓ, English ਲਈ 2 ਦਬਾਓ, ਕੰਨੜ ਲਈ 3 ਦਬਾਓ, ਤੇਲਗੂ ਲਈ 4 ਦਬਾਓ, ਤਮਿਲ ਲਈ 5 ਦਬਾਓ, ਪੰਜਾਬੀ ਲਈ 6 ਦਬਾਓ।"
+            "hi": "For Hindi press 1. For English press 2. For Kannada press 3. For Telugu press 4. For Tamil press 5. For Punjabi press 6.",
+            "en": "For Hindi press 1. For English press 2. For Kannada press 3. For Telugu press 4. For Tamil press 5. For Punjabi press 6.",
+            "kn": "For Hindi press 1. For English press 2. For Kannada press 3. For Telugu press 4. For Tamil press 5. For Punjabi press 6.",
+            "te": "For Hindi press 1. For English press 2. For Kannada press 3. For Telugu press 4. For Tamil press 5. For Punjabi press 6.",
+            "ta": "For Hindi press 1. For English press 2. For Kannada press 3. For Telugu press 4. For Tamil press 5. For Punjabi press 6.",
+            "pa": "For Hindi press 1. For English press 2. For Kannada press 3. For Telugu press 4. For Tamil press 5. For Punjabi press 6."
         },
         "dtmf": {
             "1": {"next": "CALLER_IDENTIFICATION", "set_language": "hi"},

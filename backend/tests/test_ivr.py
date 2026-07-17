@@ -14,13 +14,10 @@ from app.personalization.models import FarmerProfile
 
 def test_ivr_flow_prompts() -> None:
     flow = IVRFlow()
-    # Test multilingual greeting prompt
-    assert "नमस्ते" in flow.get_prompt("GREETING", "hi")
-    assert "welcome" in flow.get_prompt("GREETING", "en").lower()
-    assert "ನಮಸ್ಕಾರ" in flow.get_prompt("GREETING", "kn")
-    assert "నమస్కారం" in flow.get_prompt("GREETING", "te")
-    assert "வணக்கம்" in flow.get_prompt("GREETING", "ta")
-    assert "ਸਤਿ ਸ੍ਰੀ ਅਕਾਲ" in flow.get_prompt("GREETING", "pa")
+    # Test English greeting prompt for all languages
+    for lang in ["hi", "en", "kn", "te", "ta", "pa"]:
+        assert "welcome" in flow.get_prompt("GREETING", lang).lower()
+        assert "for hindi press 1" in flow.get_prompt("LANGUAGE_SELECTION", lang).lower()
 
     # Test fallback
     assert "welcome" in flow.get_prompt("GREETING", "invalid-lang").lower()
@@ -121,7 +118,7 @@ async def test_call_manager_lifecycle_e2e() -> None:
 
     session = container.call_session_manager.get_session("call-ivr-test")
     assert session is not None
-    assert session.language == "hi"
+    assert session.language == "en"
 
     # 2. Select Language to English (Press 2)
     res_lang = await manager.handle_dtmf_input("call-ivr-test", "2")

@@ -141,7 +141,7 @@ async def test_ivr_state_machine_transitions() -> None:
     # Greeting -> Language Selection direct transition
     state, prompt = await ivr.transition(sess, "next")
     assert state == IVRState.LANGUAGE_SELECTION
-    assert "To select language" in prompt
+    assert "For Hindi press 1" in prompt
 
     # Language Selection -> Caller Identification via DTMF
     state_lang, prompt_lang = await ivr.handle_dtmf(sess, "1")  # Press 1 for Hindi
@@ -225,7 +225,7 @@ async def test_call_manager_e2e_flow() -> None:
     res_in = await manager.handle_incoming_call("+9199999", "+9188888", "call-test-99")
     assert res_in["success"] is True
     assert res_in["current_state"] == "LANGUAGE_SELECTION"
-    assert "किसान मित्र" in res_in["tts_prompt"]
+    assert "Welcome to Kisan Mitra AI" in res_in["tts_prompt"]
 
     assert TelephonyEventType.INCOMING_CALL.value in events_logged
     assert TelephonyEventType.CALL_ANSWERED.value in events_logged

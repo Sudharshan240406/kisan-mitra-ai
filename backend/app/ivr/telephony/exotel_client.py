@@ -20,14 +20,34 @@ logger = logging.getLogger("kisan_mitra_ai.ivr.telephony.exotel_client")
 _EXOML_HEADER = '<?xml version="1.0" encoding="UTF-8"?>'
 
 
+# Map Unicode range starts to Exotel SSML language codes
+_UNICODE_LANG_MAP = [
+    (0x0900, 0x097F, "hi-IN"),  # Devanagari (Hindi)
+    (0x0A00, 0x0A7F, "pa-IN"),  # Gurmukhi (Punjabi)
+    (0x0B80, 0x0BFF, "ta-IN"),  # Tamil
+    (0x0C00, 0x0C7F, "te-IN"),  # Telugu
+    (0x0C80, 0x0CFF, "kn-IN"),  # Kannada
+]
+
+
 def _play_text(text: str) -> str:
-    """Wrap a text string in an ExoML <Say> element, using SSML if Hindi is detected."""
+    """Wrap a text string in an ExoML <Say> element, using SSML if regional language is detected."""
     # Exotel's ExoML uses <Say> for TTS
     safe = text.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
-    # Detect Devanagari (Hindi) characters in the Unicode range U+0900 to U+097F
-    has_hindi = any(0x0900 <= ord(char) <= 0x097F for char in text)
-    if has_hindi:
-        return f'<Say><speak><voice language="hi-IN">{safe}</voice></speak></Say>'
+    
+    # Detect regional language by scanning characters
+    detected_lang = None
+    for char in text:
+        val = ord(char)
+        for start, end, lang_code in _UNICODE_LANG_MAP:
+            if start <= val <= end:
+                detected_lang = lang_code
+                break
+        if detected_lang:
+            break
+
+    if detected_lang:
+        return f'<Say><speak><voice language="{detected_lang}">{safe}</voice></speak></Say>'
     return f"<Say>{safe}</Say>"
 
 
