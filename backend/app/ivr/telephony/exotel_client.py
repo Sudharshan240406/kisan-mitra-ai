@@ -27,11 +27,13 @@ def _play_text(text: str) -> str:
     return f"<Say>{safe}</Say>"
 
 
-def _gather_dtmf(action_url: str, num_digits: int = 1) -> str:
-    """Return an ExoML <Gather> stanza that collects DTMF from the caller."""
+def _gather_with_prompt(prompt: str, action_url: str, num_digits: int = 1) -> str:
+    """Return an ExoML <Gather> stanza with a nested <Say> prompt to enable barge-in."""
+    say_block = _play_text(prompt) if prompt else ""
     return (
         f'<Gather action="{action_url}" method="POST" numDigits="{num_digits}" '
         f'timeout="10" finishOnKey="#">'
+        f"{say_block}"
         "</Gather>"
     )
 
@@ -70,7 +72,7 @@ class ExotelClient:
         Build the ExoML response for an inbound call greeting.
         Speaks the prompt and then gathers a single DTMF digit.
         """
-        body = _play_text(prompt) + _gather_dtmf(dtmf_url, num_digits=1)
+        body = _gather_with_prompt(prompt, dtmf_url, num_digits=1)
         return f"{_EXOML_HEADER}<Response>{body}</Response>"
 
     def build_dtmf_exoml(self, prompt: str, dtmf_url: str, end_call: bool = False) -> str:
@@ -78,16 +80,15 @@ class ExotelClient:
         Build the ExoML response after a DTMF digit is received.
         Speaks the response and optionally hangs up or gathers the next digit.
         """
-        body = _play_text(prompt)
         if end_call:
-            body += _hangup()
+            body = _play_text(prompt) + _hangup()
         else:
-            body += _gather_dtmf(dtmf_url, num_digits=1)
+            body = _gather_with_prompt(prompt, dtmf_url, num_digits=1)
         return f"{_EXOML_HEADER}<Response>{body}</Response>"
 
     def build_voice_exoml(self, prompt: str, dtmf_url: str) -> str:
         """Build ExoML after a voice interaction — play the advisory and re-gather."""
-        body = _play_text(prompt) + _gather_dtmf(dtmf_url, num_digits=1)
+        body = _gather_with_prompt(prompt, dtmf_url, num_digits=1)
         return f"{_EXOML_HEADER}<Response>{body}</Response>"
 
     def build_hangup_exoml(self, farewell: str = "Thank you for calling Kisan Mitra. Goodbye.") -> str:
