@@ -73,15 +73,8 @@ async def _handle_inbound(
 
     logger.info(f"[Exotel] Inbound call — From={caller} To={callee} SID={call_id}")
 
-    result = await container.call_manager.handle_incoming_call(
-        caller=caller,
-        callee=callee,
-        call_id=call_id,
-    )
-
-    bridge = _get_bridge(request)
-    xml = bridge.greeting_to_exoml(result)
-    return _xml_response(xml)
+    # Temporarily return minimal ExoML for troubleshooting
+    return _xml_response('<?xml version="1.0" encoding="UTF-8"?><Response><Say>Hello</Say></Response>')
 
 
 @router.post("/inbound")
