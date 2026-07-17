@@ -59,20 +59,14 @@ def _xml_response(xml: str) -> Response:
 # ---------------------------------------------------------------------------
 
 
-@router.post("/inbound")
-async def exotel_inbound(
+async def _handle_inbound(
     request: Request,
-    # Exotel sends PascalCase form fields — we accept both via aliases
-    call_sid: Optional[str] = Form(None, alias="CallSid"),
-    from_: Optional[str] = Form(None, alias="From"),
-    to: Optional[str] = Form(None, alias="To"),
-    call_status: Optional[str] = Form(None, alias="CallStatus"),
-    container: Container = Depends(get_container),
+    call_sid: Optional[str],
+    from_: Optional[str],
+    to: Optional[str],
+    call_status: Optional[str],
+    container: Container,
 ) -> Response:
-    """
-    Exotel calls this endpoint when a farmer dials in.
-    Creates an IVR session and returns the greeting ExoML.
-    """
     caller = from_ or "unknown"
     callee = to or settings.EXOTEL_PHONE or "kisan_mitra"
     call_id = call_sid or None
@@ -88,6 +82,44 @@ async def exotel_inbound(
     bridge = _get_bridge(request)
     xml = bridge.greeting_to_exoml(result)
     return _xml_response(xml)
+
+
+@router.post("/inbound")
+async def exotel_inbound(
+    request: Request,
+    # Exotel sends PascalCase form fields — we accept both via aliases
+    call_sid: Optional[str] = Form(None, alias="CallSid"),
+    from_: Optional[str] = Form(None, alias="From"),
+    to: Optional[str] = Form(None, alias="To"),
+    call_status: Optional[str] = Form(None, alias="CallStatus"),
+    container: Container = Depends(get_container),
+) -> Response:
+    """
+    Exotel calls this endpoint when a farmer dials in (via POST).
+    Creates an IVR session and returns the greeting ExoML.
+    """
+    return await _handle_inbound(request, call_sid, from_, to, call_status, container)
+
+
+@router.get("/inbound")
+async def exotel_inbound_get(
+    request: Request,
+    call_sid: Optional[str] = None,
+    from_: Optional[str] = None,
+    to: Optional[str] = None,
+    call_status: Optional[str] = None,
+    container: Container = Depends(get_container),
+) -> Response:
+    """
+    Exotel calls this endpoint when a farmer dials in (via GET).
+    Creates an IVR session and returns the greeting ExoML.
+    """
+    c_sid = call_sid or request.query_params.get("CallSid") or request.query_params.get("callsid")
+    f_num = from_ or request.query_params.get("From") or request.query_params.get("from")
+    t_num = to or request.query_params.get("To") or request.query_params.get("to")
+    c_status = call_status or request.query_params.get("CallStatus") or request.query_params.get("callstatus")
+
+    return await _handle_inbound(request, c_sid, f_num, t_num, c_status, container)
 
 
 @router.post("/dtmf")

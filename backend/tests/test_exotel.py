@@ -89,6 +89,62 @@ async def test_inbound_webhook() -> None:
     )
 
 
+@pytest.mark.asyncio
+async def test_inbound_webhook_get() -> None:
+    """
+    GET /api/v1/exotel/inbound should:
+    - Call CallManager.handle_incoming_call with the caller/callee from query params
+    - Return text/xml containing ExoML <Response>
+    """
+    from app.ivr.telephony.webhook import router
+    from fastapi import FastAPI
+    from fastapi.testclient import TestClient
+
+    # Mock CallManager
+    mock_call_manager = MagicMock()
+    mock_call_manager.handle_incoming_call = AsyncMock(return_value={
+        "success": True,
+        "call_id": "CALL-TEST-001-GET",
+        "conversation_id": "CONV-002",
+        "current_state": "LANGUAGE_SELECTION",
+        "tts_prompt": "Namaste! Welcome to Kisan Mitra via GET.",
+    })
+
+    mock_container = _make_container(mock_call_manager)
+
+    app = FastAPI()
+    app.include_router(router)
+
+    # Override the DI dependency
+    from app.dependencies.container import get_container
+    app.dependency_overrides[get_container] = lambda: mock_container
+
+    client = TestClient(app, raise_server_exceptions=True)
+
+    response = client.get(
+        "/api/v1/exotel/inbound",
+        params={
+            "CallSid": "CALL-TEST-001-GET",
+            "From": "+919876543210",
+            "To": "+911234567890",
+            "CallStatus": "in-progress",
+        },
+    )
+
+    assert response.status_code == 200, response.text
+    assert "text/xml" in response.headers["content-type"]
+    body = response.text
+    assert "<Response>" in body
+    assert "<Say>" in body or "Namaste" in body
+
+    # CallManager was called with the right caller/callee
+    mock_call_manager.handle_incoming_call.assert_called_once_with(
+        caller="+919876543210",
+        callee="+911234567890",
+        call_id="CALL-TEST-001-GET",
+    )
+
+
 # ---------------------------------------------------------------------------
 # 2. DTMF webhook
 # ---------------------------------------------------------------------------
