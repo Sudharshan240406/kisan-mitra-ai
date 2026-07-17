@@ -21,9 +21,13 @@ _EXOML_HEADER = '<?xml version="1.0" encoding="UTF-8"?>'
 
 
 def _play_text(text: str) -> str:
-    """Wrap a text string in an ExoML <Say> element."""
+    """Wrap a text string in an ExoML <Say> element, using SSML if Hindi is detected."""
     # Exotel's ExoML uses <Say> for TTS
     safe = text.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+    # Detect Devanagari (Hindi) characters in the Unicode range U+0900 to U+097F
+    has_hindi = any(0x0900 <= ord(char) <= 0x097F for char in text)
+    if has_hindi:
+        return f'<Say><speak><voice language="hi-IN">{safe}</voice></speak></Say>'
     return f"<Say>{safe}</Say>"
 
 
