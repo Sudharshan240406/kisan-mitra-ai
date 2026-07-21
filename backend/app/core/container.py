@@ -38,6 +38,9 @@ from app.governance.prompts import PromptRegistry
 from app.governance.validators import PlatformValidator
 from app.intelligence.arm import AgriculturalReasoningMemory
 from app.intelligence.policy import PolicyEngine
+from app.ivr.call_manager import CallManager
+from app.ivr.call_session import CallSessionManager
+from app.ivr.ivr_flow import IVRStateMachine
 
 # Agricultural Knowledge Platform Imports
 from app.knowledge.core import KnowledgePlatform
@@ -87,35 +90,48 @@ from app.services import (
     SoilService,
     WeatherService,
 )
-from app.sms.pipeline import SMSPipeline
-from app.sms.sessions import SMSSessionManager
 from app.sms import (
-    SMSProviderRegistry,
-    SMSTemplateEngine,
-    SMSManager,
     InboundRouter as SMSInboundRouter,
 )
-from app.ivr.ivr_flow import IVRStateMachine
-from app.ivr.call_manager import CallManager
-from app.ivr.call_session import CallSessionManager
+from app.sms import (
+    SMSManager,
+    SMSProviderRegistry,
+    SMSTemplateEngine,
+)
+from app.sms.pipeline import SMSPipeline
+from app.sms.sessions import SMSSessionManager
+from app.stt import (
+    AzureProvider,
+    FallbackProvider,
+    GoogleProvider,
+    WhisperProvider,
+)
 from app.stt import (
     ProviderRegistry as STTPlatformRegistry,
+)
+from app.stt import (
     STTManager as STTPlatformManager,
-    WhisperProvider,
-    AzureProvider,
-    GoogleProvider,
-    FallbackProvider,
+)
+from app.telephony.telephony import TelephonyProviderRegistry
+from app.tts import (
+    AzureProvider as AzureTTSPlatformProvider,
+)
+from app.tts import (
+    CoquiProvider,
+    ElevenLabsProvider,
+)
+from app.tts import (
+    FallbackProvider as FallbackTTSPlatformProvider,
+)
+from app.tts import (
+    GoogleProvider as GoogleTTSPlatformProvider,
 )
 from app.tts import (
     ProviderRegistry as TTSPlatformRegistry,
-    TTSManager as TTSPlatformManager,
-    AzureProvider as AzureTTSPlatformProvider,
-    GoogleProvider as GoogleTTSPlatformProvider,
-    ElevenLabsProvider,
-    CoquiProvider,
-    FallbackProvider as FallbackTTSPlatformProvider,
 )
-from app.telephony.telephony import TelephonyProviderRegistry
+from app.tts import (
+    TTSManager as TTSPlatformManager,
+)
 from app.voice.stt import (
     AzureSTTProvider,
     GoogleSTTProvider,
@@ -370,8 +386,8 @@ class Container:
         from app.performance import PerformanceManager
         self.performance_manager = PerformanceManager(self)
 
-        from app.tenancy.tenant_manager import TenantManager
         from app.tenancy.isolation_engine import IsolationEngine
+        from app.tenancy.tenant_manager import TenantManager
         self.tenant_manager = TenantManager(self)
         IsolationEngine.initialize()
 
@@ -379,7 +395,7 @@ class Container:
         self.governance_manager = GovernanceManager(self)
 
         # Sprint 30: Live Data Platform
-        from app.live_data import LiveWeatherService, LiveMarketService
+        from app.live_data import LiveMarketService, LiveWeatherService
         self.live_weather_service = LiveWeatherService()
         self.live_market_service = LiveMarketService()
 
@@ -442,9 +458,15 @@ class Container:
         from app.sms.sms import (
             AWSSNSSMSProvider,
             BSNLSMSProvider,
-            ExotelSMSProvider as LegacyExotel,
             GovSMSProvider,
+        )
+        from app.sms.sms import (
+            ExotelSMSProvider as LegacyExotel,
+        )
+        from app.sms.sms import (
             MSG91SMSProvider as LegacyMSG91,
+        )
+        from app.sms.sms import (
             TwilioSMSProvider as LegacyTwilio,
         )
         self.sms_provider_registry.register(LegacyTwilio("twilio-sms-mock", "1.0.0", ["marketing_sms"]))
@@ -456,9 +478,11 @@ class Container:
 
         # Sprint 28 SMS providers
         from app.sms import (
-            TwilioProvider,
             ExotelProvider,
             MSG91Provider,
+            TwilioProvider,
+        )
+        from app.sms import (
             FallbackProvider as FallbackSMSProvider,
         )
         self.sms_provider_registry.register(TwilioProvider("twilio", "1.0.0", ["transactional_sms", "otp_sms", "alerts_sms"]))

@@ -1,13 +1,8 @@
 import pytest
-from fastapi.testclient import TestClient
-from fastapi import FastAPI, Depends
-from app.main import app
 from app.core.exceptions import ValidationException
-from app.core.container import Container
-from app.dependencies.container import get_container
-from app.schemas.requests import ExecutionRequest
-from app.schemas.responses import StandardResponse
-from app.orchestrator.orchestrator import AgentOrchestrator
+from app.main import app
+from fastapi.testclient import TestClient
+
 
 def test_error_handling_kisan_mitra_exception():
     """
@@ -60,7 +55,7 @@ def test_response_compression():
         # Querying an endpoint with large response, e.g. /api/v1/ai/agents or /docs
         headers = {"Accept-Encoding": "gzip"}
         response = client.get("/openapi.json", headers=headers)
-        
+
         # In TestClient, it decompresses automatically but we can check if content-encoding is set
         # to gzip, or if the size/encoding was handled.
         # Starlette's TestClient simulates ASGI call, so we inspect raw response headers
@@ -82,27 +77,27 @@ async def test_reasoning_cache_hit_and_miss():
         container = client.app.state.container
         # Clear cache first to prevent cross-test contamination
         container.reasoning_platform.cache._store.clear()
-        
+
         payload = {
             "session_id": "SESS-READINESS-123",
             "query": "How is the mandi price of wheat today?",
             "farmer_id": "FR-12345"
         }
-        
+
         # 1. First execution (Cache Miss)
         res1 = client.post("/api/v1/query", json=payload)
         assert res1.status_code == 200
         result1 = res1.json()
-        
+
         # 2. Second execution (Cache Hit)
         res2 = client.post("/api/v1/query", json=payload)
         assert res2.status_code == 200
         result2 = res2.json()
-        
+
         # Both execution results should be identical since the second was pulled from cache
         assert result1["data"]["summary"] == result2["data"]["summary"]
         assert result1["data"]["recommendation"] == result2["data"]["recommendation"]
-        
+
         # Verify stats show a cache hit
         cache_stats = container.reasoning_platform.cache.stats
         assert cache_stats["hits"] >= 1

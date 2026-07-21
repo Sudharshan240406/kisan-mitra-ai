@@ -1,5 +1,6 @@
 import re
-from typing import Any, TypedDict, List
+from typing import List, TypedDict
+
 
 class IntentResult(TypedDict):
     intent: str
@@ -20,7 +21,7 @@ class IntentRouter:
             (r"(hello|hi|namaste|greeting|welcome|hey)", "Greeting"),
             (r"(listen|speak|voice|record|audio|tts|stt)", "Voice Command")
         ]
-        
+
         self.entity_patterns = {
             "crop": r"\b(wheat|rice|cotton|soybean|sugarcane|maize|crop|crops)\b",
             "location": r"\b(punjab|maharashtra|karnataka|haryana|village|district|state)\b",
@@ -29,23 +30,23 @@ class IntentRouter:
 
     def detect_intent(self, query: str) -> IntentResult:
         query_lower = query.lower()
-        
+
         detected_intent = "General Question"
         confidence = 0.80
-        
+
         for pattern, intent in self.rules:
             if re.search(pattern, query_lower):
                 detected_intent = intent
                 confidence = 0.95
                 break
-                
+
         # Extract entities
         entities = []
         for entity_type, pat in self.entity_patterns.items():
             matches = re.findall(pat, query_lower)
             for m in matches:
                 entities.append(f"{entity_type}:{m}")
-                
+
         return {
             "intent": detected_intent,
             "confidence": confidence,

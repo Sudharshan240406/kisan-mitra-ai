@@ -8,18 +8,18 @@ from __future__ import annotations
 
 import logging
 from typing import Any, List, Optional
-from fastapi import APIRouter, Depends, HTTPException, status
-from pydantic import BaseModel
 
 from app.core.container import Container
 from app.dependencies.container import get_container
 from app.personalization.models import (
-    FarmerProfile,
     FarmDetails,
+    FarmerProfile,
     LongTermMemory,
     PrivacyConsent,
     Reminder,
 )
+from fastapi import APIRouter, Depends, HTTPException, status
+from pydantic import BaseModel
 
 router = APIRouter(prefix="/api/v1/personalization", tags=["Farmer Personalization"])
 logger = logging.getLogger("kisan_mitra_ai.personalization.api")
@@ -108,11 +108,11 @@ def log_feedback_and_learn(request: FeedbackRequest, container: Container = Depe
 
         profile_svc = container.personalization_platform.registry.get("profile_manager")
         profile = profile_svc.get_profile(request.farmer_id)
-        
+
         crop = None
         region = None
         lang = "en"
-        
+
         if profile:
             lang = profile.preferred_language or "en"
             region = f"{profile.district}, {profile.state}" if profile.district else profile.state

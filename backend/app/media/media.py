@@ -1,10 +1,10 @@
 import logging
 import time
-import httpx
 from abc import ABC, abstractmethod
 from enum import Enum
 from typing import Any, Optional
 
+import httpx
 from app.core.config import settings
 from app.utils.id import generate_uuid
 from pydantic import BaseModel, Field

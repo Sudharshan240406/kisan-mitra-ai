@@ -1,10 +1,11 @@
 import logging
 import traceback
-from fastapi import Request, status
-from fastapi.responses import JSONResponse
-from fastapi.exceptions import RequestValidationError
-from starlette.exceptions import HTTPException as StarletteHTTPException
+
 from app.core.exceptions import KisanMitraException
+from fastapi import Request, status
+from fastapi.exceptions import RequestValidationError
+from fastapi.responses import JSONResponse
+from starlette.exceptions import HTTPException as StarletteHTTPException
 
 logger = logging.getLogger("kisan_mitra_ai")
 
@@ -33,7 +34,7 @@ async def http_exception_handler(request: Request, exc: StarletteHTTPException) 
         f"[HTTP Exception Handled] {exc.status_code}: {exc.detail}",
         extra={"extra_fields": {"path": request.url.path}}
     )
-    
+
     if isinstance(exc.detail, dict):
         content = {
             "error_code": "HTTPException",
@@ -47,7 +48,7 @@ async def http_exception_handler(request: Request, exc: StarletteHTTPException) 
             "message": str(exc.detail),
             "details": {}
         }
-        
+
     return JSONResponse(
         status_code=exc.status_code,
         content=content

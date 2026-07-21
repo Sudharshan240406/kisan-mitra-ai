@@ -2,13 +2,14 @@ import logging
 import time
 from typing import Any
 
-from app.channels.envelope import ResponseEnvelope
-from app.channels.envelope import LanguageMetadata, MessageEnvelope, MessagePriority
+from app.channels.envelope import (
+    LanguageMetadata,
+    ResponseEnvelope,
+)
 from app.media.events import MediaEventType
-from app.media.media import MediaInput, MediaResult, MediaType
+from app.media.media import MediaInput, MediaType
 from app.multimodal.evidence import MultimodalEvidenceExtractor
 from app.multimodal.validation import ImageValidationEngine, supports_image_validation
-from app.schemas.responses import TrustedRecommendation
 from app.utils.id import generate_uuid
 
 logger = logging.getLogger("kisan_mitra_ai.media.pipeline")

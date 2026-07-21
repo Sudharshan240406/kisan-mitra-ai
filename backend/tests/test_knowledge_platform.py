@@ -1,16 +1,15 @@
 import time
-import pytest
-from fastapi.testclient import TestClient
 
-from app.core.container import Container
+import pytest
 from app.core.context import AgentContext
-from app.knowledge.core import KnowledgePlatform, KnowledgeMetadata
-from app.knowledge.vector_store import FAISSVectorStore
+from app.knowledge.core import KnowledgePlatform
 from app.knowledge.graph import KnowledgeGraph
 from app.knowledge.retrieval import KnowledgeRetrievalEngine
-from app.knowledge.validation import KnowledgeValidator
 from app.knowledge.telemetry import KnowledgeTelemetry
+from app.knowledge.validation import KnowledgeValidator
+from app.knowledge.vector_store import FAISSVectorStore
 from app.main import app
+from fastapi.testclient import TestClient
 
 
 def test_knowledge_registry() -> None:

@@ -1,8 +1,9 @@
-import os
 import json
-import time
-from typing import Any, Dict, List, Optional
+import os
+from typing import Dict, List
+
 from pydantic import BaseModel
+
 
 class ConversationTurn(BaseModel):
     question: str
@@ -44,11 +45,11 @@ class ConversationMemoryStore:
         if farmer_id not in self.history:
             self.history[farmer_id] = []
         self.history[farmer_id].append(turn)
-        
+
         # Keep dialogue size bounded
         if len(self.history[farmer_id]) > 50:
             self.history[farmer_id].pop(0)
-            
+
         self.save()
 
     def set_history(self, farmer_id: str, history: List[ConversationTurn]) -> None:

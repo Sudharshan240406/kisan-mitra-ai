@@ -1,19 +1,20 @@
-import pytest
+from unittest.mock import patch
+
 import httpx
-from unittest.mock import AsyncMock, patch
+import pytest
 from app.core.config import Settings, validate_production_config
 from app.core.container import Container
-from app.core.integrations.adapters.weather import (
-    IMDWeatherAdapter,
-    OpenWeatherAdapter,
-    TomorrowIOWeatherAdapter,
-)
+from app.core.integrations.adapters.authentication import LocalAuthAdapter, OAuthAdapter
 from app.core.integrations.adapters.market import (
     AgmarknetMarketAdapter,
     eNAMMarketAdapter,
 )
 from app.core.integrations.adapters.storage import CloudStorageAdapter
-from app.core.integrations.adapters.authentication import LocalAuthAdapter, OAuthAdapter
+from app.core.integrations.adapters.weather import (
+    IMDWeatherAdapter,
+    OpenWeatherAdapter,
+    TomorrowIOWeatherAdapter,
+)
 from app.core.integrations.resilience import ResilientRunner
 
 
@@ -90,7 +91,7 @@ async def test_telemetry_captures_integration_cost():
     telemetry = container.telemetry
 
     runner = ResilientRunner(telemetry=telemetry)
-    
+
     # Test simple mock call
     async def sample_op():
         return "success_val"

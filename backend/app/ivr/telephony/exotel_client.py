@@ -34,7 +34,7 @@ def _play_text(text: str) -> str:
     """Wrap a text string in an ExoML <Say> element, using SSML if regional language is detected."""
     # Exotel's ExoML uses <Say> for TTS
     safe = text.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
-    
+
     # Detect regional language by scanning characters
     detected_lang = None
     for char in text:

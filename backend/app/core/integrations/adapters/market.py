@@ -1,6 +1,7 @@
 import logging
-import httpx
 from typing import Any
+
+import httpx
 from app.core.config import settings
 from app.core.integrations.base import IMarketAdapter, IntegrationMetadata
 
@@ -38,7 +39,7 @@ class AgmarknetMarketAdapter(IMarketAdapter):
 
     async def get_market_price(self, crop: str, location: str) -> dict[str, Any]:
         logger.info(f"Fetching Agmarknet price for crop: {crop} in location: {location}")
-        
+
         api_key = settings.AGMARKNET_API_KEY
         if api_key:
             endpoint = self.metadata.configuration.get("api_endpoint", "https://api.data.gov.in/resource/9ef84f99-ffc9-4b20-bb41-1120e9941120")
@@ -61,7 +62,7 @@ class AgmarknetMarketAdapter(IMarketAdapter):
                             record = records[0]
                             raw_price = float(record.get("modal_price", 2350))
                             unit = record.get("unit", "quintal").lower()
-                            
+
                             # Normalization: Standard unit is Quintal (100 Kg)
                             if "kg" in unit:
                                 modal_price = raw_price * 100
@@ -69,7 +70,7 @@ class AgmarknetMarketAdapter(IMarketAdapter):
                                 modal_price = raw_price / 10
                             else:
                                 modal_price = raw_price
-                                
+
                             return {
                                 "provider": "Agmarknet",
                                 "crop": crop,
@@ -125,7 +126,7 @@ class eNAMMarketAdapter(IMarketAdapter):
 
     async def get_market_price(self, crop: str, location: str) -> dict[str, Any]:
         logger.info(f"Fetching eNAM price for crop: {crop} in location: {location}")
-        
+
         endpoint = settings.ENAM_API_ENDPOINT
         if endpoint:
             try:
@@ -138,7 +139,7 @@ class eNAMMarketAdapter(IMarketAdapter):
                         data = response.json()
                         raw_price = float(data.get("price", 2300))
                         unit = data.get("unit", "quintal").lower()
-                        
+
                         # Normalization
                         if "kg" in unit:
                             modal_price = raw_price * 100
@@ -146,7 +147,7 @@ class eNAMMarketAdapter(IMarketAdapter):
                             modal_price = raw_price / 10
                         else:
                             modal_price = raw_price
-                            
+
                         return {
                             "provider": "eNAM",
                             "crop": crop,

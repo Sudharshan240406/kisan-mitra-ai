@@ -21,9 +21,9 @@ from __future__ import annotations
 
 import logging
 import time
-import httpx
-from typing import Any, Optional, Protocol, runtime_checkable
+from typing import Any, Protocol, runtime_checkable
 
+import httpx
 from pydantic import BaseModel, Field
 
 logger = logging.getLogger("kisan_mitra_ai.voice.stt")
@@ -99,7 +99,7 @@ class GoogleSTTProvider:
         encoding: str = "LINEAR16",
     ) -> STTResult:
         start = time.perf_counter()
-        
+
         # Real Google STT REST request if API key is set
         if self._api_key:
             try:
@@ -174,7 +174,7 @@ class AzureSTTProvider:
         encoding: str = "LINEAR16",
     ) -> STTResult:
         start = time.perf_counter()
-        
+
         # Real Azure Cognitive Services request if key is set
         if self._key:
             try:
@@ -229,7 +229,7 @@ class WhisperSTTProvider:
         encoding: str = "LINEAR16",
     ) -> STTResult:
         start = time.perf_counter()
-        
+
         # Real OpenAI Whisper API call if key is set
         if self._api_key:
             try:

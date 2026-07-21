@@ -1,4 +1,5 @@
 import logging
+
 from app.core.config import settings
 from app.core.integrations.base import IAuthenticationAdapter, IntegrationMetadata
 
@@ -36,7 +37,7 @@ class LocalAuthAdapter(IAuthenticationAdapter):
 
     async def authenticate(self, username: str, token: str) -> bool:
         logger.info(f"Authenticating user '{username}' via Local Authentication...")
-        
+
         # Real JWT validation check in production if libraries are installed
         try:
             import jwt
@@ -83,11 +84,11 @@ class OAuthAdapter(IAuthenticationAdapter):
 
     async def authenticate(self, username: str, token: str) -> bool:
         logger.info(f"Authenticating user '{username}' via OAuth SSO...")
-        
+
         # OAuth token verification check (simulating verification against centralized SSO provider)
         if token.startswith("oauth-token:"):
-            token_val = token.split("oauth-token:")[-1]
+            token_val = token.rsplit("oauth-token:", maxsplit=1)[-1]
             # Verify structure and basic validity
             return len(token_val) > 10
-            
+
         return token == "valid-session-jwt-token" or username == "admin"

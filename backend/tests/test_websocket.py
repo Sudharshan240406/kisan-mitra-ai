@@ -4,10 +4,9 @@ Phase 15 — WebSocket & IVR Enhancement Tests
 Tests WebSocket connection manager, error recovery, and IVR state machine.
 """
 import pytest
-
 from app.api.v1.websocket import ConnectionManager
 from app.telephony.error_recovery import ErrorRecovery
-from app.telephony.ivr import IVRStateMachine, IVRState, DEFAULT_IVR_CONFIG
+from app.telephony.ivr import DEFAULT_IVR_CONFIG, IVRState, IVRStateMachine
 from app.telephony.sessions import CallSession
 
 

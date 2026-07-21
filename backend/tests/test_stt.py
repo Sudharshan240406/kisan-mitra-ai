@@ -1,6 +1,7 @@
 
-import pytest
 from typing import Any
+
+import pytest
 from app.core.container import Container
 from app.stt.azure_provider import AzureProvider
 from app.stt.fallback_provider import FallbackProvider

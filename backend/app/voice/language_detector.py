@@ -20,7 +20,6 @@ from __future__ import annotations
 
 import logging
 import unicodedata
-from typing import Any
 
 from pydantic import BaseModel, Field
 

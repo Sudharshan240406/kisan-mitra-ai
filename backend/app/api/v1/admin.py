@@ -6,14 +6,14 @@ and live operational telemetry metrics.
 """
 from __future__ import annotations
 
-import os
 import logging
+import os
 from typing import Any, Dict, List
-from fastapi import APIRouter, Depends, HTTPException, Query, status
 
+from app.core.config import settings
 from app.core.container import Container
 from app.dependencies.container import get_container
-from app.core.config import settings
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 
 router = APIRouter(prefix="/api/v1/admin", tags=["Admin Portal"])
 logger = logging.getLogger("kisan_mitra_ai.api.admin")
@@ -54,7 +54,7 @@ def get_log_tail(
     """
     logger.info(f"Admin: Tailing last {lines} lines of {log_type} logs.")
     log_file = "logs/app.log" if log_type == "app" else "logs/error.log"
-    
+
     if not os.path.exists(log_file):
         # Fallback to general lookup
         os.makedirs("logs", exist_ok=True)
@@ -69,7 +69,7 @@ def get_log_tail(
         logger.error(f"Failed to read logs: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Unable to read log file: {str(e)}"
+            detail=f"Unable to read log file: {e!s}"
         )
 
 
@@ -80,11 +80,11 @@ def get_system_stats(container: Container = Depends(get_container)) -> Dict[str,
     """
     logger.info("Admin: Compiling live system telemetry statistics.")
     platform = container.personalization_platform
-    
+
     # Calculate caching stats
     cache_healthy = True
     active_agents = container.registry.list_agents()
-    
+
     return {
         "onboarded_farmers_count": len(platform.profiles),
         "total_conversation_memories": sum(len(m.conversations) for m in platform.memories.values()),

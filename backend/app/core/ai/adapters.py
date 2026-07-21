@@ -387,10 +387,9 @@ class OllamaAdapter(BaseAdapter):
                 completion_tokens=completion_t,
                 latency_ms=latency
             )
-        except Exception:
-            # Fall back to developer stubs warning if Ollama local runtime is offline
-            logger.warning(f"Ollama server offline at {self.host}. Falling back to mock generator.")
-            return self._generate_mock(prompt, system_instruction)
+        except Exception as e:
+            logger.warning(f"Ollama server offline at {self.host}: {e}")
+            raise AIPlatformException(f"Ollama server offline at {self.host}: {e!s}")
 
     def generate_stream(
         self,

@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from typing import Any
-
 from app.media.media import MediaInput, MediaType
 from pydantic import BaseModel, Field
 

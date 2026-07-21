@@ -27,10 +27,9 @@ import logging
 import time
 from typing import Any, Optional
 
-from pydantic import BaseModel, Field
-
 from app.voice.session import VoiceSession
 from app.voice.speech_context import SpeechContext, VoiceIntent
+from pydantic import BaseModel, Field
 
 logger = logging.getLogger("kisan_mitra_ai.voice.reasoning")
 
@@ -123,7 +122,11 @@ class VoiceReasoningPipeline:
 
             # Fallback path: channel_router (existing omnichannel pipeline)
             elif hasattr(self._container, "channel_router"):
-                from app.channels.envelope import LanguageMetadata, MessageEnvelope, MessagePriority
+                from app.channels.envelope import (
+                    LanguageMetadata,
+                    MessageEnvelope,
+                    MessagePriority,
+                )
 
                 lang_meta = LanguageMetadata(preferred_language=language, locale=language)
                 envelope = MessageEnvelope(

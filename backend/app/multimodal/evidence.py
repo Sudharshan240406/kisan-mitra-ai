@@ -4,7 +4,12 @@ from typing import Any
 
 from app.media.media import MediaResult, MediaType
 from app.multimodal.core import MediaContext
-from app.schemas.evidence import BaseEvidence, DiseaseEvidence, KnowledgeEvidence, MemoryEvidence
+from app.schemas.evidence import (
+    BaseEvidence,
+    DiseaseEvidence,
+    KnowledgeEvidence,
+    MemoryEvidence,
+)
 
 
 class MultimodalEvidenceExtractor:

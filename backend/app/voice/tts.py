@@ -23,9 +23,9 @@ from __future__ import annotations
 
 import logging
 import time
-import httpx
 from typing import Any, Optional, Protocol, runtime_checkable
 
+import httpx
 from pydantic import BaseModel, Field
 
 logger = logging.getLogger("kisan_mitra_ai.voice.tts")
@@ -108,7 +108,7 @@ class GoogleTTSProvider:
         streaming: bool = False,
     ) -> TTSResult:
         start = time.perf_counter()
-        
+
         # Real Google TTS REST call if API key is set
         if self._api_key:
             try:
@@ -175,7 +175,7 @@ class AzureTTSProvider:
         streaming: bool = False,
     ) -> TTSResult:
         start = time.perf_counter()
-        
+
         # Real Azure TTS REST call if key is set
         if self._key:
             try:

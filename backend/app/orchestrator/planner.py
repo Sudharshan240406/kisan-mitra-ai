@@ -1,5 +1,6 @@
 from typing import List
 
+
 class DynamicPlanner:
     """
     Decides which agents/services are required to satisfy the detected intent.

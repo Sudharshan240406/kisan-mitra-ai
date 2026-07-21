@@ -1,7 +1,9 @@
-import os
 import json
-from typing import Any, Dict, List, Optional
+import os
+from typing import Dict, List
+
 from pydantic import BaseModel, Field
+
 
 class RecommendationRecord(BaseModel):
     recommended_schemes: List[str] = Field(default_factory=list)

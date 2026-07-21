@@ -10,12 +10,10 @@ to structured agricultural advisory requests.
 from __future__ import annotations
 
 import logging
-import time
 from typing import Any, Optional
 
-from pydantic import BaseModel, Field
-
 from app.voice.session import FarmerProfileSnapshot, VoiceSession
+from pydantic import BaseModel, Field
 
 logger = logging.getLogger("kisan_mitra_ai.voice.speech_context")
 
@@ -78,8 +76,8 @@ def extract_intent(transcript: str, language: str = "hi") -> VoiceIntent:
 
     # Crop detection
     detected_crop: Optional[str] = None
-    for crop, keywords in _CROP_KEYWORDS.items():
-        for kw in keywords:
+    for crop, crop_kws in _CROP_KEYWORDS.items():
+        for kw in crop_kws:
             if kw.lower() in text:
                 detected_crop = crop
                 break

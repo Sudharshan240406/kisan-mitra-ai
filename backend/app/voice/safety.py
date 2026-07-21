@@ -15,9 +15,8 @@ from __future__ import annotations
 import logging
 from typing import Any, Optional
 
-from pydantic import BaseModel, Field
-
 from app.voice.session import VoiceSession
+from pydantic import BaseModel, Field
 
 logger = logging.getLogger("kisan_mitra_ai.voice.safety")
 

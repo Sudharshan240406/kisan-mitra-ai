@@ -1,5 +1,6 @@
 from typing import Any, Dict, List
 
+
 class ResponseBuilder:
     """
     Builds standard unified response schema structures.

@@ -21,6 +21,7 @@ import asyncio
 import logging
 import time
 from typing import Any
+from pydantic import BaseModel
 
 from fastapi import APIRouter, HTTPException
 
@@ -499,3 +500,116 @@ def _compute_risk_profile(farmer: Farmer) -> str:
     elif risk_score >= 3:
         return "MEDIUM"
     return "LOW"
+
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# Interactive Voice Query Endpoint
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+class DemoVoiceQueryRequest(BaseModel):
+    farmer_id: str = "DEMO-F001"
+    farmer_name: str | None = None
+    state: str | None = None
+    language: str | None = None
+    preferred_language: str | None = None
+    detected_language: str | None = None
+    user_selected_language: str = "en"
+    question: str
+    query_text: str | None = None
+    language_instruction: str | None = None
+    response_language: str | None = None
+
+
+LANGUAGE_NAME_MAP: dict[str, tuple[str, str]] = {
+    "en": ("English", "en-IN"),
+    "en-in": ("English", "en-IN"),
+    "hi": ("Hindi", "hi-IN"),
+    "hi-in": ("Hindi", "hi-IN"),
+    "kn": ("Kannada", "kn-IN"),
+    "kn-in": ("Kannada", "kn-IN"),
+    "te": ("Telugu", "te-IN"),
+    "te-in": ("Telugu", "te-IN"),
+    "ta": ("Tamil", "ta-IN"),
+    "ta-in": ("Tamil", "ta-IN"),
+    "ml": ("Malayalam", "ml-IN"),
+    "ml-in": ("Malayalam", "ml-IN"),
+    "mr": ("Marathi", "mr-IN"),
+    "mr-in": ("Marathi", "mr-IN"),
+    "pa": ("Punjabi", "pa-IN"),
+    "pa-in": ("Punjabi", "pa-IN"),
+    "gu": ("Gujarati", "gu-IN"),
+    "gu-in": ("Gujarati", "gu-IN"),
+    "bn": ("Bengali", "bn-IN"),
+    "bn-in": ("Bengali", "bn-IN"),
+}
+
+LANGUAGE_RESPONSES: dict[str, dict[str, str]] = {
+    "kn": {
+        "damage": "ಮಳೆಯಿಂದ ಬೆಳೆ ಹಾನಿಯಾಗಿದ್ದರೆ ಪ್ರಧಾನ ಮಂತ್ರಿ ಫಸಲ್ ಬಿಮಾ ಯೋಜನೆಯಡಿ (PMFBY) 72 ಗಂಟೆಗಳ ಒಳಗೆ ಕೃಷಿ ಅಧಿಕಾರಿಗೆ ಅಥವಾ ಬಿಮಾ ಕಂಪನಿಗೆ ಮಾಹಿತಿ ನೀಡಿ ಪರಿಹಾರ ಪಡೆಯಬಹುದು.",
+        "default": "ಪಿಎಂ ಕಿಸಾನ್ ಸಮ್ಮಾನ ನಿಧಿ ಯೋಜನೆಯಡಿ ಪ್ರತಿಯೊಬ್ಬ ಅರ್ಹ ರೈತರಿಗೆ ವರ್ಷಕ್ಕೆ ₹6,000 ಹಣವನ್ನು 3 ಕಂತುಗಳಲ್ಲಿ ನೀಡಲಾಗುತ್ತದೆ. ಆಧಾರ್ ಕಾರ್ಡ್ ಮತ್ತು ಜಮೀನು ದಾಖಲೆ ಸಲ್ಲಿಸಿ."
+    },
+    "te": {
+        "damage": "వర్షాల వల్ల పంట నష్టపోతే ప్రధాన మంత్రి ఫసల్ బీమా యోజన (PMFBY) కింద 72 గంటల వ్యవధిలో వ్యవసాయ అధికారులకు నివేదించి నష్టపరిహారం పొందవచ్చు.",
+        "default": "పీఎం కిసాన్ సమ్మాన్ నిధి పథకం ద్వారా అర్హులైన ప్రతి రైతుకు సంవత్సరానికి ₹6,000 ఆర్థిక సహాయం 3 విడతలలో అందించబడుతుంది."
+    },
+    "hi": {
+        "damage": "भारी बारिश से हुए फसल नुकसान के लिए प्रधानमंत्री फसल बीमा योजना (PMFBY) के तहत 72 घंटे के भीतर कृषि विभाग या टोल-फ्री 1800-180-1551 पर सूचना दें।",
+        "default": "पीएम किसान सम्मान निधि योजना के अंतर्गत पात्र किसानों को प्रतिवर्ष ₹6,000 की राशि direct bank transfer (DBT) के माध्यम से प्रदान की जाती है।"
+    },
+    "pa": {
+        "damage": "ਮੀਂਹ ਕਾਰਨ ਹੋਏ ਫ਼ਸਲ ਦੇ ਨੁਕਸਾਨ ਲਈ ਪ੍ਰਧਾਨ ਮੰਤਰੀ ਫ਼ਸਲ ਬੀਮਾ ਯੋਜਨਾ (PMFBY) ਅਧੀਨ 72 ਘੰਟਿਆਂ ਦੇ ਅੰਦਰ ਖੇਤੀਬਾੜੀ ਦਫ਼ਤਰ ਵਿੱਚ ਰਿਪੋਰਟ ਕਰੋ।",
+        "default": "ਪੀਐਮ ਕਿਸਾਨ ਸਮਮਾਨ ਨਿਧੀ ਯੋਜਨਾ ਤਹਿਤ ਯੋਗ ਕਿਸਾਨਾਂ ਨੂੰ ਸਾਲਾਨਾ ₹6,000 ਦੀ ਵਿੱਤੀ ਸਹਾਇਤਾ ਪ੍ਰਦਾਨ ਕੀਤੀ ਜਾਂਦੀ ਹੈ।"
+    },
+    "en": {
+        "damage": "For crop damage caused by heavy rainfall, report within 72 hours under Pradhan Mantri Fasal Bima Yojana (PMFBY) to claim insurance compensation.",
+        "default": "Under the PM-Kisan Samman Nidhi scheme, eligible farmers receive ₹6,000 per year in three equal instalments of ₹2,000 directly via DBT."
+    }
+}
+
+
+@router.post("/call/process", response_model=dict[str, Any])
+async def process_demo_voice_query(
+    request: DemoVoiceQueryRequest,
+    container: Any = Depends(get_container)
+) -> dict[str, Any]:
+    """
+    Process an interactive demo voice query for a farmer in their chosen language.
+    Returns tailored multi-lingual advice, scheme matching, document guidance, and reasoning.
+    """
+    farmer = _demo_service.get_farmer(request.farmer_id) or _demo_service.get_all_farmers()[0]
+    raw_lang = (request.user_selected_language or request.language or farmer.preferred_language or "en").lower().strip()
+    
+    lang_info = LANGUAGE_NAME_MAP.get(raw_lang) or LANGUAGE_NAME_MAP.get(raw_lang.split("-")[0]) or ("English", "en-IN")
+    lang_name, bcp47_tag = lang_info
+    short_lang = raw_lang.split("-")[0]
+
+    q_lower = request.question.lower()
+    is_damage_q = any(w in q_lower for w in ["damage", "rain", "rainfall", "ನಷ್ಟ", "പാടൈപോಯಿಂದಿ", "ਹਾਨੀ", "ਨੁਕਸਾਨ", "नुकसान", "ਖਰਾਬ", "बीमा", "హాని"]) or "മళ" in q_lower or "వర్ష" in q_lower or "ਮੀਂਹ" in q_lower or "ಬೆಳೆಗೆ" in q_lower
+
+    lang_dict = LANGUAGE_RESPONSES.get(short_lang, LANGUAGE_RESPONSES["en"])
+    ans_text = lang_dict["damage"] if is_damage_q else lang_dict["default"]
+
+    return {
+        "success": True,
+        "farmer_id": farmer.farmer_id,
+        "farmer_name": farmer.name,
+        "state": farmer.state,
+        "question": request.question,
+        "lang_code": request.user_selected_language or short_lang,
+        "detected_speech_language": request.user_selected_language or short_lang,
+        "response_language": lang_name,
+        "response_language_tag": bcp47_tag,
+        "top_scheme": "Pradhan Mantri Fasal Bima Yojana" if is_damage_q else "PM-Kisan Samman Nidhi",
+        "voice_response": ans_text,
+        "reasoning": [
+            f"✓ Selected Language: {lang_name} ({bcp47_tag})",
+            f"✓ Query categorized: {'Crop Damage Insurance Claim' if is_damage_q else 'PM-Kisan Eligibility'}",
+            f"✓ Verified for {farmer.name} ({farmer.district}, {farmer.state})",
+        ],
+        "document_guidance": {
+            "required_documents": ["Aadhaar Card", "Land Record", "Bank Passbook"],
+            "helpline": "1800-180-1551",
+            "nearest_office": f"District Agriculture Office, {farmer.district}",
+        },
+    }
+

@@ -2,13 +2,18 @@
 
 import React, { useState } from "react";
 import { useDashboard } from "@/components/DashboardContext";
-import { Cpu, Wifi, WifiOff, Bell, User, AlertTriangle, ShieldCheck, ChevronDown, Check } from "lucide-react";
+import { Cpu, Wifi, WifiOff, Bell, User, AlertTriangle, ShieldCheck, ChevronDown, Check, Phone } from "lucide-react";
 import { useWebSocket } from "@/hooks/useWebSocket";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 const WS_BASE = API_BASE.replace(/^http/, "ws");
 
-export default function TopNavigation() {
+interface TopNavigationProps {
+  onOpenDemo?: () => void;
+}
+
+export default function TopNavigation({ onOpenDemo }: TopNavigationProps = {}) {
+
   const {
     sessionId,
     alerts,
@@ -78,9 +83,21 @@ export default function TopNavigation() {
         </div>
       </div>
 
-      {/* Right Controls: Notifications & Profile */}
+      {/* Right Controls: Phone Demo, Notifications & Profile */}
       <div className="flex items-center gap-3">
+        {/* Launch Phone Demo Button */}
+        {onOpenDemo && (
+          <button
+            onClick={onOpenDemo}
+            className="flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-500 hover:to-teal-400 text-white text-xs font-bold shadow-lg shadow-emerald-950/50 border border-emerald-300/30 transition duration-200 cursor-pointer animate-pulse"
+          >
+            <Phone className="w-3.5 h-3.5" />
+            <span>✦ Launch Phone Demo</span>
+          </button>
+        )}
+
         {/* Alerts Dropdown */}
+
         <div className="relative">
           <button 
             onClick={() => {

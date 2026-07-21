@@ -20,7 +20,7 @@ from __future__ import annotations
 import logging
 import time
 import uuid
-from typing import Any, Optional
+from typing import Any
 
 from app.voice.session import VoiceSession
 
@@ -132,7 +132,10 @@ class VoiceDigitalTwinIntegrator:
 
     async def _save_arm_record(self, session: VoiceSession) -> None:
         """Save reasoning decision to Agricultural Reasoning Memory."""
-        from app.intelligence.arm import AgriculturalReasoningMemory, ReasoningMemoryRecord
+        from app.intelligence.arm import (
+            AgriculturalReasoningMemory,
+            ReasoningMemoryRecord,
+        )
 
         arm: AgriculturalReasoningMemory = self._container.arm
         record = ReasoningMemoryRecord(

@@ -9,16 +9,16 @@ from __future__ import annotations
 import logging
 import time
 from typing import Any, Dict, List, Optional
-from pydantic import BaseModel, Field
 
 from app.personalization.models import (
-    FarmerProfile,
     FarmDetails,
+    FarmerProfile,
     LongTermMemory,
+    PersonalizationContext,
     PrivacyConsent,
     Reminder,
-    PersonalizationContext,
 )
+from pydantic import BaseModel
 
 logger = logging.getLogger("kisan_mitra_ai.personalization.platform")
 
@@ -93,8 +93,8 @@ class PersonalizationPlatform:
 
     def save_to_disk(self) -> None:
         """Saves current personalization state to local JSON files under data/farmers/."""
-        import os
         import json
+        import os
         try:
             os.makedirs("data/farmers", exist_ok=True)
             with open("data/farmers/profiles.json", "w", encoding="utf-8") as f:
@@ -105,7 +105,7 @@ class PersonalizationPlatform:
                 json.dump({k: v.model_dump() for k, v in self.memories.items()}, f, ensure_ascii=False, indent=2)
             with open("data/farmers/consents.json", "w", encoding="utf-8") as f:
                 json.dump({k: v.model_dump() for k, v in self.consents.items()}, f, ensure_ascii=False, indent=2)
-            
+
             reminders_dict = {}
             for k, val_list in self.reminders.items():
                 reminders_dict[k] = [r.model_dump() for r in val_list]
@@ -117,8 +117,8 @@ class PersonalizationPlatform:
 
     def load_from_disk(self) -> bool:
         """Loads state from local JSON files under data/farmers/. Returns True if successfully loaded."""
-        import os
         import json
+        import os
         if not os.path.exists("data/farmers/profiles.json"):
             return False
         try:

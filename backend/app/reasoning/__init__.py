@@ -18,9 +18,18 @@ Package exposes the public API surface of the reasoning layer:
 from app.reasoning.chief import ChiefReasoningAgent, ReasoningResult
 from app.reasoning.confidence import ConfidenceEngine, ConfidenceReport
 from app.reasoning.consensus import ConflictResolutionEngine, ConsensusEngine
-from app.reasoning.core import ReasoningContext, ReasoningMetrics, ReasoningPlatform, ReasoningSession
+from app.reasoning.core import (
+    ReasoningContext,
+    ReasoningMetrics,
+    ReasoningPlatform,
+    ReasoningSession,
+)
 from app.reasoning.escalation import HumanEscalationEngine
-from app.reasoning.evidence import EvidenceCollector, EvidenceRankingEngine, RankedEvidence
+from app.reasoning.evidence import (
+    EvidenceCollector,
+    EvidenceRankingEngine,
+    RankedEvidence,
+)
 from app.reasoning.synthesis import DecisionSynthesizer, ExplainabilityEngine
 from app.reasoning.telemetry import ReasoningTelemetry
 

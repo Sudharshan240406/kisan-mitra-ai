@@ -10,7 +10,7 @@ from __future__ import annotations
 import logging
 import time
 import uuid
-from typing import Any, Optional
+from typing import Optional
 
 from app.core.context import AgentContext
 from app.personalization.models import PersonalizationContext

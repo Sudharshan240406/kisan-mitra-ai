@@ -18,9 +18,8 @@ import time
 from enum import Enum
 from typing import Any, Optional
 
-from pydantic import BaseModel, Field
-
 from app.voice.session import TranscriptTurn, VoiceSession
+from pydantic import BaseModel, Field
 
 logger = logging.getLogger("kisan_mitra_ai.voice.conversation")
 

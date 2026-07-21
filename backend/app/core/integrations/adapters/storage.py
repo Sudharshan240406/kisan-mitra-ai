@@ -1,5 +1,6 @@
 import logging
 from typing import Any
+
 from app.core.config import settings
 from app.core.integrations.base import IntegrationMetadata, IStorageAdapter
 

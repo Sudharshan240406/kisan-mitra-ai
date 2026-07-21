@@ -4,11 +4,9 @@ Phase 15 — Eligibility Engine Tests
 Tests the explainable eligibility engine against all demo farmer profiles.
 """
 import pytest
-
-from app.models.farmer import Farmer
-from app.services.eligibility import EligibilityEngine
 from app.knowledge.modules.government import GovernmentKnowledgeProvider
 from app.services.demo import DEMO_FARMERS, DemoService
+from app.services.eligibility import EligibilityEngine
 
 
 @pytest.fixture

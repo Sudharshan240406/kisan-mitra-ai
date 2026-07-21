@@ -3,14 +3,13 @@ Phase 15 — Demo Service & API Tests
 ======================================
 Tests demo farmer profiles, simulation, and document advisor.
 """
-import pytest
 
-from app.services.demo import DemoService, DEMO_FARMERS
+from app.knowledge.modules.government import GovernmentKnowledgeProvider
+from app.models.scheme import SchemeRecommendation
+from app.services.demo import DEMO_FARMERS, DemoService
 from app.services.document_advisor import DocumentAdvisor
 from app.services.eligibility import EligibilityEngine
 from app.services.scheme_service import GovernmentSchemeService
-from app.knowledge.modules.government import GovernmentKnowledgeProvider
-from app.models.scheme import SchemeRecommendation
 
 
 class TestDemoService:

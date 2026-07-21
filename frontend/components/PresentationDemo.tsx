@@ -112,7 +112,12 @@ const STORY_STEPS = [
   }
 ];
 
-export default function PresentationDemo() {
+interface PresentationDemoProps {
+  onOpenDemo?: () => void;
+}
+
+export default function PresentationDemo({ onOpenDemo }: PresentationDemoProps = {}) {
+
   const { lastEvent, isConnected } = useDashboard();
 
   // Farmers list
@@ -362,7 +367,19 @@ export default function PresentationDemo() {
           >
             Simulate Ingress Run
           </button>
+
+          {/* Launch Live Phone Call Demo */}
+          {onOpenDemo && (
+            <button
+              onClick={onOpenDemo}
+              className="px-3.5 py-1.5 bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-500 hover:to-teal-400 text-white rounded-xl font-bold uppercase text-[10px] transition cursor-pointer shadow-md shadow-emerald-950/50 flex items-center gap-1.5 animate-pulse"
+            >
+              <Phone className="w-3.5 h-3.5" />
+              <span>Launch Live Phone Call</span>
+            </button>
+          )}
         </div>
+
 
         {/* Timer & Fullscreen */}
         <div className="flex items-center gap-4">

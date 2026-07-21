@@ -3,7 +3,6 @@ from __future__ import annotations
 from types import SimpleNamespace
 
 import pytest
-
 from app.reasoning.chief import ReasoningResult, RiskAssessment
 from app.voice.reasoning import VoiceReasoningPipeline
 from app.voice.session import FarmerProfileSnapshot, VoiceSession

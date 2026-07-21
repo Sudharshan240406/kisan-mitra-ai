@@ -30,7 +30,7 @@ except ModuleNotFoundError:
 
             return state
 
-    class StateGraph:
+    class StateGraph:  # type: ignore[no-redef]
         def __init__(self, _state_type: type[Any]) -> None:
             self._nodes: dict[str, Any] = {}
             self._edges: dict[str, str] = {}
@@ -178,7 +178,7 @@ async def reasoning_node(state: GraphState) -> dict[str, Any]:
                     loc_str = f"{p_ctx.twin.village}, {p_ctx.twin.district}, {p_ctx.twin.state}"
                     ctx.metadata["location"] = loc_str
                     ctx.location = loc_str
-                
+
                 mem_ev = container.adaptive_recommender.generate_personalization_evidence(ctx.farmer_id, ctx)
                 if mem_ev:
                     evidence_items.append(mem_ev)

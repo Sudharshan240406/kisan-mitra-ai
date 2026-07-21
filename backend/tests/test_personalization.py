@@ -13,21 +13,18 @@ Verifies all core personalization loops:
 from __future__ import annotations
 
 import time
-import pytest
-from fastapi.testclient import TestClient
+from typing import Any
 
-from app.core.container import Container
+import pytest
 from app.core.config import settings
-from app.core.context import AgentContext
+from app.core.container import Container
 from app.main import app
 from app.personalization.models import (
     FarmerProfile,
-    FarmDetails,
-    LongTermMemory,
-    PrivacyConsent,
     Reminder,
 )
 from app.schemas.requests import ExecutionRequest
+from fastapi.testclient import TestClient
 
 
 @pytest.fixture
@@ -37,7 +34,6 @@ def container() -> Container:
 
 @pytest.fixture
 def client() -> Any:
-    from typing import Generator
     with TestClient(app) as client:
         yield client
 
@@ -189,7 +185,7 @@ def test_continuous_learning_rules(container: Container) -> None:
     # Run learning iteration
     result = learning_svc.run_learning_iteration(farmer_id)
     assert result["status"] == "success"
-    
+
     # Check risk tolerance downgraded to 'low' due to bad outcomes
     updated_profile = profile_svc.get_profile(farmer_id)
     assert updated_profile.risk_tolerance == "low"
@@ -222,13 +218,13 @@ def test_privacy_scrubbing(container: Container) -> None:
 
 @pytest.mark.asyncio
 async def test_adaptive_reasoning_node_execution(container: Container) -> None:
-    from agents.planner.planner import PlannerAgent
-    from agents.weather.weather import WeatherAgent
+    from agents.disease.disease import KnowledgeAgent
     from agents.market.market import MarketAgent
     from agents.memory.memory import MemoryAgent
-    from agents.disease.disease import KnowledgeAgent
+    from agents.planner.planner import PlannerAgent
     from agents.schemes.schemes import GovernmentSchemeAgent
     from agents.verifier.verifier import VerifierAgent
+    from agents.weather.weather import WeatherAgent
 
     # Register all platform agents so orchestrator executes cleanly
     planner_agent = PlannerAgent(container.llm_provider)
@@ -270,7 +266,7 @@ async def test_adaptive_reasoning_node_execution(container: Container) -> None:
     assert data is not None
     assert "recommendation" in data
     rec_text = data["recommendation"]
-    
+
     # Verify personalized tag was injected into recommendation
     assert "[PERSONALIZED FOR SIDDAPPA GOWDA]" in rec_text
     assert "Risk: LOW" in rec_text

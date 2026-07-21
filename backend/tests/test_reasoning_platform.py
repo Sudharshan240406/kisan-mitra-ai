@@ -15,27 +15,28 @@ from __future__ import annotations
 import time
 import uuid
 from typing import Any
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import MagicMock
 
 import pytest
-
+from app.reasoning.chief import ChiefReasoningAgent
 from app.reasoning.confidence import ConfidenceEngine, ConfidenceReport
 from app.reasoning.consensus import ConflictResolutionEngine, ConsensusEngine
 from app.reasoning.core import (
     ReasoningCache,
     ReasoningContext,
-    ReasoningMetrics,
     ReasoningPlatform,
     ReasoningRegistry,
     ReasoningSession,
 )
-from app.reasoning.chief import ChiefReasoningAgent
 from app.reasoning.escalation import HumanEscalationEngine
-from app.reasoning.evidence import EvidenceCollector, EvidenceRankingEngine, RankedEvidence
-from app.reasoning.synthesis import DecisionSynthesizer, ExplainabilityEngine
+from app.reasoning.evidence import (
+    EvidenceCollector,
+    EvidenceRankingEngine,
+    RankedEvidence,
+)
+from app.reasoning.synthesis import DecisionSynthesizer
 from app.reasoning.telemetry import ReasoningTelemetry
 from app.schemas.evidence import BaseEvidence
-
 
 # ---------------------------------------------------------------------------
 # Fixtures

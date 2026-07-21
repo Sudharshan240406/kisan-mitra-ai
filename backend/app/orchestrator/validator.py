@@ -1,5 +1,6 @@
 from typing import Any, Dict, List
 
+
 class ResponseValidator:
     """
     Validates consolidated agent responses for contradictions, low confidence indicators, and incomplete recommendations.
@@ -9,7 +10,7 @@ class ResponseValidator:
 
     def validate(self, response_data: Dict[str, Any]) -> List[str]:
         warnings = []
-        
+
         confidence = response_data.get("confidence", 1.0)
         if confidence < 0.7:
             warnings.append(f"Low confidence evaluation score: {confidence:.2f}")

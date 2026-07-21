@@ -9,14 +9,14 @@ Validates Loop 1 to 10 requirements:
 - Performance duration limits (<5s per call)
 - Error recovery path with CALL_ERROR and recovery actions
 """
-import pytest
 import time
 from typing import Any
 
-from app.services.demo import DemoService, DEMO_FARMERS
-from app.services.eligibility import EligibilityEngine
-from app.services.document_advisor import DocumentAdvisor
+import pytest
 from app.knowledge.modules.government import GovernmentKnowledgeProvider
+from app.services.demo import DEMO_FARMERS, DemoService
+from app.services.document_advisor import DocumentAdvisor
+from app.services.eligibility import EligibilityEngine
 
 
 class MockWebSocketManager:
@@ -50,7 +50,7 @@ class TestEndToEndPipeline:
         # 1. Onboarding
         farmer = DEMO_FARMERS[0]
         assert farmer.name == "Ramesh Singh"
-        
+
         # Simulate E2E steps (matching the app/api/v1/demo.py pipeline structure)
         # Event 1: CALL_STARTED
         await ws_mock.push_event("CALL_STARTED", {
@@ -115,7 +115,7 @@ class TestEndToEndPipeline:
         guidance = advisor.generate_guidance(farmer, pm_kisan)
         required_names = [d["name"] for d in guidance["required_documents"]]
         assert "Aadhaar Card" in required_names
-        
+
         await ws_mock.push_event("DOCUMENT_ADVISOR_READY", {
             "call_id": "TEST-CALL-RAMESH",
             "required_documents": guidance["required_documents"]
@@ -162,7 +162,7 @@ class TestEndToEndPipeline:
             "TRANSCRIPT_UPDATED",
             "CALL_COMPLETED"
         ]
-        
+
         for exp in expected_types:
             assert exp in event_types, f"Missing event type: {exp}"
 
@@ -173,7 +173,7 @@ class TestEndToEndPipeline:
         that CALL_ERROR and ERROR_RECOVERY_STARTED are emitted in sequence.
         """
         call_id = "TEST-CALL-FAIL"
-        
+
         # Simulate pipeline crash
         try:
             raise ValueError("Database connection failed (Simulated)")
@@ -183,7 +183,7 @@ class TestEndToEndPipeline:
                 "call_id": call_id,
                 "error": str(exc)
             })
-            
+
             # Event 13: ERROR_RECOVERY_STARTED
             await ws_mock.push_event("ERROR_RECOVERY_STARTED", {
                 "call_id": call_id,
@@ -194,7 +194,7 @@ class TestEndToEndPipeline:
         event_types = [e["type"] for e in ws_mock.events]
         assert "CALL_ERROR" in event_types
         assert "ERROR_RECOVERY_STARTED" in event_types
-        
+
         # Verify recovery details
         recovery_event = next(e for e in ws_mock.events if e["type"] == "ERROR_RECOVERY_STARTED")
         assert recovery_event["payload"]["recovery_action"] == "fallback_to_helpline"
@@ -208,10 +208,10 @@ class TestEndToEndPipeline:
         gov_provider = GovernmentKnowledgeProvider()
         all_schemes = gov_provider.get_all_schemes()
         engine = EligibilityEngine()
-        
+
         start = time.perf_counter()
         results = engine.evaluate_all(farmer, all_schemes)
         duration_ms = (time.perf_counter() - start) * 1000
-        
+
         assert len(results) == 11
         assert duration_ms < 500.0, f"Eligibility engine too slow: {duration_ms:.1f}ms"

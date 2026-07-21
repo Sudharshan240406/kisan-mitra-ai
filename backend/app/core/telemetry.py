@@ -343,7 +343,7 @@ class TelemetryFramework(ITelemetryExporter):
         # 1. Fetch memory usage via resource module (Unix/Linux friendly)
         try:
             import resource
-            max_rss = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
+            max_rss = getattr(resource, "getrusage", lambda x: type("R", (), {"ru_maxrss": 0})())(getattr(resource, "RUSAGE_SELF", 0)).ru_maxrss  # type: ignore
             if sys.platform == "darwin":  # macOS ru_maxrss is in bytes
                 stats["memory_usage_mb"] = round(max_rss / (1024 * 1024), 2)
             else:  # Linux ru_maxrss is in kilobytes

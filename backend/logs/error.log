@@ -428,3 +428,494 @@ connection to server at "localhost" (127.0.0.1), port 5432 failed: Connection re
 [2026-07-01 19:00:33,320] WARNING  in router [Trace: N/A, Request: N/A, Session: N/A]: Channel 'sms-01' not registered.
 [2026-07-01 19:00:33,320] WARNING  in pipeline [Trace: N/A, Request: N/A, Session: N/A]: SMS Inbound Validation Failed: Spam filter blocked: Rate limit exceeded: max 5 messages per minute.
 [2026-07-01 19:00:33,354] ERROR    in orchestrator [Trace: SMS-TR-27316056, Request: 2e8258b2-48b7-463a-b3c8-3850c938985d, Session: CONV-SMS-49ff3c6d]: [Orchestrator] Execution failed (Trace: SMS-TR-27316056): Agent 'Memory' was not found in the registry.
+[2026-07-05 22:40:35,478] ERROR    in platform [Trace: N/A, Request: N/A, Session: N/A]: Adapter execution failed for 'gemini-1.5-pro': Cloud service timeout
+[2026-07-05 22:40:35,479] WARNING  in platform [Trace: N/A, Request: N/A, Session: N/A]: [AI Platform] Primary failed. Cascading fallback to: llama3
+[2026-07-05 22:40:35,723] WARNING  in channels [Trace: N/A, Request: N/A, Session: N/A]: WhatsApp channel 'wa-01' missing 'api_endpoint' configuration.
+[2026-07-05 22:40:35,723] WARNING  in channels [Trace: N/A, Request: N/A, Session: N/A]: Skipping invalid channel config: {'channel_id': 'invalid-cfg', 'channel_type': 'sms'}
+[2026-07-05 22:40:36,102] WARNING  in router [Trace: N/A, Request: N/A, Session: N/A]: Validation failed: Missing conversation_id., Missing sender.
+[2026-07-05 22:40:36,105] WARNING  in router [Trace: N/A, Request: N/A, Session: N/A]: Channel 'unknown-ch' not registered.
+[2026-07-05 22:40:37,362] WARNING  in resilience [Trace: N/A, Request: N/A, Session: N/A]: Attempt 1 failed for 'dummy-weather': Connection refused by dummy server
+[2026-07-05 22:40:37,468] WARNING  in resilience [Trace: N/A, Request: N/A, Session: N/A]: Attempt 2 failed for 'dummy-weather': Connection refused by dummy server
+[2026-07-05 22:40:37,580] WARNING  in resilience [Trace: N/A, Request: N/A, Session: N/A]: Attempt 3 failed for 'dummy-weather': Connection refused by dummy server
+[2026-07-05 22:40:37,583] WARNING  in resilience [Trace: N/A, Request: N/A, Session: N/A]: Attempt 1 failed for 'dummy-weather': Connection refused by dummy server
+[2026-07-05 22:40:37,583] WARNING  in resilience [Trace: N/A, Request: N/A, Session: N/A]: CircuitBreaker state transition: CLOSED -> OPEN (failures: 2)
+[2026-07-05 22:40:37,583] WARNING  in resilience [Trace: N/A, Request: N/A, Session: N/A]: [CircuitBreaker] 'dummy-weather' is OPEN. Failing fast.
+[2026-07-05 22:40:38,423] WARNING  in resilience [Trace: N/A, Request: N/A, Session: N/A]: Attempt 1 failed for 'dummy-weather': 
+[2026-07-05 22:40:38,423] WARNING  in resilience [Trace: N/A, Request: N/A, Session: N/A]: Attempt 1 failed for 'dummy-weather': Connection refused by dummy server
+[2026-07-05 22:40:38,912] WARNING  in error_handler [Trace: N/A, Request: N/A, Session: N/A]: [HTTP Exception Handled] 400: Cannot select 'openweather' as active because its status is 'inactive'.
+[2026-07-05 22:40:41,721] WARNING  in weather [Trace: N/A, Request: N/A, Session: N/A]: [IMDWeatherAdapter] HTTP call failed, falling back: Network Offline
+[2026-07-05 22:40:46,252] WARNING  in market [Trace: N/A, Request: N/A, Session: N/A]: [eNAMMarketAdapter] HTTP call failed, falling back: 
+[2026-07-05 22:40:46,846] WARNING  in authentication [Trace: N/A, Request: N/A, Session: N/A]: JWT Decode failed: Not enough segments
+[2026-07-05 22:40:46,853] WARNING  in authentication [Trace: N/A, Request: N/A, Session: N/A]: JWT Decode failed: Not enough segments
+[2026-07-05 22:40:48,317] ERROR    in validation [Trace: N/A, Request: N/A, Session: N/A]: Policy Violation: Recommendation contains banned chemical: 'endosulfan'
+[2026-07-05 22:40:48,319] WARNING  in validation [Trace: N/A, Request: N/A, Session: N/A]: Knowledge validation: Stale data detected. Age: 744.00 hours
+[2026-07-05 22:40:49,279] WARNING  in pipeline [Trace: N/A, Request: N/A, Session: N/A]: Media Validation Failed: Format '.txt' is not supported for media type 'voice'.
+[2026-07-05 22:40:49,281] WARNING  in pipeline [Trace: N/A, Request: N/A, Session: N/A]: Media Validation Failed: File size exceeds maximum threshold of 20971520 bytes.
+[2026-07-05 22:40:49,579] WARNING  in pipeline [Trace: N/A, Request: N/A, Session: N/A]: Policy violation detected in media text: Forbidden term 'illegal pesticide' detected under policy 'default-safety-policy'.
+[2026-07-05 22:40:56,578] ERROR    in health [Trace: N/A, Request: N/A, Session: N/A]: [HEALTH CHECK FAIL] Database connection check failed: connection to server at "localhost" (::1), port 5432 failed: Connection refused (0x0000274D/10061)
+	Is the server running on that host and accepting TCP/IP connections?
+connection to server at "localhost" (127.0.0.1), port 5432 failed: Connection refused (0x0000274D/10061)
+	Is the server running on that host and accepting TCP/IP connections?
+
+[2026-07-05 22:41:00,667] ERROR    in health [Trace: N/A, Request: N/A, Session: N/A]: [HEALTH CHECK FAIL] Redis connection check failed: Error 10061 connecting to localhost:6379. No connection could be made because the target machine actively refused it.
+[2026-07-05 22:41:00,667] ERROR    in health [Trace: N/A, Request: N/A, Session: N/A]: [HEALTH CHECK FAIL] Chroma Vector DB connection check failed: chromadb dependency not installed
+[2026-07-05 22:41:00,667] WARNING  in error_handler [Trace: N/A, Request: N/A, Session: N/A]: [HTTP Exception Handled] 503: {'status': 'degraded', 'service': 'kisan-mitra-backend', 'components': {'database': 'unhealthy', 'cache': 'unhealthy', 'vector_db': 'unhealthy'}}
+[2026-07-05 22:41:01,299] ERROR    in error_handler [Trace: N/A, Request: N/A, Session: N/A]: [Exception Handled] ValidationException: Custom validation failed
+[2026-07-05 22:41:01,543] WARNING  in error_handler [Trace: N/A, Request: N/A, Session: N/A]: [Validation Exception Handled] 400 Bad Request: [{'type': 'missing', 'loc': ('body', 'session_id'), 'msg': 'Field required', 'input': {'query': 12345}}, {'type': 'string_type', 'loc': ('body', 'query'), 'msg': 'Input should be a valid string', 'input': 12345}]
+[2026-07-05 22:41:02,407] WARNING  in consensus [Trace: N/A, Request: N/A, Session: N/A]: [ConflictResolution] Conflict detected: Agent 'Weather' evidence spread=0.500 exceeds divergence threshold=0.3.
+[2026-07-05 22:41:02,422] WARNING  in escalation [Trace: N/A, Request: N/A, Session: N/A]: [EscalationEngine] Escalation #1 triggered for trace=TR-101: Confidence 20.00% is below safety threshold 50.00%.
+[2026-07-05 22:41:02,425] WARNING  in escalation [Trace: N/A, Request: N/A, Session: N/A]: [EscalationEngine] Escalation #1 triggered for trace=TR-102: Safety-critical keyword(s) detected: pesticide overdose.
+[2026-07-05 22:41:02,428] WARNING  in escalation [Trace: N/A, Request: N/A, Session: N/A]: [EscalationEngine] Escalation #1 triggered for trace=TR-103: 3 missing query fields exceed escalation threshold (2).
+[2026-07-05 22:41:02,432] WARNING  in escalation [Trace: N/A, Request: N/A, Session: N/A]: [EscalationEngine] Escalation #1 triggered for trace=TR-104: Evidence count 0 is below minimum threshold (2).
+[2026-07-05 22:41:02,435] WARNING  in escalation [Trace: N/A, Request: N/A, Session: N/A]: [EscalationEngine] Escalation #1 triggered for trace=T: Confidence 10.00% is below safety threshold 90.00%.
+[2026-07-05 22:41:02,436] WARNING  in escalation [Trace: N/A, Request: N/A, Session: N/A]: [EscalationEngine] Escalation #2 triggered for trace=T: Confidence 10.00% is below safety threshold 90.00%.
+[2026-07-05 22:41:02,436] WARNING  in escalation [Trace: N/A, Request: N/A, Session: N/A]: [EscalationEngine] Escalation #3 triggered for trace=T: Confidence 10.00% is below safety threshold 90.00%.
+[2026-07-05 22:41:02,453] WARNING  in escalation [Trace: N/A, Request: N/A, Session: N/A]: [EscalationEngine] Escalation #1 triggered for trace=TR-chief: Confidence 22.00% is below safety threshold 30.00%.
+[2026-07-05 22:41:02,465] ERROR    in telemetry [Trace: N/A, Request: N/A, Session: N/A]: [ReasoningTelemetry] Session FAILED: S3 — Timeout during reasoning
+[2026-07-05 22:41:02,592] WARNING  in pipeline [Trace: N/A, Request: N/A, Session: N/A]: SMS Inbound Validation Failed: Message contains sensitive information fields (PIN/CVV/Password/Card details).
+[2026-07-05 22:41:02,597] WARNING  in pipeline [Trace: N/A, Request: N/A, Session: N/A]: SMS Inbound Validation Failed: Message body length exceeds maximum threshold of 800 characters.
+[2026-07-05 22:41:02,597] WARNING  in router [Trace: N/A, Request: N/A, Session: N/A]: Channel 'sms-01' not registered.
+[2026-07-05 22:41:02,609] WARNING  in pipeline [Trace: N/A, Request: N/A, Session: N/A]: SMS Inbound Validation Failed: Spam filter blocked: Duplicate message within 5 seconds.
+[2026-07-05 22:41:02,614] WARNING  in router [Trace: N/A, Request: N/A, Session: N/A]: Channel 'sms-01' not registered.
+[2026-07-05 22:41:02,625] WARNING  in router [Trace: N/A, Request: N/A, Session: N/A]: Channel 'sms-01' not registered.
+[2026-07-05 22:41:02,635] WARNING  in router [Trace: N/A, Request: N/A, Session: N/A]: Channel 'sms-01' not registered.
+[2026-07-05 22:41:02,649] WARNING  in router [Trace: N/A, Request: N/A, Session: N/A]: Channel 'sms-01' not registered.
+[2026-07-05 22:41:02,661] WARNING  in router [Trace: N/A, Request: N/A, Session: N/A]: Channel 'sms-01' not registered.
+[2026-07-05 22:41:02,669] WARNING  in pipeline [Trace: N/A, Request: N/A, Session: N/A]: SMS Inbound Validation Failed: Spam filter blocked: Rate limit exceeded: max 5 messages per minute.
+[2026-07-05 22:41:03,877] ERROR    in orchestrator [Trace: SMS-TR-ca0037bd, Request: 8c82a7b1-6fd2-409d-abf4-9c69a052e777, Session: CONV-SMS-53f981fc]: [Orchestrator] Execution failed (Trace: SMS-TR-ca0037bd): Agent 'Memory' was not found in the registry.
+[2026-07-05 22:42:50,694] ERROR    in platform [Trace: N/A, Request: N/A, Session: N/A]: Adapter execution failed for 'gemini-1.5-pro': Cloud service timeout
+[2026-07-05 22:42:50,697] WARNING  in platform [Trace: N/A, Request: N/A, Session: N/A]: [AI Platform] Primary failed. Cascading fallback to: llama3
+[2026-07-05 22:42:50,914] WARNING  in channels [Trace: N/A, Request: N/A, Session: N/A]: WhatsApp channel 'wa-01' missing 'api_endpoint' configuration.
+[2026-07-05 22:42:50,918] WARNING  in channels [Trace: N/A, Request: N/A, Session: N/A]: Skipping invalid channel config: {'channel_id': 'invalid-cfg', 'channel_type': 'sms'}
+[2026-07-05 22:42:51,193] WARNING  in router [Trace: N/A, Request: N/A, Session: N/A]: Validation failed: Missing conversation_id., Missing sender.
+[2026-07-05 22:42:51,196] WARNING  in router [Trace: N/A, Request: N/A, Session: N/A]: Channel 'unknown-ch' not registered.
+[2026-07-05 22:42:52,537] WARNING  in resilience [Trace: N/A, Request: N/A, Session: N/A]: Attempt 1 failed for 'dummy-weather': Connection refused by dummy server
+[2026-07-05 22:42:52,647] WARNING  in resilience [Trace: N/A, Request: N/A, Session: N/A]: Attempt 2 failed for 'dummy-weather': Connection refused by dummy server
+[2026-07-05 22:42:52,760] WARNING  in resilience [Trace: N/A, Request: N/A, Session: N/A]: Attempt 3 failed for 'dummy-weather': Connection refused by dummy server
+[2026-07-05 22:42:52,766] WARNING  in resilience [Trace: N/A, Request: N/A, Session: N/A]: Attempt 1 failed for 'dummy-weather': Connection refused by dummy server
+[2026-07-05 22:42:52,768] WARNING  in resilience [Trace: N/A, Request: N/A, Session: N/A]: CircuitBreaker state transition: CLOSED -> OPEN (failures: 2)
+[2026-07-05 22:42:52,768] WARNING  in resilience [Trace: N/A, Request: N/A, Session: N/A]: [CircuitBreaker] 'dummy-weather' is OPEN. Failing fast.
+[2026-07-05 22:42:53,605] WARNING  in resilience [Trace: N/A, Request: N/A, Session: N/A]: Attempt 1 failed for 'dummy-weather': 
+[2026-07-05 22:42:53,605] WARNING  in resilience [Trace: N/A, Request: N/A, Session: N/A]: Attempt 1 failed for 'dummy-weather': Connection refused by dummy server
+[2026-07-05 22:42:54,097] WARNING  in error_handler [Trace: N/A, Request: N/A, Session: N/A]: [HTTP Exception Handled] 400: Cannot select 'openweather' as active because its status is 'inactive'.
+[2026-07-05 22:42:55,913] WARNING  in weather [Trace: N/A, Request: N/A, Session: N/A]: [IMDWeatherAdapter] HTTP call failed, falling back: Network Offline
+[2026-07-05 22:43:00,791] WARNING  in market [Trace: N/A, Request: N/A, Session: N/A]: [eNAMMarketAdapter] HTTP call failed, falling back: 
+[2026-07-05 22:43:00,932] WARNING  in authentication [Trace: N/A, Request: N/A, Session: N/A]: JWT Decode failed: Not enough segments
+[2026-07-05 22:43:00,935] WARNING  in authentication [Trace: N/A, Request: N/A, Session: N/A]: JWT Decode failed: Not enough segments
+[2026-07-05 22:43:02,241] ERROR    in validation [Trace: N/A, Request: N/A, Session: N/A]: Policy Violation: Recommendation contains banned chemical: 'endosulfan'
+[2026-07-05 22:43:02,244] WARNING  in validation [Trace: N/A, Request: N/A, Session: N/A]: Knowledge validation: Stale data detected. Age: 744.00 hours
+[2026-07-05 22:43:03,053] WARNING  in pipeline [Trace: N/A, Request: N/A, Session: N/A]: Media Validation Failed: Format '.txt' is not supported for media type 'voice'.
+[2026-07-05 22:43:03,062] WARNING  in pipeline [Trace: N/A, Request: N/A, Session: N/A]: Media Validation Failed: File size exceeds maximum threshold of 20971520 bytes.
+[2026-07-05 22:43:03,371] WARNING  in pipeline [Trace: N/A, Request: N/A, Session: N/A]: Policy violation detected in media text: Forbidden term 'illegal pesticide' detected under policy 'default-safety-policy'.
+[2026-07-05 22:43:09,714] ERROR    in health [Trace: N/A, Request: N/A, Session: N/A]: [HEALTH CHECK FAIL] Database connection check failed: connection to server at "localhost" (::1), port 5432 failed: Connection refused (0x0000274D/10061)
+	Is the server running on that host and accepting TCP/IP connections?
+connection to server at "localhost" (127.0.0.1), port 5432 failed: Connection refused (0x0000274D/10061)
+	Is the server running on that host and accepting TCP/IP connections?
+
+[2026-07-05 22:43:13,784] ERROR    in health [Trace: N/A, Request: N/A, Session: N/A]: [HEALTH CHECK FAIL] Redis connection check failed: Error 10061 connecting to localhost:6379. No connection could be made because the target machine actively refused it.
+[2026-07-05 22:43:13,786] ERROR    in health [Trace: N/A, Request: N/A, Session: N/A]: [HEALTH CHECK FAIL] Chroma Vector DB connection check failed: chromadb dependency not installed
+[2026-07-05 22:43:13,786] WARNING  in error_handler [Trace: N/A, Request: N/A, Session: N/A]: [HTTP Exception Handled] 503: {'status': 'degraded', 'service': 'kisan-mitra-backend', 'components': {'database': 'unhealthy', 'cache': 'unhealthy', 'vector_db': 'unhealthy'}}
+[2026-07-05 22:43:14,410] ERROR    in error_handler [Trace: N/A, Request: N/A, Session: N/A]: [Exception Handled] ValidationException: Custom validation failed
+[2026-07-05 22:43:14,660] WARNING  in error_handler [Trace: N/A, Request: N/A, Session: N/A]: [Validation Exception Handled] 400 Bad Request: [{'type': 'missing', 'loc': ('body', 'session_id'), 'msg': 'Field required', 'input': {'query': 12345}}, {'type': 'string_type', 'loc': ('body', 'query'), 'msg': 'Input should be a valid string', 'input': 12345}]
+[2026-07-05 22:43:15,879] WARNING  in consensus [Trace: N/A, Request: N/A, Session: N/A]: [ConflictResolution] Conflict detected: Agent 'Weather' evidence spread=0.500 exceeds divergence threshold=0.3.
+[2026-07-05 22:43:15,903] WARNING  in escalation [Trace: N/A, Request: N/A, Session: N/A]: [EscalationEngine] Escalation #1 triggered for trace=TR-101: Confidence 20.00% is below safety threshold 50.00%.
+[2026-07-05 22:43:15,909] WARNING  in escalation [Trace: N/A, Request: N/A, Session: N/A]: [EscalationEngine] Escalation #1 triggered for trace=TR-102: Safety-critical keyword(s) detected: pesticide overdose.
+[2026-07-05 22:43:15,914] WARNING  in escalation [Trace: N/A, Request: N/A, Session: N/A]: [EscalationEngine] Escalation #1 triggered for trace=TR-103: 3 missing query fields exceed escalation threshold (2).
+[2026-07-05 22:43:15,920] WARNING  in escalation [Trace: N/A, Request: N/A, Session: N/A]: [EscalationEngine] Escalation #1 triggered for trace=TR-104: Evidence count 0 is below minimum threshold (2).
+[2026-07-05 22:43:15,926] WARNING  in escalation [Trace: N/A, Request: N/A, Session: N/A]: [EscalationEngine] Escalation #1 triggered for trace=T: Confidence 10.00% is below safety threshold 90.00%.
+[2026-07-05 22:43:15,928] WARNING  in escalation [Trace: N/A, Request: N/A, Session: N/A]: [EscalationEngine] Escalation #2 triggered for trace=T: Confidence 10.00% is below safety threshold 90.00%.
+[2026-07-05 22:43:15,929] WARNING  in escalation [Trace: N/A, Request: N/A, Session: N/A]: [EscalationEngine] Escalation #3 triggered for trace=T: Confidence 10.00% is below safety threshold 90.00%.
+[2026-07-05 22:43:15,953] WARNING  in escalation [Trace: N/A, Request: N/A, Session: N/A]: [EscalationEngine] Escalation #1 triggered for trace=TR-chief: Confidence 22.00% is below safety threshold 30.00%.
+[2026-07-05 22:43:15,972] ERROR    in telemetry [Trace: N/A, Request: N/A, Session: N/A]: [ReasoningTelemetry] Session FAILED: S3 — Timeout during reasoning
+[2026-07-05 22:43:16,058] WARNING  in pipeline [Trace: N/A, Request: N/A, Session: N/A]: SMS Inbound Validation Failed: Message contains sensitive information fields (PIN/CVV/Password/Card details).
+[2026-07-05 22:43:16,064] WARNING  in pipeline [Trace: N/A, Request: N/A, Session: N/A]: SMS Inbound Validation Failed: Message body length exceeds maximum threshold of 800 characters.
+[2026-07-05 22:43:16,067] WARNING  in router [Trace: N/A, Request: N/A, Session: N/A]: Channel 'sms-01' not registered.
+[2026-07-05 22:43:16,072] WARNING  in pipeline [Trace: N/A, Request: N/A, Session: N/A]: SMS Inbound Validation Failed: Spam filter blocked: Duplicate message within 5 seconds.
+[2026-07-05 22:43:16,075] WARNING  in router [Trace: N/A, Request: N/A, Session: N/A]: Channel 'sms-01' not registered.
+[2026-07-05 22:43:16,081] WARNING  in router [Trace: N/A, Request: N/A, Session: N/A]: Channel 'sms-01' not registered.
+[2026-07-05 22:43:16,088] WARNING  in router [Trace: N/A, Request: N/A, Session: N/A]: Channel 'sms-01' not registered.
+[2026-07-05 22:43:16,094] WARNING  in router [Trace: N/A, Request: N/A, Session: N/A]: Channel 'sms-01' not registered.
+[2026-07-05 22:43:16,101] WARNING  in router [Trace: N/A, Request: N/A, Session: N/A]: Channel 'sms-01' not registered.
+[2026-07-05 22:43:16,106] WARNING  in pipeline [Trace: N/A, Request: N/A, Session: N/A]: SMS Inbound Validation Failed: Spam filter blocked: Rate limit exceeded: max 5 messages per minute.
+[2026-07-05 22:43:16,918] ERROR    in orchestrator [Trace: SMS-TR-78d242e7, Request: c5adf233-b915-4ac7-95a3-763383b63faf, Session: CONV-SMS-342da47d]: [Orchestrator] Execution failed (Trace: SMS-TR-78d242e7): Agent 'Memory' was not found in the registry.
+[2026-07-05 23:04:23,172] WARNING  in error_handler [Trace: N/A, Request: N/A, Session: N/A]: [HTTP Exception Handled] 404: Not Found
+[2026-07-05 23:05:07,337] WARNING  in adapters [Trace: N/A, Request: N/A, Session: N/A]: Ollama server offline at http://localhost:11434. Falling back to mock generator.
+[2026-07-05 23:05:07,345] WARNING  in error_handler [Trace: N/A, Request: N/A, Session: N/A]: [HTTP Exception Handled] 404: Not Found
+[2026-07-05 23:05:07,376] WARNING  in error_handler [Trace: N/A, Request: N/A, Session: N/A]: [HTTP Exception Handled] 404: Not Found
+[2026-07-05 23:05:07,389] WARNING  in error_handler [Trace: N/A, Request: N/A, Session: N/A]: [HTTP Exception Handled] 404: Not Found
+[2026-07-05 23:06:23,260] WARNING  in adapters [Trace: N/A, Request: N/A, Session: N/A]: Ollama server offline at http://localhost:11434. Falling back to mock generator.
+[2026-07-05 23:08:39,298] WARNING  in adapters [Trace: N/A, Request: N/A, Session: N/A]: Ollama server offline at http://localhost:11434. Falling back to mock generator.
+[2026-07-06 18:15:58,600] WARNING  in adapters [Trace: N/A, Request: N/A, Session: N/A]: Ollama server offline at http://localhost:11434. Falling back to mock generator.
+[2026-07-06 18:23:32,381] WARNING  in adapters [Trace: N/A, Request: N/A, Session: N/A]: Ollama server offline at http://localhost:11434. Falling back to mock generator.
+[2026-07-07 10:30:45,572] ERROR    in platform [Trace: N/A, Request: N/A, Session: N/A]: Adapter execution failed for 'gemini-1.5-pro': Cloud service timeout
+[2026-07-07 10:30:45,573] WARNING  in platform [Trace: N/A, Request: N/A, Session: N/A]: [AI Platform] Primary failed. Cascading fallback to: llama3
+[2026-07-07 10:30:45,846] WARNING  in channels [Trace: N/A, Request: N/A, Session: N/A]: WhatsApp channel 'wa-01' missing 'api_endpoint' configuration.
+[2026-07-07 10:30:45,849] WARNING  in channels [Trace: N/A, Request: N/A, Session: N/A]: Skipping invalid channel config: {'channel_id': 'invalid-cfg', 'channel_type': 'sms'}
+[2026-07-07 10:30:46,087] WARNING  in router [Trace: N/A, Request: N/A, Session: N/A]: Validation failed: Missing conversation_id., Missing sender.
+[2026-07-07 10:30:46,087] WARNING  in router [Trace: N/A, Request: N/A, Session: N/A]: Channel 'unknown-ch' not registered.
+[2026-07-07 10:30:46,932] WARNING  in resilience [Trace: N/A, Request: N/A, Session: N/A]: Attempt 1 failed for 'dummy-weather': Connection refused by dummy server
+[2026-07-07 10:30:47,041] WARNING  in resilience [Trace: N/A, Request: N/A, Session: N/A]: Attempt 2 failed for 'dummy-weather': Connection refused by dummy server
+[2026-07-07 10:30:47,147] WARNING  in resilience [Trace: N/A, Request: N/A, Session: N/A]: Attempt 3 failed for 'dummy-weather': Connection refused by dummy server
+[2026-07-07 10:30:47,147] WARNING  in resilience [Trace: N/A, Request: N/A, Session: N/A]: Attempt 1 failed for 'dummy-weather': Connection refused by dummy server
+[2026-07-07 10:30:47,147] WARNING  in resilience [Trace: N/A, Request: N/A, Session: N/A]: CircuitBreaker state transition: CLOSED -> OPEN (failures: 2)
+[2026-07-07 10:30:47,155] WARNING  in resilience [Trace: N/A, Request: N/A, Session: N/A]: [CircuitBreaker] 'dummy-weather' is OPEN. Failing fast.
+[2026-07-07 10:30:47,979] WARNING  in resilience [Trace: N/A, Request: N/A, Session: N/A]: Attempt 1 failed for 'dummy-weather': 
+[2026-07-07 10:30:47,981] WARNING  in resilience [Trace: N/A, Request: N/A, Session: N/A]: Attempt 1 failed for 'dummy-weather': Connection refused by dummy server
+[2026-07-07 10:30:48,204] WARNING  in error_handler [Trace: N/A, Request: N/A, Session: N/A]: [HTTP Exception Handled] 400: Cannot select 'openweather' as active because its status is 'inactive'.
+[2026-07-07 10:30:50,318] WARNING  in weather [Trace: N/A, Request: N/A, Session: N/A]: [IMDWeatherAdapter] HTTP call failed, falling back: Network Offline
+[2026-07-07 10:30:54,839] WARNING  in market [Trace: N/A, Request: N/A, Session: N/A]: [eNAMMarketAdapter] HTTP call failed, falling back: 
+[2026-07-07 10:30:55,110] WARNING  in authentication [Trace: N/A, Request: N/A, Session: N/A]: JWT Decode failed: Not enough segments
+[2026-07-07 10:30:55,111] WARNING  in authentication [Trace: N/A, Request: N/A, Session: N/A]: JWT Decode failed: Not enough segments
+[2026-07-07 10:30:56,330] ERROR    in validation [Trace: N/A, Request: N/A, Session: N/A]: Policy Violation: Recommendation contains banned chemical: 'endosulfan'
+[2026-07-07 10:30:56,331] WARNING  in validation [Trace: N/A, Request: N/A, Session: N/A]: Knowledge validation: Stale data detected. Age: 744.00 hours
+[2026-07-07 10:30:56,792] WARNING  in pipeline [Trace: N/A, Request: N/A, Session: N/A]: Media Validation Failed: Format '.txt' is not supported for media type 'voice'.
+[2026-07-07 10:30:56,796] WARNING  in pipeline [Trace: N/A, Request: N/A, Session: N/A]: Media Validation Failed: File size exceeds maximum threshold of 20971520 bytes.
+[2026-07-07 10:30:56,942] WARNING  in pipeline [Trace: N/A, Request: N/A, Session: N/A]: Policy violation detected in media text: Forbidden term 'illegal pesticide' detected under policy 'default-safety-policy'.
+[2026-07-07 10:30:57,615] WARNING  in orchestrator [Trace: N/A, Request: N/A, Session: N/A]: [MemoryRetrieval] Profile fetch failed: 'FarmerProfile' object has no attribute 'district'
+[2026-07-07 10:31:02,118] ERROR    in health [Trace: N/A, Request: N/A, Session: N/A]: [HEALTH CHECK FAIL] Database connection check failed: connection to server at "localhost" (::1), port 5432 failed: Connection refused (0x0000274D/10061)
+	Is the server running on that host and accepting TCP/IP connections?
+connection to server at "localhost" (127.0.0.1), port 5432 failed: Connection refused (0x0000274D/10061)
+	Is the server running on that host and accepting TCP/IP connections?
+
+[2026-07-07 10:31:06,157] ERROR    in health [Trace: N/A, Request: N/A, Session: N/A]: [HEALTH CHECK FAIL] Redis connection check failed: Error 10061 connecting to localhost:6379. No connection could be made because the target machine actively refused it.
+[2026-07-07 10:31:06,159] ERROR    in health [Trace: N/A, Request: N/A, Session: N/A]: [HEALTH CHECK FAIL] Chroma Vector DB connection check failed: chromadb dependency not installed
+[2026-07-07 10:31:06,161] WARNING  in error_handler [Trace: N/A, Request: N/A, Session: N/A]: [HTTP Exception Handled] 503: {'status': 'degraded', 'service': 'kisan-mitra-backend', 'components': {'database': 'unhealthy', 'cache': 'unhealthy', 'vector_db': 'unhealthy'}}
+[2026-07-07 10:31:06,482] ERROR    in error_handler [Trace: N/A, Request: N/A, Session: N/A]: [Exception Handled] ValidationException: Custom validation failed
+[2026-07-07 10:31:06,567] WARNING  in error_handler [Trace: N/A, Request: N/A, Session: N/A]: [Validation Exception Handled] 400 Bad Request: [{'type': 'missing', 'loc': ('body', 'session_id'), 'msg': 'Field required', 'input': {'query': 12345}}, {'type': 'string_type', 'loc': ('body', 'query'), 'msg': 'Input should be a valid string', 'input': 12345}]
+[2026-07-07 10:31:07,491] WARNING  in consensus [Trace: N/A, Request: N/A, Session: N/A]: [ConflictResolution] Conflict detected: Agent 'Weather' evidence spread=0.500 exceeds divergence threshold=0.3.
+[2026-07-07 10:31:07,509] WARNING  in escalation [Trace: N/A, Request: N/A, Session: N/A]: [EscalationEngine] Escalation #1 triggered for trace=TR-101: Confidence 20.00% is below safety threshold 50.00%.
+[2026-07-07 10:31:07,513] WARNING  in escalation [Trace: N/A, Request: N/A, Session: N/A]: [EscalationEngine] Escalation #1 triggered for trace=TR-102: Safety-critical keyword(s) detected: pesticide overdose.
+[2026-07-07 10:31:07,517] WARNING  in escalation [Trace: N/A, Request: N/A, Session: N/A]: [EscalationEngine] Escalation #1 triggered for trace=TR-103: 3 missing query fields exceed escalation threshold (2).
+[2026-07-07 10:31:07,520] WARNING  in escalation [Trace: N/A, Request: N/A, Session: N/A]: [EscalationEngine] Escalation #1 triggered for trace=TR-104: Evidence count 0 is below minimum threshold (2).
+[2026-07-07 10:31:07,523] WARNING  in escalation [Trace: N/A, Request: N/A, Session: N/A]: [EscalationEngine] Escalation #1 triggered for trace=T: Confidence 10.00% is below safety threshold 90.00%.
+[2026-07-07 10:31:07,524] WARNING  in escalation [Trace: N/A, Request: N/A, Session: N/A]: [EscalationEngine] Escalation #2 triggered for trace=T: Confidence 10.00% is below safety threshold 90.00%.
+[2026-07-07 10:31:07,525] WARNING  in escalation [Trace: N/A, Request: N/A, Session: N/A]: [EscalationEngine] Escalation #3 triggered for trace=T: Confidence 10.00% is below safety threshold 90.00%.
+[2026-07-07 10:31:07,540] WARNING  in escalation [Trace: N/A, Request: N/A, Session: N/A]: [EscalationEngine] Escalation #1 triggered for trace=TR-chief: Confidence 22.00% is below safety threshold 30.00%.
+[2026-07-07 10:31:07,556] ERROR    in telemetry [Trace: N/A, Request: N/A, Session: N/A]: [ReasoningTelemetry] Session FAILED: S3 — Timeout during reasoning
+[2026-07-07 10:31:07,646] WARNING  in pipeline [Trace: N/A, Request: N/A, Session: N/A]: SMS Inbound Validation Failed: Message contains sensitive information fields (PIN/CVV/Password/Card details).
+[2026-07-07 10:31:07,657] WARNING  in pipeline [Trace: N/A, Request: N/A, Session: N/A]: SMS Inbound Validation Failed: Message body length exceeds maximum threshold of 800 characters.
+[2026-07-07 10:31:07,660] WARNING  in router [Trace: N/A, Request: N/A, Session: N/A]: Channel 'sms-01' not registered.
+[2026-07-07 10:31:07,666] WARNING  in pipeline [Trace: N/A, Request: N/A, Session: N/A]: SMS Inbound Validation Failed: Spam filter blocked: Duplicate message within 5 seconds.
+[2026-07-07 10:31:07,670] WARNING  in router [Trace: N/A, Request: N/A, Session: N/A]: Channel 'sms-01' not registered.
+[2026-07-07 10:31:07,676] WARNING  in router [Trace: N/A, Request: N/A, Session: N/A]: Channel 'sms-01' not registered.
+[2026-07-07 10:31:07,682] WARNING  in router [Trace: N/A, Request: N/A, Session: N/A]: Channel 'sms-01' not registered.
+[2026-07-07 10:31:07,687] WARNING  in router [Trace: N/A, Request: N/A, Session: N/A]: Channel 'sms-01' not registered.
+[2026-07-07 10:31:07,691] WARNING  in router [Trace: N/A, Request: N/A, Session: N/A]: Channel 'sms-01' not registered.
+[2026-07-07 10:31:07,697] WARNING  in pipeline [Trace: N/A, Request: N/A, Session: N/A]: SMS Inbound Validation Failed: Spam filter blocked: Rate limit exceeded: max 5 messages per minute.
+[2026-07-07 10:31:07,792] ERROR    in orchestrator [Trace: N/A, Request: N/A, Session: N/A]: [OrchestratorException] Trace: KM-TRC-14CADD76717F4B38 | Error: Agent 'Knowledge' was not found in the registry.
+[2026-07-07 10:31:55,984] ERROR    in platform [Trace: N/A, Request: N/A, Session: N/A]: Adapter execution failed for 'gemini-1.5-pro': Cloud service timeout
+[2026-07-07 10:31:55,987] WARNING  in platform [Trace: N/A, Request: N/A, Session: N/A]: [AI Platform] Primary failed. Cascading fallback to: llama3
+[2026-07-07 10:31:56,193] WARNING  in channels [Trace: N/A, Request: N/A, Session: N/A]: WhatsApp channel 'wa-01' missing 'api_endpoint' configuration.
+[2026-07-07 10:31:56,197] WARNING  in channels [Trace: N/A, Request: N/A, Session: N/A]: Skipping invalid channel config: {'channel_id': 'invalid-cfg', 'channel_type': 'sms'}
+[2026-07-07 10:31:56,562] WARNING  in router [Trace: N/A, Request: N/A, Session: N/A]: Validation failed: Missing conversation_id., Missing sender.
+[2026-07-07 10:31:56,562] WARNING  in router [Trace: N/A, Request: N/A, Session: N/A]: Channel 'unknown-ch' not registered.
+[2026-07-07 10:31:57,637] WARNING  in resilience [Trace: N/A, Request: N/A, Session: N/A]: Attempt 1 failed for 'dummy-weather': Connection refused by dummy server
+[2026-07-07 10:31:57,749] WARNING  in resilience [Trace: N/A, Request: N/A, Session: N/A]: Attempt 2 failed for 'dummy-weather': Connection refused by dummy server
+[2026-07-07 10:31:57,864] WARNING  in resilience [Trace: N/A, Request: N/A, Session: N/A]: Attempt 3 failed for 'dummy-weather': Connection refused by dummy server
+[2026-07-07 10:31:57,870] WARNING  in resilience [Trace: N/A, Request: N/A, Session: N/A]: Attempt 1 failed for 'dummy-weather': Connection refused by dummy server
+[2026-07-07 10:31:57,872] WARNING  in resilience [Trace: N/A, Request: N/A, Session: N/A]: CircuitBreaker state transition: CLOSED -> OPEN (failures: 2)
+[2026-07-07 10:31:57,874] WARNING  in resilience [Trace: N/A, Request: N/A, Session: N/A]: [CircuitBreaker] 'dummy-weather' is OPEN. Failing fast.
+[2026-07-07 10:31:58,697] WARNING  in resilience [Trace: N/A, Request: N/A, Session: N/A]: Attempt 1 failed for 'dummy-weather': 
+[2026-07-07 10:31:58,699] WARNING  in resilience [Trace: N/A, Request: N/A, Session: N/A]: Attempt 1 failed for 'dummy-weather': Connection refused by dummy server
+[2026-07-07 10:31:58,919] WARNING  in error_handler [Trace: N/A, Request: N/A, Session: N/A]: [HTTP Exception Handled] 400: Cannot select 'openweather' as active because its status is 'inactive'.
+[2026-07-07 10:32:00,368] WARNING  in weather [Trace: N/A, Request: N/A, Session: N/A]: [IMDWeatherAdapter] HTTP call failed, falling back: Network Offline
+[2026-07-07 10:32:04,996] WARNING  in market [Trace: N/A, Request: N/A, Session: N/A]: [eNAMMarketAdapter] HTTP call failed, falling back: 
+[2026-07-07 10:32:05,108] WARNING  in authentication [Trace: N/A, Request: N/A, Session: N/A]: JWT Decode failed: Not enough segments
+[2026-07-07 10:32:05,110] WARNING  in authentication [Trace: N/A, Request: N/A, Session: N/A]: JWT Decode failed: Not enough segments
+[2026-07-07 10:32:06,375] ERROR    in validation [Trace: N/A, Request: N/A, Session: N/A]: Policy Violation: Recommendation contains banned chemical: 'endosulfan'
+[2026-07-07 10:32:06,377] WARNING  in validation [Trace: N/A, Request: N/A, Session: N/A]: Knowledge validation: Stale data detected. Age: 744.00 hours
+[2026-07-07 10:32:06,894] WARNING  in pipeline [Trace: N/A, Request: N/A, Session: N/A]: Media Validation Failed: Format '.txt' is not supported for media type 'voice'.
+[2026-07-07 10:32:06,898] WARNING  in pipeline [Trace: N/A, Request: N/A, Session: N/A]: Media Validation Failed: File size exceeds maximum threshold of 20971520 bytes.
+[2026-07-07 10:32:06,994] WARNING  in pipeline [Trace: N/A, Request: N/A, Session: N/A]: Policy violation detected in media text: Forbidden term 'illegal pesticide' detected under policy 'default-safety-policy'.
+[2026-07-07 10:32:07,835] WARNING  in orchestrator [Trace: N/A, Request: N/A, Session: N/A]: [MemoryRetrieval] Profile fetch failed: 'FarmerProfile' object has no attribute 'district'
+[2026-07-07 10:32:12,273] ERROR    in health [Trace: N/A, Request: N/A, Session: N/A]: [HEALTH CHECK FAIL] Database connection check failed: connection to server at "localhost" (::1), port 5432 failed: Connection refused (0x0000274D/10061)
+	Is the server running on that host and accepting TCP/IP connections?
+connection to server at "localhost" (127.0.0.1), port 5432 failed: Connection refused (0x0000274D/10061)
+	Is the server running on that host and accepting TCP/IP connections?
+
+[2026-07-07 10:32:16,350] ERROR    in health [Trace: N/A, Request: N/A, Session: N/A]: [HEALTH CHECK FAIL] Redis connection check failed: Error 10061 connecting to localhost:6379. No connection could be made because the target machine actively refused it.
+[2026-07-07 10:32:16,354] ERROR    in health [Trace: N/A, Request: N/A, Session: N/A]: [HEALTH CHECK FAIL] Chroma Vector DB connection check failed: chromadb dependency not installed
+[2026-07-07 10:32:16,356] WARNING  in error_handler [Trace: N/A, Request: N/A, Session: N/A]: [HTTP Exception Handled] 503: {'status': 'degraded', 'service': 'kisan-mitra-backend', 'components': {'database': 'unhealthy', 'cache': 'unhealthy', 'vector_db': 'unhealthy'}}
+[2026-07-07 10:32:16,792] ERROR    in error_handler [Trace: N/A, Request: N/A, Session: N/A]: [Exception Handled] ValidationException: Custom validation failed
+[2026-07-07 10:32:17,041] WARNING  in error_handler [Trace: N/A, Request: N/A, Session: N/A]: [Validation Exception Handled] 400 Bad Request: [{'type': 'missing', 'loc': ('body', 'session_id'), 'msg': 'Field required', 'input': {'query': 12345}}, {'type': 'string_type', 'loc': ('body', 'query'), 'msg': 'Input should be a valid string', 'input': 12345}]
+[2026-07-07 10:32:17,941] WARNING  in consensus [Trace: N/A, Request: N/A, Session: N/A]: [ConflictResolution] Conflict detected: Agent 'Weather' evidence spread=0.500 exceeds divergence threshold=0.3.
+[2026-07-07 10:32:17,969] WARNING  in escalation [Trace: N/A, Request: N/A, Session: N/A]: [EscalationEngine] Escalation #1 triggered for trace=TR-101: Confidence 20.00% is below safety threshold 50.00%.
+[2026-07-07 10:32:17,975] WARNING  in escalation [Trace: N/A, Request: N/A, Session: N/A]: [EscalationEngine] Escalation #1 triggered for trace=TR-102: Safety-critical keyword(s) detected: pesticide overdose.
+[2026-07-07 10:32:17,980] WARNING  in escalation [Trace: N/A, Request: N/A, Session: N/A]: [EscalationEngine] Escalation #1 triggered for trace=TR-103: 3 missing query fields exceed escalation threshold (2).
+[2026-07-07 10:32:17,985] WARNING  in escalation [Trace: N/A, Request: N/A, Session: N/A]: [EscalationEngine] Escalation #1 triggered for trace=TR-104: Evidence count 0 is below minimum threshold (2).
+[2026-07-07 10:32:17,991] WARNING  in escalation [Trace: N/A, Request: N/A, Session: N/A]: [EscalationEngine] Escalation #1 triggered for trace=T: Confidence 10.00% is below safety threshold 90.00%.
+[2026-07-07 10:32:17,992] WARNING  in escalation [Trace: N/A, Request: N/A, Session: N/A]: [EscalationEngine] Escalation #2 triggered for trace=T: Confidence 10.00% is below safety threshold 90.00%.
+[2026-07-07 10:32:17,994] WARNING  in escalation [Trace: N/A, Request: N/A, Session: N/A]: [EscalationEngine] Escalation #3 triggered for trace=T: Confidence 10.00% is below safety threshold 90.00%.
+[2026-07-07 10:32:18,018] WARNING  in escalation [Trace: N/A, Request: N/A, Session: N/A]: [EscalationEngine] Escalation #1 triggered for trace=TR-chief: Confidence 22.00% is below safety threshold 30.00%.
+[2026-07-07 10:32:18,037] ERROR    in telemetry [Trace: N/A, Request: N/A, Session: N/A]: [ReasoningTelemetry] Session FAILED: S3 — Timeout during reasoning
+[2026-07-07 10:32:18,212] WARNING  in pipeline [Trace: N/A, Request: N/A, Session: N/A]: SMS Inbound Validation Failed: Message contains sensitive information fields (PIN/CVV/Password/Card details).
+[2026-07-07 10:32:18,218] WARNING  in pipeline [Trace: N/A, Request: N/A, Session: N/A]: SMS Inbound Validation Failed: Message body length exceeds maximum threshold of 800 characters.
+[2026-07-07 10:32:18,220] WARNING  in router [Trace: N/A, Request: N/A, Session: N/A]: Channel 'sms-01' not registered.
+[2026-07-07 10:32:18,235] WARNING  in pipeline [Trace: N/A, Request: N/A, Session: N/A]: SMS Inbound Validation Failed: Spam filter blocked: Duplicate message within 5 seconds.
+[2026-07-07 10:32:18,236] WARNING  in router [Trace: N/A, Request: N/A, Session: N/A]: Channel 'sms-01' not registered.
+[2026-07-07 10:32:18,253] WARNING  in router [Trace: N/A, Request: N/A, Session: N/A]: Channel 'sms-01' not registered.
+[2026-07-07 10:32:18,261] WARNING  in router [Trace: N/A, Request: N/A, Session: N/A]: Channel 'sms-01' not registered.
+[2026-07-07 10:32:18,270] WARNING  in router [Trace: N/A, Request: N/A, Session: N/A]: Channel 'sms-01' not registered.
+[2026-07-07 10:32:18,286] WARNING  in router [Trace: N/A, Request: N/A, Session: N/A]: Channel 'sms-01' not registered.
+[2026-07-07 10:32:18,295] WARNING  in pipeline [Trace: N/A, Request: N/A, Session: N/A]: SMS Inbound Validation Failed: Spam filter blocked: Rate limit exceeded: max 5 messages per minute.
+[2026-07-07 10:38:40,205] ERROR    in platform [Trace: N/A, Request: N/A, Session: N/A]: Adapter execution failed for 'gemini-1.5-pro': Cloud service timeout
+[2026-07-07 10:38:40,206] WARNING  in platform [Trace: N/A, Request: N/A, Session: N/A]: [AI Platform] Primary failed. Cascading fallback to: llama3
+[2026-07-07 10:38:40,301] WARNING  in channels [Trace: N/A, Request: N/A, Session: N/A]: WhatsApp channel 'wa-01' missing 'api_endpoint' configuration.
+[2026-07-07 10:38:40,303] WARNING  in channels [Trace: N/A, Request: N/A, Session: N/A]: Skipping invalid channel config: {'channel_id': 'invalid-cfg', 'channel_type': 'sms'}
+[2026-07-07 10:38:40,479] WARNING  in router [Trace: N/A, Request: N/A, Session: N/A]: Validation failed: Missing conversation_id., Missing sender.
+[2026-07-07 10:38:40,479] WARNING  in router [Trace: N/A, Request: N/A, Session: N/A]: Channel 'unknown-ch' not registered.
+[2026-07-07 10:38:41,840] WARNING  in resilience [Trace: N/A, Request: N/A, Session: N/A]: Attempt 1 failed for 'dummy-weather': Connection refused by dummy server
+[2026-07-07 10:38:41,952] WARNING  in resilience [Trace: N/A, Request: N/A, Session: N/A]: Attempt 2 failed for 'dummy-weather': Connection refused by dummy server
+[2026-07-07 10:38:42,057] WARNING  in resilience [Trace: N/A, Request: N/A, Session: N/A]: Attempt 3 failed for 'dummy-weather': Connection refused by dummy server
+[2026-07-07 10:38:42,057] WARNING  in resilience [Trace: N/A, Request: N/A, Session: N/A]: Attempt 1 failed for 'dummy-weather': Connection refused by dummy server
+[2026-07-07 10:38:42,057] WARNING  in resilience [Trace: N/A, Request: N/A, Session: N/A]: CircuitBreaker state transition: CLOSED -> OPEN (failures: 2)
+[2026-07-07 10:38:42,064] WARNING  in resilience [Trace: N/A, Request: N/A, Session: N/A]: [CircuitBreaker] 'dummy-weather' is OPEN. Failing fast.
+[2026-07-07 10:38:42,883] WARNING  in resilience [Trace: N/A, Request: N/A, Session: N/A]: Attempt 1 failed for 'dummy-weather': 
+[2026-07-07 10:38:42,884] WARNING  in resilience [Trace: N/A, Request: N/A, Session: N/A]: Attempt 1 failed for 'dummy-weather': Connection refused by dummy server
+[2026-07-07 10:38:43,104] WARNING  in error_handler [Trace: N/A, Request: N/A, Session: N/A]: [HTTP Exception Handled] 400: Cannot select 'openweather' as active because its status is 'inactive'.
+[2026-07-07 10:38:44,872] WARNING  in weather [Trace: N/A, Request: N/A, Session: N/A]: [IMDWeatherAdapter] HTTP call failed, falling back: Network Offline
+[2026-07-07 10:38:49,403] WARNING  in market [Trace: N/A, Request: N/A, Session: N/A]: [eNAMMarketAdapter] HTTP call failed, falling back: 
+[2026-07-07 10:38:49,477] WARNING  in authentication [Trace: N/A, Request: N/A, Session: N/A]: JWT Decode failed: Not enough segments
+[2026-07-07 10:38:49,477] WARNING  in authentication [Trace: N/A, Request: N/A, Session: N/A]: JWT Decode failed: Not enough segments
+[2026-07-07 10:38:50,705] ERROR    in validation [Trace: N/A, Request: N/A, Session: N/A]: Policy Violation: Recommendation contains banned chemical: 'endosulfan'
+[2026-07-07 10:38:50,707] WARNING  in validation [Trace: N/A, Request: N/A, Session: N/A]: Knowledge validation: Stale data detected. Age: 744.00 hours
+[2026-07-07 10:38:51,210] WARNING  in pipeline [Trace: N/A, Request: N/A, Session: N/A]: Media Validation Failed: Format '.txt' is not supported for media type 'voice'.
+[2026-07-07 10:38:51,212] WARNING  in pipeline [Trace: N/A, Request: N/A, Session: N/A]: Media Validation Failed: File size exceeds maximum threshold of 20971520 bytes.
+[2026-07-07 10:38:51,315] WARNING  in pipeline [Trace: N/A, Request: N/A, Session: N/A]: Policy violation detected in media text: Forbidden term 'illegal pesticide' detected under policy 'default-safety-policy'.
+[2026-07-07 10:38:56,903] ERROR    in health [Trace: N/A, Request: N/A, Session: N/A]: [HEALTH CHECK FAIL] Database connection check failed: connection to server at "localhost" (::1), port 5432 failed: Connection refused (0x0000274D/10061)
+	Is the server running on that host and accepting TCP/IP connections?
+connection to server at "localhost" (127.0.0.1), port 5432 failed: Connection refused (0x0000274D/10061)
+	Is the server running on that host and accepting TCP/IP connections?
+
+[2026-07-07 10:39:00,972] ERROR    in health [Trace: N/A, Request: N/A, Session: N/A]: [HEALTH CHECK FAIL] Redis connection check failed: Error 10061 connecting to localhost:6379. No connection could be made because the target machine actively refused it.
+[2026-07-07 10:39:00,975] ERROR    in health [Trace: N/A, Request: N/A, Session: N/A]: [HEALTH CHECK FAIL] Chroma Vector DB connection check failed: chromadb dependency not installed
+[2026-07-07 10:39:00,979] WARNING  in error_handler [Trace: N/A, Request: N/A, Session: N/A]: [HTTP Exception Handled] 503: {'status': 'degraded', 'service': 'kisan-mitra-backend', 'components': {'database': 'unhealthy', 'cache': 'unhealthy', 'vector_db': 'unhealthy'}}
+[2026-07-07 10:39:01,271] ERROR    in error_handler [Trace: N/A, Request: N/A, Session: N/A]: [Exception Handled] ValidationException: Custom validation failed
+[2026-07-07 10:39:01,351] WARNING  in error_handler [Trace: N/A, Request: N/A, Session: N/A]: [Validation Exception Handled] 400 Bad Request: [{'type': 'missing', 'loc': ('body', 'session_id'), 'msg': 'Field required', 'input': {'query': 12345}}, {'type': 'string_type', 'loc': ('body', 'query'), 'msg': 'Input should be a valid string', 'input': 12345}]
+[2026-07-07 10:39:02,125] WARNING  in consensus [Trace: N/A, Request: N/A, Session: N/A]: [ConflictResolution] Conflict detected: Agent 'Weather' evidence spread=0.500 exceeds divergence threshold=0.3.
+[2026-07-07 10:39:02,138] WARNING  in escalation [Trace: N/A, Request: N/A, Session: N/A]: [EscalationEngine] Escalation #1 triggered for trace=TR-101: Confidence 20.00% is below safety threshold 50.00%.
+[2026-07-07 10:39:02,141] WARNING  in escalation [Trace: N/A, Request: N/A, Session: N/A]: [EscalationEngine] Escalation #1 triggered for trace=TR-102: Safety-critical keyword(s) detected: pesticide overdose.
+[2026-07-07 10:39:02,143] WARNING  in escalation [Trace: N/A, Request: N/A, Session: N/A]: [EscalationEngine] Escalation #1 triggered for trace=TR-103: 3 missing query fields exceed escalation threshold (2).
+[2026-07-07 10:39:02,146] WARNING  in escalation [Trace: N/A, Request: N/A, Session: N/A]: [EscalationEngine] Escalation #1 triggered for trace=TR-104: Evidence count 0 is below minimum threshold (2).
+[2026-07-07 10:39:02,150] WARNING  in escalation [Trace: N/A, Request: N/A, Session: N/A]: [EscalationEngine] Escalation #1 triggered for trace=T: Confidence 10.00% is below safety threshold 90.00%.
+[2026-07-07 10:39:02,151] WARNING  in escalation [Trace: N/A, Request: N/A, Session: N/A]: [EscalationEngine] Escalation #2 triggered for trace=T: Confidence 10.00% is below safety threshold 90.00%.
+[2026-07-07 10:39:02,152] WARNING  in escalation [Trace: N/A, Request: N/A, Session: N/A]: [EscalationEngine] Escalation #3 triggered for trace=T: Confidence 10.00% is below safety threshold 90.00%.
+[2026-07-07 10:39:02,165] WARNING  in escalation [Trace: N/A, Request: N/A, Session: N/A]: [EscalationEngine] Escalation #1 triggered for trace=TR-chief: Confidence 22.00% is below safety threshold 30.00%.
+[2026-07-07 10:39:02,176] ERROR    in telemetry [Trace: N/A, Request: N/A, Session: N/A]: [ReasoningTelemetry] Session FAILED: S3 — Timeout during reasoning
+[2026-07-07 10:39:02,298] WARNING  in pipeline [Trace: N/A, Request: N/A, Session: N/A]: SMS Inbound Validation Failed: Message contains sensitive information fields (PIN/CVV/Password/Card details).
+[2026-07-07 10:39:02,305] WARNING  in pipeline [Trace: N/A, Request: N/A, Session: N/A]: SMS Inbound Validation Failed: Message body length exceeds maximum threshold of 800 characters.
+[2026-07-07 10:39:02,305] WARNING  in router [Trace: N/A, Request: N/A, Session: N/A]: Channel 'sms-01' not registered.
+[2026-07-07 10:39:02,316] WARNING  in pipeline [Trace: N/A, Request: N/A, Session: N/A]: SMS Inbound Validation Failed: Spam filter blocked: Duplicate message within 5 seconds.
+[2026-07-07 10:39:02,316] WARNING  in router [Trace: N/A, Request: N/A, Session: N/A]: Channel 'sms-01' not registered.
+[2026-07-07 10:39:02,322] WARNING  in router [Trace: N/A, Request: N/A, Session: N/A]: Channel 'sms-01' not registered.
+[2026-07-07 10:39:02,330] WARNING  in router [Trace: N/A, Request: N/A, Session: N/A]: Channel 'sms-01' not registered.
+[2026-07-07 10:39:02,338] WARNING  in router [Trace: N/A, Request: N/A, Session: N/A]: Channel 'sms-01' not registered.
+[2026-07-07 10:39:02,348] WARNING  in router [Trace: N/A, Request: N/A, Session: N/A]: Channel 'sms-01' not registered.
+[2026-07-07 10:39:02,355] WARNING  in pipeline [Trace: N/A, Request: N/A, Session: N/A]: SMS Inbound Validation Failed: Spam filter blocked: Rate limit exceeded: max 5 messages per minute.
+[2026-07-07 10:39:24,217] ERROR    in platform [Trace: N/A, Request: N/A, Session: N/A]: Adapter execution failed for 'gemini-1.5-pro': Cloud service timeout
+[2026-07-07 10:39:24,218] WARNING  in platform [Trace: N/A, Request: N/A, Session: N/A]: [AI Platform] Primary failed. Cascading fallback to: llama3
+[2026-07-07 10:39:24,361] WARNING  in channels [Trace: N/A, Request: N/A, Session: N/A]: WhatsApp channel 'wa-01' missing 'api_endpoint' configuration.
+[2026-07-07 10:39:24,361] WARNING  in channels [Trace: N/A, Request: N/A, Session: N/A]: Skipping invalid channel config: {'channel_id': 'invalid-cfg', 'channel_type': 'sms'}
+[2026-07-07 10:39:24,650] WARNING  in router [Trace: N/A, Request: N/A, Session: N/A]: Validation failed: Missing conversation_id., Missing sender.
+[2026-07-07 10:39:24,654] WARNING  in router [Trace: N/A, Request: N/A, Session: N/A]: Channel 'unknown-ch' not registered.
+[2026-07-07 10:39:25,705] WARNING  in resilience [Trace: N/A, Request: N/A, Session: N/A]: Attempt 1 failed for 'dummy-weather': Connection refused by dummy server
+[2026-07-07 10:39:25,812] WARNING  in resilience [Trace: N/A, Request: N/A, Session: N/A]: Attempt 2 failed for 'dummy-weather': Connection refused by dummy server
+[2026-07-07 10:39:25,919] WARNING  in resilience [Trace: N/A, Request: N/A, Session: N/A]: Attempt 3 failed for 'dummy-weather': Connection refused by dummy server
+[2026-07-07 10:39:25,923] WARNING  in resilience [Trace: N/A, Request: N/A, Session: N/A]: Attempt 1 failed for 'dummy-weather': Connection refused by dummy server
+[2026-07-07 10:39:25,924] WARNING  in resilience [Trace: N/A, Request: N/A, Session: N/A]: CircuitBreaker state transition: CLOSED -> OPEN (failures: 2)
+[2026-07-07 10:39:25,924] WARNING  in resilience [Trace: N/A, Request: N/A, Session: N/A]: [CircuitBreaker] 'dummy-weather' is OPEN. Failing fast.
+[2026-07-07 10:39:26,757] WARNING  in resilience [Trace: N/A, Request: N/A, Session: N/A]: Attempt 1 failed for 'dummy-weather': 
+[2026-07-07 10:39:26,758] WARNING  in resilience [Trace: N/A, Request: N/A, Session: N/A]: Attempt 1 failed for 'dummy-weather': Connection refused by dummy server
+[2026-07-07 10:39:26,938] WARNING  in error_handler [Trace: N/A, Request: N/A, Session: N/A]: [HTTP Exception Handled] 400: Cannot select 'openweather' as active because its status is 'inactive'.
+[2026-07-07 10:39:28,264] WARNING  in weather [Trace: N/A, Request: N/A, Session: N/A]: [IMDWeatherAdapter] HTTP call failed, falling back: Network Offline
+[2026-07-07 10:39:32,827] WARNING  in market [Trace: N/A, Request: N/A, Session: N/A]: [eNAMMarketAdapter] HTTP call failed, falling back: 
+[2026-07-07 10:39:32,919] WARNING  in authentication [Trace: N/A, Request: N/A, Session: N/A]: JWT Decode failed: Not enough segments
+[2026-07-07 10:39:32,921] WARNING  in authentication [Trace: N/A, Request: N/A, Session: N/A]: JWT Decode failed: Not enough segments
+[2026-07-07 10:39:34,158] ERROR    in validation [Trace: N/A, Request: N/A, Session: N/A]: Policy Violation: Recommendation contains banned chemical: 'endosulfan'
+[2026-07-07 10:39:34,160] WARNING  in validation [Trace: N/A, Request: N/A, Session: N/A]: Knowledge validation: Stale data detected. Age: 744.00 hours
+[2026-07-07 10:39:34,448] WARNING  in pipeline [Trace: N/A, Request: N/A, Session: N/A]: Media Validation Failed: Format '.txt' is not supported for media type 'voice'.
+[2026-07-07 10:39:34,454] WARNING  in pipeline [Trace: N/A, Request: N/A, Session: N/A]: Media Validation Failed: File size exceeds maximum threshold of 20971520 bytes.
+[2026-07-07 10:39:34,538] WARNING  in pipeline [Trace: N/A, Request: N/A, Session: N/A]: Policy violation detected in media text: Forbidden term 'illegal pesticide' detected under policy 'default-safety-policy'.
+[2026-07-07 10:39:39,696] ERROR    in health [Trace: N/A, Request: N/A, Session: N/A]: [HEALTH CHECK FAIL] Database connection check failed: connection to server at "localhost" (::1), port 5432 failed: Connection refused (0x0000274D/10061)
+	Is the server running on that host and accepting TCP/IP connections?
+connection to server at "localhost" (127.0.0.1), port 5432 failed: Connection refused (0x0000274D/10061)
+	Is the server running on that host and accepting TCP/IP connections?
+
+[2026-07-07 10:39:43,770] ERROR    in health [Trace: N/A, Request: N/A, Session: N/A]: [HEALTH CHECK FAIL] Redis connection check failed: Error 10061 connecting to localhost:6379. No connection could be made because the target machine actively refused it.
+[2026-07-07 10:39:43,773] ERROR    in health [Trace: N/A, Request: N/A, Session: N/A]: [HEALTH CHECK FAIL] Chroma Vector DB connection check failed: chromadb dependency not installed
+[2026-07-07 10:39:43,777] WARNING  in error_handler [Trace: N/A, Request: N/A, Session: N/A]: [HTTP Exception Handled] 503: {'status': 'degraded', 'service': 'kisan-mitra-backend', 'components': {'database': 'unhealthy', 'cache': 'unhealthy', 'vector_db': 'unhealthy'}}
+[2026-07-07 10:39:44,251] ERROR    in error_handler [Trace: N/A, Request: N/A, Session: N/A]: [Exception Handled] ValidationException: Custom validation failed
+[2026-07-07 10:39:44,377] WARNING  in error_handler [Trace: N/A, Request: N/A, Session: N/A]: [Validation Exception Handled] 400 Bad Request: [{'type': 'missing', 'loc': ('body', 'session_id'), 'msg': 'Field required', 'input': {'query': 12345}}, {'type': 'string_type', 'loc': ('body', 'query'), 'msg': 'Input should be a valid string', 'input': 12345}]
+[2026-07-07 10:39:45,173] WARNING  in consensus [Trace: N/A, Request: N/A, Session: N/A]: [ConflictResolution] Conflict detected: Agent 'Weather' evidence spread=0.500 exceeds divergence threshold=0.3.
+[2026-07-07 10:39:45,187] WARNING  in escalation [Trace: N/A, Request: N/A, Session: N/A]: [EscalationEngine] Escalation #1 triggered for trace=TR-101: Confidence 20.00% is below safety threshold 50.00%.
+[2026-07-07 10:39:45,191] WARNING  in escalation [Trace: N/A, Request: N/A, Session: N/A]: [EscalationEngine] Escalation #1 triggered for trace=TR-102: Safety-critical keyword(s) detected: pesticide overdose.
+[2026-07-07 10:39:45,194] WARNING  in escalation [Trace: N/A, Request: N/A, Session: N/A]: [EscalationEngine] Escalation #1 triggered for trace=TR-103: 3 missing query fields exceed escalation threshold (2).
+[2026-07-07 10:39:45,197] WARNING  in escalation [Trace: N/A, Request: N/A, Session: N/A]: [EscalationEngine] Escalation #1 triggered for trace=TR-104: Evidence count 0 is below minimum threshold (2).
+[2026-07-07 10:39:45,201] WARNING  in escalation [Trace: N/A, Request: N/A, Session: N/A]: [EscalationEngine] Escalation #1 triggered for trace=T: Confidence 10.00% is below safety threshold 90.00%.
+[2026-07-07 10:39:45,202] WARNING  in escalation [Trace: N/A, Request: N/A, Session: N/A]: [EscalationEngine] Escalation #2 triggered for trace=T: Confidence 10.00% is below safety threshold 90.00%.
+[2026-07-07 10:39:45,204] WARNING  in escalation [Trace: N/A, Request: N/A, Session: N/A]: [EscalationEngine] Escalation #3 triggered for trace=T: Confidence 10.00% is below safety threshold 90.00%.
+[2026-07-07 10:39:45,223] WARNING  in escalation [Trace: N/A, Request: N/A, Session: N/A]: [EscalationEngine] Escalation #1 triggered for trace=TR-chief: Confidence 22.00% is below safety threshold 30.00%.
+[2026-07-07 10:39:45,233] ERROR    in telemetry [Trace: N/A, Request: N/A, Session: N/A]: [ReasoningTelemetry] Session FAILED: S3 — Timeout during reasoning
+[2026-07-07 10:39:45,359] WARNING  in pipeline [Trace: N/A, Request: N/A, Session: N/A]: SMS Inbound Validation Failed: Message contains sensitive information fields (PIN/CVV/Password/Card details).
+[2026-07-07 10:39:45,361] WARNING  in pipeline [Trace: N/A, Request: N/A, Session: N/A]: SMS Inbound Validation Failed: Message body length exceeds maximum threshold of 800 characters.
+[2026-07-07 10:39:45,365] WARNING  in router [Trace: N/A, Request: N/A, Session: N/A]: Channel 'sms-01' not registered.
+[2026-07-07 10:39:45,369] WARNING  in pipeline [Trace: N/A, Request: N/A, Session: N/A]: SMS Inbound Validation Failed: Spam filter blocked: Duplicate message within 5 seconds.
+[2026-07-07 10:39:45,375] WARNING  in router [Trace: N/A, Request: N/A, Session: N/A]: Channel 'sms-01' not registered.
+[2026-07-07 10:39:45,383] WARNING  in router [Trace: N/A, Request: N/A, Session: N/A]: Channel 'sms-01' not registered.
+[2026-07-07 10:39:45,389] WARNING  in router [Trace: N/A, Request: N/A, Session: N/A]: Channel 'sms-01' not registered.
+[2026-07-07 10:39:45,397] WARNING  in router [Trace: N/A, Request: N/A, Session: N/A]: Channel 'sms-01' not registered.
+[2026-07-07 10:39:45,403] WARNING  in router [Trace: N/A, Request: N/A, Session: N/A]: Channel 'sms-01' not registered.
+[2026-07-07 10:39:45,407] WARNING  in pipeline [Trace: N/A, Request: N/A, Session: N/A]: SMS Inbound Validation Failed: Spam filter blocked: Rate limit exceeded: max 5 messages per minute.
+[2026-07-20 13:11:10,125] WARNING  in adapters [Trace: N/A, Request: N/A, Session: N/A]: Ollama server offline at http://localhost:11434. Falling back to mock generator.
+[2026-07-20 13:11:10,135] WARNING  in logging_engine [Trace: N/A, Request: N/A, Session: N/A]: {"timestamp": "2026-07-20T07:41:10.135662", "message": "ALERT [High Latency]: Request took 34431.7ms, exceeding threshold of 5000ms", "trace_id": "N/A", "execution_id": "N/A", "agent": null, "latency_ms": 34431.71, "error": null, "confidence": null}
+[2026-07-20 13:13:03,550] WARNING  in adapters [Trace: N/A, Request: N/A, Session: N/A]: Ollama server offline at http://localhost:11434. Falling back to mock generator.
+[2026-07-20 13:13:03,555] WARNING  in logging_engine [Trace: N/A, Request: N/A, Session: N/A]: {"timestamp": "2026-07-20T07:43:03.555574", "message": "ALERT [High Latency]: Request took 32041.4ms, exceeding threshold of 5000ms", "trace_id": "N/A", "execution_id": "N/A", "agent": null, "latency_ms": 32041.4, "error": null, "confidence": null}
+[2026-07-20 13:15:47,614] WARNING  in adapters [Trace: N/A, Request: N/A, Session: N/A]: Ollama server offline at http://localhost:11434. Falling back to mock generator.
+[2026-07-20 13:15:47,792] WARNING  in logging_engine [Trace: N/A, Request: N/A, Session: N/A]: {"timestamp": "2026-07-20T07:45:47.791758", "message": "ALERT [High Latency]: Request took 32068.8ms, exceeding threshold of 5000ms", "trace_id": "N/A", "execution_id": "N/A", "agent": null, "latency_ms": 32068.76, "error": null, "confidence": null}
+[2026-07-20 13:17:23,169] WARNING  in adapters [Trace: N/A, Request: N/A, Session: N/A]: Ollama server offline at http://localhost:11434. Falling back to mock generator.
+[2026-07-20 13:17:23,182] WARNING  in logging_engine [Trace: N/A, Request: N/A, Session: N/A]: {"timestamp": "2026-07-20T07:47:23.182133", "message": "ALERT [High Latency]: Request took 32080.0ms, exceeding threshold of 5000ms", "trace_id": "N/A", "execution_id": "N/A", "agent": null, "latency_ms": 32079.98, "error": null, "confidence": null}
+[2026-07-20 13:34:11,161] WARNING  in adapters [Trace: N/A, Request: N/A, Session: N/A]: Ollama server offline at http://localhost:11434. Falling back to mock generator.
+[2026-07-20 13:34:11,197] WARNING  in logging_engine [Trace: N/A, Request: N/A, Session: N/A]: {"timestamp": "2026-07-20T08:04:11.196533", "message": "ALERT [High Latency]: Request took 33493.5ms, exceeding threshold of 5000ms", "trace_id": "N/A", "execution_id": "N/A", "agent": null, "latency_ms": 33493.53, "error": null, "confidence": null}
+[2026-07-20 13:35:28,233] WARNING  in adapters [Trace: N/A, Request: N/A, Session: N/A]: Ollama server offline at http://localhost:11434. Falling back to mock generator.
+[2026-07-20 13:35:28,238] WARNING  in logging_engine [Trace: N/A, Request: N/A, Session: N/A]: {"timestamp": "2026-07-20T08:05:28.238894", "message": "ALERT [High Latency]: Request took 32043.6ms, exceeding threshold of 5000ms", "trace_id": "N/A", "execution_id": "N/A", "agent": null, "latency_ms": 32043.57, "error": null, "confidence": null}
+[2026-07-20 13:42:35,664] WARNING  in adapters [Trace: N/A, Request: N/A, Session: N/A]: Ollama server offline at http://localhost:11434. Falling back to mock generator.
+[2026-07-20 13:42:35,668] WARNING  in logging_engine [Trace: N/A, Request: N/A, Session: N/A]: {"timestamp": "2026-07-20T08:12:35.666890", "message": "ALERT [High Latency]: Request took 32050.2ms, exceeding threshold of 5000ms", "trace_id": "N/A", "execution_id": "N/A", "agent": null, "latency_ms": 32050.15, "error": null, "confidence": null}
+[2026-07-20 13:48:52,452] WARNING  in adapters [Trace: N/A, Request: N/A, Session: N/A]: Ollama server offline at http://localhost:11434. Falling back to mock generator.
+[2026-07-20 13:48:52,519] WARNING  in logging_engine [Trace: N/A, Request: N/A, Session: N/A]: {"timestamp": "2026-07-20T08:18:52.519991", "message": "ALERT [High Latency]: Request took 32063.3ms, exceeding threshold of 5000ms", "trace_id": "N/A", "execution_id": "N/A", "agent": null, "latency_ms": 32063.35, "error": null, "confidence": null}
+[2026-07-20 13:49:46,451] WARNING  in adapters [Trace: N/A, Request: N/A, Session: N/A]: Ollama server offline at http://localhost:11434. Falling back to mock generator.
+[2026-07-20 13:49:46,508] WARNING  in logging_engine [Trace: N/A, Request: N/A, Session: N/A]: {"timestamp": "2026-07-20T08:19:46.508420", "message": "ALERT [High Latency]: Request took 32088.6ms, exceeding threshold of 5000ms", "trace_id": "N/A", "execution_id": "N/A", "agent": null, "latency_ms": 32088.56, "error": null, "confidence": null}
+[2026-07-20 13:53:28,133] WARNING  in adapters [Trace: N/A, Request: N/A, Session: N/A]: Ollama server offline at http://localhost:11434. Falling back to mock generator.
+[2026-07-20 13:53:28,138] WARNING  in logging_engine [Trace: N/A, Request: N/A, Session: N/A]: {"timestamp": "2026-07-20T08:23:28.138386", "message": "ALERT [High Latency]: Request took 32058.5ms, exceeding threshold of 5000ms", "trace_id": "N/A", "execution_id": "N/A", "agent": null, "latency_ms": 32058.47, "error": null, "confidence": null}
+[2026-07-20 13:54:28,943] WARNING  in adapters [Trace: N/A, Request: N/A, Session: N/A]: Ollama server offline at http://localhost:11434. Falling back to mock generator.
+[2026-07-20 13:54:28,950] WARNING  in logging_engine [Trace: N/A, Request: N/A, Session: N/A]: {"timestamp": "2026-07-20T08:24:28.950437", "message": "ALERT [High Latency]: Request took 32047.3ms, exceeding threshold of 5000ms", "trace_id": "N/A", "execution_id": "N/A", "agent": null, "latency_ms": 32047.3, "error": null, "confidence": null}
+[2026-07-20 13:55:22,507] WARNING  in adapters [Trace: N/A, Request: N/A, Session: N/A]: Ollama server offline at http://localhost:11434. Falling back to mock generator.
+[2026-07-20 13:55:22,512] WARNING  in logging_engine [Trace: N/A, Request: N/A, Session: N/A]: {"timestamp": "2026-07-20T08:25:22.512229", "message": "ALERT [High Latency]: Request took 32041.0ms, exceeding threshold of 5000ms", "trace_id": "N/A", "execution_id": "N/A", "agent": null, "latency_ms": 32041.0, "error": null, "confidence": null}
+[2026-07-20 13:56:39,386] WARNING  in adapters [Trace: N/A, Request: N/A, Session: N/A]: Ollama server offline at http://localhost:11434. Falling back to mock generator.
+[2026-07-20 13:56:39,391] WARNING  in logging_engine [Trace: N/A, Request: N/A, Session: N/A]: {"timestamp": "2026-07-20T08:26:39.391343", "message": "ALERT [High Latency]: Request took 32034.7ms, exceeding threshold of 5000ms", "trace_id": "N/A", "execution_id": "N/A", "agent": null, "latency_ms": 32034.65, "error": null, "confidence": null}
+[2026-07-20 13:57:52,902] WARNING  in adapters [Trace: N/A, Request: N/A, Session: N/A]: Ollama server offline at http://localhost:11434. Falling back to mock generator.
+[2026-07-20 13:57:52,910] WARNING  in logging_engine [Trace: N/A, Request: N/A, Session: N/A]: {"timestamp": "2026-07-20T08:27:52.910183", "message": "ALERT [High Latency]: Request took 32045.4ms, exceeding threshold of 5000ms", "trace_id": "N/A", "execution_id": "N/A", "agent": null, "latency_ms": 32045.41, "error": null, "confidence": null}
+[2026-07-20 13:59:02,208] WARNING  in adapters [Trace: N/A, Request: N/A, Session: N/A]: Ollama server offline at http://localhost:11434. Falling back to mock generator.
+[2026-07-20 13:59:02,215] WARNING  in logging_engine [Trace: N/A, Request: N/A, Session: N/A]: {"timestamp": "2026-07-20T08:29:02.215877", "message": "ALERT [High Latency]: Request took 32030.2ms, exceeding threshold of 5000ms", "trace_id": "N/A", "execution_id": "N/A", "agent": null, "latency_ms": 32030.16, "error": null, "confidence": null}
+[2026-07-20 14:05:33,542] WARNING  in adapters [Trace: N/A, Request: N/A, Session: N/A]: Ollama server offline at http://localhost:11434. Falling back to mock generator.
+[2026-07-20 14:05:33,548] WARNING  in logging_engine [Trace: N/A, Request: N/A, Session: N/A]: {"timestamp": "2026-07-20T08:35:33.548732", "message": "ALERT [High Latency]: Request took 32051.4ms, exceeding threshold of 5000ms", "trace_id": "N/A", "execution_id": "N/A", "agent": null, "latency_ms": 32051.39, "error": null, "confidence": null}
+[2026-07-20 17:13:13,904] WARNING  in error_handler [Trace: N/A, Request: N/A, Session: N/A]: [HTTP Exception Handled] 404: Not Found
+[2026-07-20 17:13:23,931] WARNING  in error_handler [Trace: N/A, Request: N/A, Session: N/A]: [HTTP Exception Handled] 404: Not Found
+[2026-07-20 17:56:04,130] WARNING  in adapters [Trace: N/A, Request: N/A, Session: N/A]: Ollama server offline at http://localhost:11434: timed out
+[2026-07-20 17:56:04,133] ERROR    in platform [Trace: N/A, Request: N/A, Session: N/A]: Adapter execution failed for 'llama3': Ollama server offline at http://localhost:11434: timed out
+[2026-07-20 17:56:04,135] WARNING  in platform [Trace: N/A, Request: N/A, Session: N/A]: [AI Platform] Primary failed. Cascading fallback to: groq-llama-3-70b
+[2026-07-20 17:56:49,749] WARNING  in adapters [Trace: N/A, Request: N/A, Session: N/A]: Ollama server offline at http://localhost:11434: timed out
+[2026-07-20 17:56:49,752] ERROR    in platform [Trace: N/A, Request: N/A, Session: N/A]: Adapter execution failed for 'llama3': Ollama server offline at http://localhost:11434: timed out
+[2026-07-20 17:56:49,755] WARNING  in platform [Trace: N/A, Request: N/A, Session: N/A]: [AI Platform] Primary failed. Cascading fallback to: groq-llama-3-70b
+[2026-07-20 18:01:46,463] WARNING  in adapters [Trace: N/A, Request: N/A, Session: N/A]: Ollama server offline at http://localhost:11434: timed out
+[2026-07-20 18:01:46,466] ERROR    in platform [Trace: N/A, Request: N/A, Session: N/A]: Adapter execution failed for 'llama3': Ollama server offline at http://localhost:11434: timed out
+[2026-07-20 18:01:46,468] WARNING  in platform [Trace: N/A, Request: N/A, Session: N/A]: [AI Platform] Primary failed. Cascading fallback to: groq-llama-3-70b
+[2026-07-20 18:03:20,322] WARNING  in adapters [Trace: N/A, Request: N/A, Session: N/A]: Ollama server offline at http://localhost:11434: timed out
+[2026-07-20 18:03:20,324] ERROR    in platform [Trace: N/A, Request: N/A, Session: N/A]: Adapter execution failed for 'llama3': Ollama server offline at http://localhost:11434: timed out
+[2026-07-20 18:03:20,327] WARNING  in platform [Trace: N/A, Request: N/A, Session: N/A]: [AI Platform] Primary failed. Cascading fallback to: groq-llama-3-70b
+[2026-07-20 18:06:44,256] WARNING  in adapters [Trace: N/A, Request: N/A, Session: N/A]: Ollama server offline at http://localhost:11434: timed out
+[2026-07-20 18:06:44,258] ERROR    in platform [Trace: N/A, Request: N/A, Session: N/A]: Adapter execution failed for 'llama3': Ollama server offline at http://localhost:11434: timed out
+[2026-07-20 18:06:44,259] WARNING  in platform [Trace: N/A, Request: N/A, Session: N/A]: [AI Platform] Primary failed. Cascading fallback to: groq-llama-3-70b
+[2026-07-20 18:21:41,896] WARNING  in adapters [Trace: N/A, Request: N/A, Session: N/A]: Ollama server offline at http://localhost:11434: timed out
+[2026-07-20 18:21:41,901] ERROR    in platform [Trace: N/A, Request: N/A, Session: N/A]: Adapter execution failed for 'llama3': Ollama server offline at http://localhost:11434: timed out
+[2026-07-20 18:21:41,902] WARNING  in platform [Trace: N/A, Request: N/A, Session: N/A]: [AI Platform] Primary failed. Cascading fallback to: groq-llama-3-70b
+[2026-07-20 18:22:53,603] WARNING  in adapters [Trace: N/A, Request: N/A, Session: N/A]: Ollama server offline at http://localhost:11434: timed out
+[2026-07-20 18:22:53,606] ERROR    in platform [Trace: N/A, Request: N/A, Session: N/A]: Adapter execution failed for 'llama3': Ollama server offline at http://localhost:11434: timed out
+[2026-07-20 18:22:53,609] WARNING  in platform [Trace: N/A, Request: N/A, Session: N/A]: [AI Platform] Primary failed. Cascading fallback to: groq-llama-3-70b
+[2026-07-20 18:23:56,309] WARNING  in adapters [Trace: N/A, Request: N/A, Session: N/A]: Ollama server offline at http://localhost:11434: timed out
+[2026-07-20 18:23:56,311] ERROR    in platform [Trace: N/A, Request: N/A, Session: N/A]: Adapter execution failed for 'llama3': Ollama server offline at http://localhost:11434: timed out
+[2026-07-20 18:23:56,312] WARNING  in platform [Trace: N/A, Request: N/A, Session: N/A]: [AI Platform] Primary failed. Cascading fallback to: groq-llama-3-70b
+[2026-07-20 18:26:36,315] WARNING  in adapters [Trace: N/A, Request: N/A, Session: N/A]: Ollama server offline at http://localhost:11434: timed out
+[2026-07-20 18:26:36,317] ERROR    in platform [Trace: N/A, Request: N/A, Session: N/A]: Adapter execution failed for 'llama3': Ollama server offline at http://localhost:11434: timed out
+[2026-07-20 18:26:36,318] WARNING  in platform [Trace: N/A, Request: N/A, Session: N/A]: [AI Platform] Primary failed. Cascading fallback to: groq-llama-3-70b
+[2026-07-20 18:28:18,805] WARNING  in adapters [Trace: N/A, Request: N/A, Session: N/A]: Ollama server offline at http://localhost:11434: timed out
+[2026-07-20 18:28:18,808] ERROR    in platform [Trace: N/A, Request: N/A, Session: N/A]: Adapter execution failed for 'llama3': Ollama server offline at http://localhost:11434: timed out
+[2026-07-20 18:28:18,813] WARNING  in platform [Trace: N/A, Request: N/A, Session: N/A]: [AI Platform] Primary failed. Cascading fallback to: groq-llama-3-70b
+[2026-07-20 18:29:41,330] WARNING  in adapters [Trace: N/A, Request: N/A, Session: N/A]: Ollama server offline at http://localhost:11434: timed out
+[2026-07-20 18:29:41,333] ERROR    in platform [Trace: N/A, Request: N/A, Session: N/A]: Adapter execution failed for 'llama3': Ollama server offline at http://localhost:11434: timed out
+[2026-07-20 18:29:41,337] WARNING  in platform [Trace: N/A, Request: N/A, Session: N/A]: [AI Platform] Primary failed. Cascading fallback to: groq-llama-3-70b
+[2026-07-20 18:32:42,582] WARNING  in adapters [Trace: N/A, Request: N/A, Session: N/A]: Ollama server offline at http://localhost:11434: timed out
+[2026-07-20 18:32:42,585] ERROR    in platform [Trace: N/A, Request: N/A, Session: N/A]: Adapter execution failed for 'llama3': Ollama server offline at http://localhost:11434: timed out
+[2026-07-20 18:32:42,588] WARNING  in platform [Trace: N/A, Request: N/A, Session: N/A]: [AI Platform] Primary failed. Cascading fallback to: groq-llama-3-70b
+[2026-07-20 18:34:04,043] WARNING  in adapters [Trace: N/A, Request: N/A, Session: N/A]: Ollama server offline at http://localhost:11434: timed out
+[2026-07-20 18:34:04,047] ERROR    in platform [Trace: N/A, Request: N/A, Session: N/A]: Adapter execution failed for 'llama3': Ollama server offline at http://localhost:11434: timed out
+[2026-07-20 18:34:04,049] WARNING  in platform [Trace: N/A, Request: N/A, Session: N/A]: [AI Platform] Primary failed. Cascading fallback to: groq-llama-3-70b
+[2026-07-20 18:35:24,418] WARNING  in adapters [Trace: N/A, Request: N/A, Session: N/A]: Ollama server offline at http://localhost:11434: timed out
+[2026-07-20 18:35:24,424] ERROR    in platform [Trace: N/A, Request: N/A, Session: N/A]: Adapter execution failed for 'llama3': Ollama server offline at http://localhost:11434: timed out
+[2026-07-20 18:35:24,426] WARNING  in platform [Trace: N/A, Request: N/A, Session: N/A]: [AI Platform] Primary failed. Cascading fallback to: groq-llama-3-70b
+[2026-07-20 18:52:07,290] WARNING  in adapters [Trace: N/A, Request: N/A, Session: N/A]: Ollama server offline at http://localhost:11434: timed out
+[2026-07-20 18:52:07,292] ERROR    in platform [Trace: N/A, Request: N/A, Session: N/A]: Adapter execution failed for 'llama3': Ollama server offline at http://localhost:11434: timed out
+[2026-07-20 18:52:07,294] WARNING  in platform [Trace: N/A, Request: N/A, Session: N/A]: [AI Platform] Primary failed. Cascading fallback to: groq-llama-3-70b
+[2026-07-20 18:55:01,881] WARNING  in adapters [Trace: N/A, Request: N/A, Session: N/A]: Ollama server offline at http://localhost:11434: timed out
+[2026-07-20 18:55:01,884] ERROR    in platform [Trace: N/A, Request: N/A, Session: N/A]: Adapter execution failed for 'llama3': Ollama server offline at http://localhost:11434: timed out
+[2026-07-20 18:55:01,888] WARNING  in platform [Trace: N/A, Request: N/A, Session: N/A]: [AI Platform] Primary failed. Cascading fallback to: groq-llama-3-70b
+[2026-07-20 18:58:15,748] WARNING  in adapters [Trace: N/A, Request: N/A, Session: N/A]: Ollama server offline at http://localhost:11434: timed out
+[2026-07-20 18:58:15,751] ERROR    in platform [Trace: N/A, Request: N/A, Session: N/A]: Adapter execution failed for 'llama3': Ollama server offline at http://localhost:11434: timed out
+[2026-07-20 18:58:15,753] WARNING  in platform [Trace: N/A, Request: N/A, Session: N/A]: [AI Platform] Primary failed. Cascading fallback to: groq-llama-3-70b
+[2026-07-20 19:00:23,030] WARNING  in adapters [Trace: N/A, Request: N/A, Session: N/A]: Ollama server offline at http://localhost:11434: timed out
+[2026-07-20 19:00:23,032] ERROR    in platform [Trace: N/A, Request: N/A, Session: N/A]: Adapter execution failed for 'llama3': Ollama server offline at http://localhost:11434: timed out
+[2026-07-20 19:00:23,032] WARNING  in platform [Trace: N/A, Request: N/A, Session: N/A]: [AI Platform] Primary failed. Cascading fallback to: groq-llama-3-70b
+[2026-07-20 19:01:33,044] WARNING  in adapters [Trace: N/A, Request: N/A, Session: N/A]: Ollama server offline at http://localhost:11434: timed out
+[2026-07-20 19:01:33,046] ERROR    in platform [Trace: N/A, Request: N/A, Session: N/A]: Adapter execution failed for 'llama3': Ollama server offline at http://localhost:11434: timed out
+[2026-07-20 19:01:33,049] WARNING  in platform [Trace: N/A, Request: N/A, Session: N/A]: [AI Platform] Primary failed. Cascading fallback to: groq-llama-3-70b
+[2026-07-20 19:03:50,039] WARNING  in adapters [Trace: N/A, Request: N/A, Session: N/A]: Ollama server offline at http://localhost:11434: timed out
+[2026-07-20 19:03:50,040] ERROR    in platform [Trace: N/A, Request: N/A, Session: N/A]: Adapter execution failed for 'llama3': Ollama server offline at http://localhost:11434: timed out
+[2026-07-20 19:03:50,042] WARNING  in platform [Trace: N/A, Request: N/A, Session: N/A]: [AI Platform] Primary failed. Cascading fallback to: groq-llama-3-70b
+[2026-07-20 19:06:17,992] WARNING  in adapters [Trace: N/A, Request: N/A, Session: N/A]: Ollama server offline at http://localhost:11434: timed out
+[2026-07-20 19:06:17,994] ERROR    in platform [Trace: N/A, Request: N/A, Session: N/A]: Adapter execution failed for 'llama3': Ollama server offline at http://localhost:11434: timed out
+[2026-07-20 19:06:17,997] WARNING  in platform [Trace: N/A, Request: N/A, Session: N/A]: [AI Platform] Primary failed. Cascading fallback to: groq-llama-3-70b
+[2026-07-20 19:07:31,053] WARNING  in adapters [Trace: N/A, Request: N/A, Session: N/A]: Ollama server offline at http://localhost:11434: timed out
+[2026-07-20 19:07:31,055] ERROR    in platform [Trace: N/A, Request: N/A, Session: N/A]: Adapter execution failed for 'llama3': Ollama server offline at http://localhost:11434: timed out
+[2026-07-20 19:07:31,057] WARNING  in platform [Trace: N/A, Request: N/A, Session: N/A]: [AI Platform] Primary failed. Cascading fallback to: groq-llama-3-70b
+[2026-07-20 19:08:59,104] WARNING  in adapters [Trace: N/A, Request: N/A, Session: N/A]: Ollama server offline at http://localhost:11434: timed out
+[2026-07-20 19:08:59,107] ERROR    in platform [Trace: N/A, Request: N/A, Session: N/A]: Adapter execution failed for 'llama3': Ollama server offline at http://localhost:11434: timed out
+[2026-07-20 19:08:59,109] WARNING  in platform [Trace: N/A, Request: N/A, Session: N/A]: [AI Platform] Primary failed. Cascading fallback to: groq-llama-3-70b
+[2026-07-20 19:11:02,925] WARNING  in adapters [Trace: N/A, Request: N/A, Session: N/A]: Ollama server offline at http://localhost:11434: timed out
+[2026-07-20 19:11:02,927] ERROR    in platform [Trace: N/A, Request: N/A, Session: N/A]: Adapter execution failed for 'llama3': Ollama server offline at http://localhost:11434: timed out
+[2026-07-20 19:11:02,928] WARNING  in platform [Trace: N/A, Request: N/A, Session: N/A]: [AI Platform] Primary failed. Cascading fallback to: groq-llama-3-70b
+[2026-07-20 19:11:56,244] WARNING  in adapters [Trace: N/A, Request: N/A, Session: N/A]: Ollama server offline at http://localhost:11434: timed out
+[2026-07-20 19:11:56,246] ERROR    in platform [Trace: N/A, Request: N/A, Session: N/A]: Adapter execution failed for 'llama3': Ollama server offline at http://localhost:11434: timed out
+[2026-07-20 19:11:56,248] WARNING  in platform [Trace: N/A, Request: N/A, Session: N/A]: [AI Platform] Primary failed. Cascading fallback to: groq-llama-3-70b
+[2026-07-20 19:13:00,986] WARNING  in adapters [Trace: N/A, Request: N/A, Session: N/A]: Ollama server offline at http://localhost:11434: timed out
+[2026-07-20 19:13:00,987] ERROR    in platform [Trace: N/A, Request: N/A, Session: N/A]: Adapter execution failed for 'llama3': Ollama server offline at http://localhost:11434: timed out
+[2026-07-20 19:13:00,991] WARNING  in platform [Trace: N/A, Request: N/A, Session: N/A]: [AI Platform] Primary failed. Cascading fallback to: groq-llama-3-70b
+[2026-07-20 19:15:34,819] WARNING  in adapters [Trace: N/A, Request: N/A, Session: N/A]: Ollama server offline at http://localhost:11434: timed out
+[2026-07-20 19:15:34,822] ERROR    in platform [Trace: N/A, Request: N/A, Session: N/A]: Adapter execution failed for 'llama3': Ollama server offline at http://localhost:11434: timed out
+[2026-07-20 19:15:34,823] WARNING  in platform [Trace: N/A, Request: N/A, Session: N/A]: [AI Platform] Primary failed. Cascading fallback to: groq-llama-3-70b
+[2026-07-20 19:17:12,336] WARNING  in adapters [Trace: N/A, Request: N/A, Session: N/A]: Ollama server offline at http://localhost:11434: timed out
+[2026-07-20 19:17:12,338] ERROR    in platform [Trace: N/A, Request: N/A, Session: N/A]: Adapter execution failed for 'llama3': Ollama server offline at http://localhost:11434: timed out
+[2026-07-20 19:17:12,342] WARNING  in platform [Trace: N/A, Request: N/A, Session: N/A]: [AI Platform] Primary failed. Cascading fallback to: groq-llama-3-70b
+[2026-07-20 19:25:31,105] WARNING  in adapters [Trace: N/A, Request: N/A, Session: N/A]: Ollama server offline at http://localhost:11434: timed out
+[2026-07-20 19:25:31,107] ERROR    in platform [Trace: N/A, Request: N/A, Session: N/A]: Adapter execution failed for 'llama3': Ollama server offline at http://localhost:11434: timed out
+[2026-07-20 19:25:31,108] WARNING  in platform [Trace: N/A, Request: N/A, Session: N/A]: [AI Platform] Primary failed. Cascading fallback to: groq-llama-3-70b
+[2026-07-20 19:26:17,681] WARNING  in adapters [Trace: N/A, Request: N/A, Session: N/A]: Ollama server offline at http://localhost:11434: timed out
+[2026-07-20 19:26:17,683] ERROR    in platform [Trace: N/A, Request: N/A, Session: N/A]: Adapter execution failed for 'llama3': Ollama server offline at http://localhost:11434: timed out
+[2026-07-20 19:26:17,685] WARNING  in platform [Trace: N/A, Request: N/A, Session: N/A]: [AI Platform] Primary failed. Cascading fallback to: groq-llama-3-70b
+[2026-07-20 19:26:59,095] WARNING  in error_handler [Trace: N/A, Request: N/A, Session: N/A]: [HTTP Exception Handled] 404: Not Found
+[2026-07-20 19:28:08,328] WARNING  in adapters [Trace: N/A, Request: N/A, Session: N/A]: Ollama server offline at http://localhost:11434: timed out
+[2026-07-20 19:28:08,329] ERROR    in platform [Trace: N/A, Request: N/A, Session: N/A]: Adapter execution failed for 'llama3': Ollama server offline at http://localhost:11434: timed out
+[2026-07-20 19:28:08,330] WARNING  in platform [Trace: N/A, Request: N/A, Session: N/A]: [AI Platform] Primary failed. Cascading fallback to: groq-llama-3-70b
+[2026-07-20 19:28:40,645] WARNING  in adapters [Trace: N/A, Request: N/A, Session: N/A]: Ollama server offline at http://localhost:11434: timed out
+[2026-07-20 19:28:40,647] ERROR    in platform [Trace: N/A, Request: N/A, Session: N/A]: Adapter execution failed for 'llama3': Ollama server offline at http://localhost:11434: timed out
+[2026-07-20 19:28:40,648] WARNING  in platform [Trace: N/A, Request: N/A, Session: N/A]: [AI Platform] Primary failed. Cascading fallback to: groq-llama-3-70b
+[2026-07-20 19:29:12,847] WARNING  in adapters [Trace: N/A, Request: N/A, Session: N/A]: Ollama server offline at http://localhost:11434: timed out
+[2026-07-20 19:29:12,853] ERROR    in platform [Trace: N/A, Request: N/A, Session: N/A]: Adapter execution failed for 'llama3': Ollama server offline at http://localhost:11434: timed out
+[2026-07-20 19:29:12,875] WARNING  in platform [Trace: N/A, Request: N/A, Session: N/A]: [AI Platform] Primary failed. Cascading fallback to: groq-llama-3-70b
+[2026-07-20 19:29:45,475] WARNING  in adapters [Trace: N/A, Request: N/A, Session: N/A]: Ollama server offline at http://localhost:11434: timed out
+[2026-07-20 19:29:45,477] ERROR    in platform [Trace: N/A, Request: N/A, Session: N/A]: Adapter execution failed for 'llama3': Ollama server offline at http://localhost:11434: timed out
+[2026-07-20 19:29:45,494] WARNING  in platform [Trace: N/A, Request: N/A, Session: N/A]: [AI Platform] Primary failed. Cascading fallback to: groq-llama-3-70b
+[2026-07-21 07:39:42,100] WARNING  in error_handler [Trace: N/A, Request: N/A, Session: N/A]: [HTTP Exception Handled] 404: Not Found
+[2026-07-21 07:39:43,010] WARNING  in error_handler [Trace: N/A, Request: N/A, Session: N/A]: [HTTP Exception Handled] 404: Not Found
+[2026-07-21 07:39:43,034] WARNING  in error_handler [Trace: N/A, Request: N/A, Session: N/A]: [HTTP Exception Handled] 404: Not Found
+[2026-07-21 07:39:43,053] WARNING  in error_handler [Trace: N/A, Request: N/A, Session: N/A]: [HTTP Exception Handled] 404: Not Found
+[2026-07-21 07:47:20,231] WARNING  in adapters [Trace: N/A, Request: N/A, Session: N/A]: Ollama server offline at http://localhost:11434: timed out
+[2026-07-21 07:47:20,236] ERROR    in platform [Trace: N/A, Request: N/A, Session: N/A]: Adapter execution failed for 'llama3': Ollama server offline at http://localhost:11434: timed out
+[2026-07-21 07:47:20,239] WARNING  in platform [Trace: N/A, Request: N/A, Session: N/A]: [AI Platform] Primary failed. Cascading fallback to: groq-llama-3-70b
+[2026-07-21 07:48:17,142] WARNING  in adapters [Trace: N/A, Request: N/A, Session: N/A]: Ollama server offline at http://localhost:11434: timed out
+[2026-07-21 07:48:17,143] ERROR    in platform [Trace: N/A, Request: N/A, Session: N/A]: Adapter execution failed for 'llama3': Ollama server offline at http://localhost:11434: timed out
+[2026-07-21 07:48:17,145] WARNING  in platform [Trace: N/A, Request: N/A, Session: N/A]: [AI Platform] Primary failed. Cascading fallback to: groq-llama-3-70b
+[2026-07-21 07:49:36,972] WARNING  in adapters [Trace: N/A, Request: N/A, Session: N/A]: Ollama server offline at http://localhost:11434: timed out
+[2026-07-21 07:49:36,978] ERROR    in platform [Trace: N/A, Request: N/A, Session: N/A]: Adapter execution failed for 'llama3': Ollama server offline at http://localhost:11434: timed out
+[2026-07-21 07:49:36,984] WARNING  in platform [Trace: N/A, Request: N/A, Session: N/A]: [AI Platform] Primary failed. Cascading fallback to: groq-llama-3-70b
+[2026-07-21 07:56:39,909] WARNING  in adapters [Trace: N/A, Request: N/A, Session: N/A]: Ollama server offline at http://localhost:11434: timed out
+[2026-07-21 07:56:39,910] ERROR    in platform [Trace: N/A, Request: N/A, Session: N/A]: Adapter execution failed for 'llama3': Ollama server offline at http://localhost:11434: timed out
+[2026-07-21 07:56:39,911] WARNING  in platform [Trace: N/A, Request: N/A, Session: N/A]: [AI Platform] Primary failed. Cascading fallback to: groq-llama-3-70b

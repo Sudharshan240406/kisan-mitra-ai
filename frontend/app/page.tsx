@@ -16,7 +16,9 @@ import WelfareSchemes from "@/components/WelfareSchemes";
 import AIExplainability from "@/components/AIExplainability";
 import AnalyticsCenter from "@/components/AnalyticsCenter";
 import PresentationDemo from "@/components/PresentationDemo";
+import { DemoModeModal } from "@/components/demo/DemoModeModal";
 import { Users, MessageCircle, Landmark, Sparkles, Bot, MapPin } from "lucide-react";
+
 
 const MissionControl = dynamic(() => import("@/components/MissionControl"), { ssr: false });
 import {
@@ -237,6 +239,9 @@ function DashboardContent() {
     updateBudgetLimit, toggleModelAvailability, runRouterDiagnostic
   } = useDashboard();
 
+  const [isDemoModalOpen, setIsDemoModalOpen] = useState(false);
+
+
   const fallbackMetrics: any = {
     planning_latency: { avg_ms: 18.4, count: 12 },
     workflow_latency: { avg_ms: 145.2, count: 12 },
@@ -386,9 +391,12 @@ function DashboardContent() {
     <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans select-none selection:bg-emerald-500 selection:text-slate-950">
       <BackgroundFX />
       
-      <TopNavigation />
+      <TopNavigation onOpenDemo={() => setIsDemoModalOpen(true)} />
+
+      <DemoModeModal isOpen={isDemoModalOpen} onClose={() => setIsDemoModalOpen(false)} />
 
       {/* Main Core Layout Grid */}
+
       <div className="flex-1 flex flex-col md:flex-row h-[calc(100vh-53px)] overflow-hidden">
         
         <LeftSidebar />
@@ -413,9 +421,10 @@ function DashboardContent() {
           {/* TAB 1.1: PRESENTATION DEMO CENTER */}
           {activeTab === "demo" && (
             <Suspense fallback={<div className="text-slate-500 text-sm p-8">Loading Presentation Deck...</div>}>
-              <PresentationDemo />
+              <PresentationDemo onOpenDemo={() => setIsDemoModalOpen(true)} />
             </Suspense>
           )}
+
 
           {/* TAB 1: OVERVIEW */}
           {activeTab === "overview" && (

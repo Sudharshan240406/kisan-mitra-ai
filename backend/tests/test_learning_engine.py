@@ -1,19 +1,18 @@
 import os
+from typing import Any
+
 import pytest
-import shutil
-from typing import Any, Dict
 from app.core.container import Container
-from app.learning.feedback_store import (
-    FeedbackStore,
-    RecommendationFeedback,
-    KnowledgeFeedback,
-    AgentFeedback,
-)
 from app.learning.confidence_optimizer import ConfidenceOptimizer
-from app.learning.recommendation_optimizer import RecommendationOptimizer
-from app.learning.ranking_engine import RankingEngine
-from app.learning.feedback_engine import FeedbackEngine
+from app.learning.feedback_store import (
+    AgentFeedback,
+    FeedbackStore,
+    KnowledgeFeedback,
+    RecommendationFeedback,
+)
 from app.learning.learning_manager import LearningManager
+from app.learning.ranking_engine import RankingEngine
+from app.learning.recommendation_optimizer import RecommendationOptimizer
 from app.orchestrator.orchestrator import AgentOrchestrator
 from app.schemas.requests import ExecutionRequest
 
@@ -29,7 +28,7 @@ def temp_db_path() -> str:
 def test_feedback_store_persistence(temp_db_path: str) -> None:
     """Verifies that feedbacks are correctly written to and loaded from disk."""
     store = FeedbackStore(db_path=temp_db_path)
-    
+
     rec_fb = RecommendationFeedback(
         farmer_id="farmer_123",
         recommendation_id="rec_abc",
@@ -69,7 +68,7 @@ def test_feedback_store_persistence(temp_db_path: str) -> None:
 def test_confidence_optimizer() -> None:
     """Verifies confidence score tuning and crop/region offsets."""
     optimizer = ConfidenceOptimizer()
-    
+
     # Baseline
     assert optimizer.get_optimized_confidence(0.70, crop="cotton", region="Gujarat") == 0.70
 
@@ -80,14 +79,14 @@ def test_confidence_optimizer() -> None:
         accepted=True,
         metadata={"crop": "cotton", "region": "Gujarat"}
     )
-    
+
     # Direct tuning check
     assert optimizer.optimize_confidence(0.80, fb_accept) == 0.85
-    
+
     # Verify offset was applied
     assert optimizer.crop_offsets["cotton"] == 0.02
     assert optimizer.region_offsets["Gujarat"] == 0.02
-    
+
     # Check optimized output with offsets applied
     assert optimizer.get_optimized_confidence(0.70, crop="cotton", region="Gujarat") == 0.74
 
@@ -142,7 +141,7 @@ def test_learning_manager_analytics(temp_db_path: str) -> None:
     manager = LearningManager(store=store)
 
     context = {"crop": "rice", "region": "Haryana", "language": "hi", "scheme": "pm_kisan"}
-    
+
     # Interaction 1: Accept
     manager.process_interaction(
         farmer_id="farmer_abc",
@@ -171,11 +170,11 @@ async def test_orchestrator_learning_integration() -> None:
     """Verifies orchestrator invokes and tracks telemetry metadata for learning systems."""
     from app.core.config import settings
     container = Container(settings)
-    
+
     # Register mock specialist agent
     from agents.base import BaseAgent
     from app.schemas.responses import AgentResult
-    
+
     class MockSpecialistAgent(BaseAgent):
         def __init__(self, llm_provider: Any) -> None:
             super().__init__(name="GovernmentScheme", llm_provider=llm_provider)
@@ -189,19 +188,19 @@ async def test_orchestrator_learning_integration() -> None:
             return []
         async def cleanup(self) -> None:
             pass
-            
+
     mock_agent = MockSpecialistAgent(container.llm_provider)
     await mock_agent.initialize()
     container.registry.register(mock_agent)
-    
+
     # Instantiate AgentOrchestrator
     orchestrator = AgentOrchestrator(container=container)
-    
+
     # Inject temporary db to learning manager to avoid writing to default db
     test_db = "./data/test_orchestrator_learning.json"
     if os.path.exists(test_db):
         os.remove(test_db)
-    
+
     try:
         orchestrator.learning_manager.store = FeedbackStore(db_path=test_db)
         orchestrator.learning_manager.feedback_engine.store = orchestrator.learning_manager.store
@@ -211,7 +210,7 @@ async def test_orchestrator_learning_integration() -> None:
             query="Tell me about PM-Kisan scheme.",
             session_id="session_test"
         )
-        
+
         # Execute query
         resp = await orchestrator.execute_query(req)
         assert resp.status == "success"

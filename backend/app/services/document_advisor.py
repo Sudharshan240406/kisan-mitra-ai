@@ -99,27 +99,40 @@ class DocumentAdvisor:
         language: str = "en",
     ) -> str:
         """
-        Generate a natural voice-friendly summary of document requirements.
+        Generate a natural voice-friendly summary of document requirements in the target language.
         """
         name = farmer.name.split()[0]
         scheme = recommendation.title
         docs = recommendation.required_documents[:3]
         docs_text = ", ".join(docs)
+        lang_code = language.split("-", maxsplit=1)[0].lower()
 
-        if language == "hi":
+        if lang_code == "hi":
             return (
                 f"{name} जी, {scheme} के लिए आवेदन करने के लिए "
                 f"कृपया {docs_text} तैयार रखें। "
                 f"आवेदन {recommendation.nearest_office} पर करें। "
-                f"अंतिम तिथि: {recommendation.deadline}। "
                 f"हेल्पलाइन: {recommendation.helpline}।"
             )
-        elif language == "pa":
+        elif lang_code == "kn":
+            return (
+                f"{name} ಅವರೇ, {scheme} ಯೋಜನೆಗೆ ಅರ್ಜಿ ಸಲ್ಲಿಸಲು "
+                f"ದಯವಿಟ್ಟು {docs_text} ದಾಖಲೆಗಳನ್ನು ಸಿದ್ಧವಾಗಿಟ್ಟುಕೊಳ್ಳಿ. "
+                f"ನಿಮ್ಮ ಹತ್ತಿರದ {recommendation.nearest_office} ಕಚೇರಿಯಲ್ಲಿ ಸಂಪರ್ಕಿಸಿ. "
+                f"ಸಹಾಯವಾಣಿ: {recommendation.helpline}."
+            )
+        elif lang_code == "mr":
+            return (
+                f"{name} जी, {scheme} साठी अर्ज करण्यासाठी "
+                f"कृपया {docs_text} ही कागदपत्रे तयार ठेवा. "
+                f"आपल्या जवळच्या {recommendation.nearest_office} कार्यालयात अर्ज करा. "
+                f"हेल्पलाइन: {recommendation.helpline}."
+            )
+        elif lang_code == "pa":
             return (
                 f"{name} ਜੀ, {scheme} ਲਈ ਅਰਜ਼ੀ ਦੇਣ ਲਈ "
                 f"ਕਿਰਪਾ ਕਰਕੇ {docs_text} ਤਿਆਰ ਰੱਖੋ। "
                 f"ਅਰਜ਼ੀ {recommendation.nearest_office} ਤੇ ਦਿਓ। "
-                f"ਆਖ਼ਰੀ ਤਰੀਕ: {recommendation.deadline}। "
                 f"ਹੈਲਪਲਾਈਨ: {recommendation.helpline}।"
             )
         else:
@@ -127,9 +140,9 @@ class DocumentAdvisor:
                 f"{name}, to apply for {scheme}, "
                 f"please keep {docs_text} ready. "
                 f"Apply at {recommendation.nearest_office}. "
-                f"Deadline: {recommendation.deadline}. "
                 f"Helpline: {recommendation.helpline}."
             )
+
 
     def _farmer_likely_has(self, farmer: Farmer, doc: str) -> bool:
         """Check if farmer likely already has this document."""

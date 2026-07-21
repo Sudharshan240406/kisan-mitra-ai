@@ -139,12 +139,19 @@ def test_e2e_orchestrator_caching_and_rate_limiting() -> None:
         assert dur < 1000.0
 
         # 3. Test rate limiting throttling by triggering bursts
-        # The limiter default capacity is 25, let's make 120 requests to trigger throttling (429)
+        # Capacity is 20, loop 100 times to exceed refilled tokens and trigger HTTP 429 throttling
         throttled = False
-        for _ in range(120):
+        for _ in range(100):
             resp = client.post("/api/v1/query", json=payload)
             if resp.status_code == 429:
                 throttled = True
                 break
 
         assert throttled is True
+
+
+
+
+
+
+

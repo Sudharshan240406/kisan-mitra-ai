@@ -7,11 +7,10 @@ from app.core.config import settings
 
 logger = logging.getLogger("kisan_mitra_ai.observability.health")
 
-chromadb: Any = None
 try:
-    import chromadb
+    import chromadb  # type: ignore
 except ImportError:
-    pass
+    chromadb = None
 
 class HealthEngine:
     """

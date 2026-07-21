@@ -66,11 +66,11 @@ class ConfidenceOptimizer:
         Returns an adjusted confidence level directly for an individual feedback outcome.
         """
         self.update_offsets(feedback)
-        
+
         val = current_confidence
         if feedback.accepted:
             val = min(1.0, current_confidence + 0.05)
         elif feedback.rejected:
             val = max(0.1, current_confidence - 0.10)
-            
+
         return round(float(val), 4)

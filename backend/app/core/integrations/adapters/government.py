@@ -1,6 +1,7 @@
 import logging
-import httpx
 from typing import Any
+
+import httpx
 from app.core.integrations.base import IGovernmentSchemeAdapter, IntegrationMetadata
 
 logger = logging.getLogger("kisan_mitra_ai.integrations.adapters.government")
@@ -45,7 +46,7 @@ class PMKisanAdapter(IGovernmentSchemeAdapter):
                     return response.json()
         except Exception as e:
             logger.warning(f"[PMKisanAdapter] HTTP call failed, using fallback schemes list: {e}")
-            
+
         return [{
             "id": "pm_kisan_benefit",
             "name": "PM-Kisan Income Support",

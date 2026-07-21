@@ -23,7 +23,7 @@ import uuid
 from typing import Any, Optional
 
 from app.core.context import AgentContext
-from app.reasoning.core import ReasoningContext, ReasoningPlatform, ReasoningSession
+from app.reasoning.core import ReasoningContext, ReasoningPlatform
 from app.schemas.evidence import BaseEvidence
 from pydantic import BaseModel, Field
 

@@ -1,8 +1,8 @@
 import pytest
+from app.core.config import Settings, validate_production_config
+from app.main import app
 from fastapi.testclient import TestClient
 
-from app.main import app
-from app.core.config import Settings, validate_production_config
 
 def test_liveness_endpoint():
     with TestClient(app) as client:
@@ -18,12 +18,12 @@ def test_readiness_endpoint_response_structure():
         # Thus, readiness probe may return 200 (if connected) or 503 Service Unavailable (degraded).
         # We assert the HTTP status code is one of these and verify the payload contains the core components.
         assert response.status_code in [200, 503]
-        
+
         data = response.json()
         if response.status_code == 503:
             assert "detail" in data
             data = data["detail"]
-            
+
         assert data["service"] == "kisan-mitra-backend"
         assert "components" in data
         assert "database" in data["components"]

@@ -1,12 +1,16 @@
 import time
 from typing import Any, Dict, List, Optional
 
-# Substores
-from app.memory.profile_memory import ProfileMemoryStore, FarmerProfileMemory
 from app.memory.conversation_memory import ConversationMemoryStore, ConversationTurn
-from app.memory.recommendation_memory import RecommendationMemoryStore, RecommendationRecord
-from app.memory.vector_memory import VectorMemoryIndex
 from app.memory.memory_manager import MemoryManager
+
+# Substores
+from app.memory.profile_memory import FarmerProfileMemory, ProfileMemoryStore
+from app.memory.recommendation_memory import (
+    RecommendationMemoryStore,
+)
+from app.memory.vector_memory import VectorMemoryIndex
+
 
 class FarmerMemoryEngine:
     """
@@ -36,7 +40,7 @@ class FarmerMemoryEngine:
         documents_submitted: Optional[List[str]] = None
     ) -> None:
         timestamp = time.time()
-        
+
         # 1. Update Profile (create basic if missing)
         profile = self.profiles.get(farmer_id)
         if not profile:
@@ -104,7 +108,7 @@ class FarmerMemoryEngine:
         """
         # Fetch search list from vector index
         raw_results = self.vectors.search(query, k=10)
-        
+
         # Filter by farmer_id
         filtered_memories = []
         for doc in raw_results:
@@ -117,7 +121,7 @@ class FarmerMemoryEngine:
                     "intent": meta.get("intent", ""),
                     "similarity": doc["similarity"]
                 })
-                
+
         # Rank via memory manager
         return self.manager.rank_memories(filtered_memories, query)
 

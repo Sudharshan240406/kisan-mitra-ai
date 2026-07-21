@@ -24,7 +24,7 @@ def get_deterministic_embedding(text: str, dimension: int = 384) -> List[float]:
     """
     if not text:
         return [0.0] * dimension
-    
+
     stopwords = {
         "the", "a", "an", "in", "on", "at", "for", "with", "about", "against",
         "of", "by", "to", "is", "are", "and", "or", "but", "what", "how", "where", "who", "which"

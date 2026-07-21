@@ -2,7 +2,7 @@ import logging
 import time
 from typing import Any, Optional
 
-from app.stt.provider_base import BaseSTTProvider, STTResult
+from app.stt.provider_base import STTResult
 
 logger = logging.getLogger("kisan_mitra_ai.stt.fallback_provider")
 

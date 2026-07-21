@@ -1,4 +1,5 @@
 import os
+from typing import Generator
 
 import pytest
 from app.core.config import settings
@@ -12,8 +13,6 @@ from app.orchestrator.orchestrator import AgentOrchestrator
 from app.personalization.models import FarmDetails, FarmerProfile, LongTermMemory
 from app.schemas.requests import ExecutionRequest
 
-
-from typing import Generator
 
 @pytest.fixture
 def temp_twin_db_path() -> Generator[str, None, None]:

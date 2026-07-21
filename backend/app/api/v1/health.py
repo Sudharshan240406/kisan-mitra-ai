@@ -15,14 +15,14 @@ logger = logging.getLogger("kisan_mitra_ai")
 router = APIRouter()
 
 @router.get("/liveness", response_model=dict[str, str])
-def check_liveness():
+def check_liveness() -> dict[str, str]:
     """
     Liveness probe. Quick heartbeat to ensure application process is running.
     """
     return {"status": "healthy", "service": "kisan-mitra-backend"}
 
 @router.get("/readiness", response_model=HealthResponse)
-def check_readiness():
+def check_readiness() -> HealthResponse:
     """
     Readiness probe. Checks connections to core dependencies (DB, Redis, Chroma).
     """

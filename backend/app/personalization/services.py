@@ -10,11 +10,10 @@ from __future__ import annotations
 import logging
 import time
 from typing import Any, List, Optional
-from pydantic import BaseModel
 
 from app.personalization.models import (
-    FarmerProfile,
     FarmDetails,
+    FarmerProfile,
     LongTermMemory,
     PrivacyConsent,
     Reminder,
@@ -39,19 +38,16 @@ class ProfileManagerService:
         is_new = farmer_id not in self.platform.profiles
         self.platform.profiles[farmer_id] = profile
 
-        if is_new:
-            self.platform.metrics.total_profiles = len(self.platform.profiles)
-            # Create corresponding default Twin, Memory, Consent if they don't exist
-            if farmer_id not in self.platform.twins:
-                self.platform.twins[farmer_id] = FarmDetails(
-                    farmer_id=farmer_id, land_size_acres=0.0, village="unknown", district="unknown", state="unknown"
-                )
-            if farmer_id not in self.platform.memories:
-                self.platform.memories[farmer_id] = LongTermMemory(farmer_id=farmer_id)
-            if farmer_id not in self.platform.consents:
-                self.platform.consents[farmer_id] = PrivacyConsent(farmer_id=farmer_id)
-            if farmer_id not in self.platform.reminders:
-                self.platform.reminders[farmer_id] = []
+        if farmer_id not in self.platform.twins:
+            self.platform.twins[farmer_id] = FarmDetails(
+                farmer_id=farmer_id, land_size_acres=0.0, village="unknown", district="unknown", state="unknown"
+            )
+        if farmer_id not in self.platform.memories:
+            self.platform.memories[farmer_id] = LongTermMemory(farmer_id=farmer_id)
+        if farmer_id not in self.platform.consents:
+            self.platform.consents[farmer_id] = PrivacyConsent(farmer_id=farmer_id)
+        if farmer_id not in self.platform.reminders:
+            self.platform.reminders[farmer_id] = []
 
         logger.info(f"[ProfileManagerService] Saved profile for farmer: {farmer_id}")
         self.platform.save_to_disk()
@@ -101,8 +97,10 @@ class LongTermMemoryService:
     def __init__(self, platform: PersonalizationPlatform) -> None:
         self.platform = platform
 
-    def get_memory(self, farmer_id: str) -> Optional[LongTermMemory]:
-        return self.platform.memories.get(farmer_id)
+    def get_memory(self, farmer_id: str) -> LongTermMemory:
+        if farmer_id not in self.platform.memories:
+            self.platform.memories[farmer_id] = LongTermMemory(farmer_id=farmer_id)
+        return self.platform.memories[farmer_id]
 
     def log_conversation(self, farmer_id: str, query: str, response: str) -> None:
         memory = self.get_memory(farmer_id)
@@ -220,9 +218,12 @@ class ContinuousLearningService:
         if consistent success/failure patterns emerge, and increments iteration counts.
         """
         profile = self.platform.profiles.get(farmer_id)
+        if not profile:
+            return {"status": "error", "message": "Farmer profile missing."}
         memory = self.platform.memories.get(farmer_id)
-        if not profile or not memory:
-            return {"status": "error", "message": "Farmer or memory profile missing."}
+        if not memory:
+            memory = LongTermMemory(farmer_id=farmer_id)
+            self.platform.memories[farmer_id] = memory
 
         self.platform.metrics.learning_iterations += 1
 

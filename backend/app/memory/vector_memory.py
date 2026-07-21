@@ -1,6 +1,6 @@
-import math
 import re
-from typing import Any, Dict, List, Set
+from typing import Any, Dict, List
+
 
 class VectorMemoryIndex:
     """
@@ -32,16 +32,16 @@ class VectorMemoryIndex:
         for doc in self.documents:
             doc_tokens = doc["tokens"]
             intersection = query_tokens.intersection(doc_tokens)
-            
+
             # Simple Jaccard similarity coefficient as semantic distance
             union_len = len(query_tokens.union(doc_tokens))
             score = len(intersection) / union_len if union_len > 0 else 0.0
-            
+
             scored_docs.append((score, doc))
 
         # Sort descending by score
         scored_docs.sort(key=lambda x: x[0], reverse=True)
-        
+
         results = []
         for score, doc in scored_docs[:k]:
             results.append({
@@ -49,7 +49,7 @@ class VectorMemoryIndex:
                 "metadata": doc["metadata"],
                 "similarity": score
             })
-            
+
         return results
 
     def clear(self) -> None:

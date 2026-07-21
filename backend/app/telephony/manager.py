@@ -281,7 +281,6 @@ class CallManager:
         try:
             from app.knowledge.modules.government import GovernmentKnowledgeProvider
             from app.services.demo import DemoService
-            from app.services.eligibility import EligibilityEngine
             from app.services.scheme_service import GovernmentSchemeService
 
             demo_service = DemoService()

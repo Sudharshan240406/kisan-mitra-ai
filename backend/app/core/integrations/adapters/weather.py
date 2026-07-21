@@ -1,6 +1,7 @@
 import logging
-import httpx
 from typing import Any
+
+import httpx
 from app.core.config import settings
 from app.core.integrations.base import IntegrationMetadata, IWeatherAdapter
 
@@ -38,11 +39,11 @@ class IMDWeatherAdapter(IWeatherAdapter):
 
     async def get_forecast(self, location: str) -> dict[str, Any]:
         logger.info(f"Fetching IMD forecast for location: {location}")
-        
+
         # Real production API call if configured, otherwise fallback
         endpoint = self.metadata.configuration.get("api_endpoint", "https://api.imd.gov.in")
         try:
-            async with httpx.AsyncClient(timeout=4.0) as client:
+            async with httpx.AsyncClient(timeout=1.0) as client:
                 # Simulating calling standard IMD weather API structure
                 response = await client.get(f"{endpoint}/v1/weather", params={"location": location})
                 if response.status_code == 200:
@@ -100,7 +101,7 @@ class OpenWeatherAdapter(IWeatherAdapter):
 
     async def get_forecast(self, location: str) -> dict[str, Any]:
         logger.info(f"Fetching OpenWeather forecast for location: {location}")
-        
+
         api_key = settings.OPENWEATHER_API_KEY
         if api_key:
             endpoint = self.metadata.configuration.get("api_endpoint", "https://api.openweathermap.org/data/2.5")
@@ -167,7 +168,7 @@ class TomorrowIOWeatherAdapter(IWeatherAdapter):
 
     async def get_forecast(self, location: str) -> dict[str, Any]:
         logger.info(f"Fetching Tomorrow.io forecast for location: {location}")
-        
+
         api_key = settings.TOMORROW_IO_API_KEY
         if api_key:
             endpoint = self.metadata.configuration.get("api_endpoint", "https://api.tomorrow.io/v4")

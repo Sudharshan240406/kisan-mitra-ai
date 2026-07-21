@@ -23,12 +23,12 @@ from app.orchestrator.router import IntentRouter
 from app.orchestrator.validator import ResponseValidator
 from app.schemas.evidence import BaseEvidence
 
-# Tenancy
-from app.tenancy.tenant_context import set_tenant_context
-
 # Schemas
 from app.schemas.requests import AgentRequest, ExecutionRequest
 from app.schemas.responses import StandardResponse, TrustedRecommendation
+
+# Tenancy
+from app.tenancy.tenant_context import set_tenant_context
 from app.utils.id import generate_trace_id, generate_uuid
 
 logger = logging.getLogger("kisan_mitra_ai")
@@ -56,7 +56,7 @@ class AgentOrchestrator:
 
     async def execute_query(self, request: ExecutionRequest, background_bypass: bool = False) -> StandardResponse:  # noqa: PLR0912
         start_time = time.time()
-        
+
         if getattr(request, "background", False) and not background_bypass:
             if hasattr(self.container, "workflow_manager"):
                 job_id = await self.container.workflow_manager.queue_manager.enqueue(
@@ -628,7 +628,7 @@ class AgentOrchestrator:
                 if recommendation.evidence:
                     for ev in recommendation.evidence:
                         evidence_chain.append(getattr(ev, "title", str(ev)))
-                
+
                 audit_record = gov_mgr.run_post_execution_checks(
                     execution_id=request_id,
                     query=request.query,
@@ -642,7 +642,7 @@ class AgentOrchestrator:
                     risk_score=0.0,
                     evidence_chain=evidence_chain
                 )
-                
+
                 if not recommendation.safety_assessment:
                     recommendation.safety_assessment = {}
                 recommendation.safety_assessment["governance_compliance"] = audit_record.compliance.status

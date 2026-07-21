@@ -4,7 +4,7 @@ import logging
 import time
 from typing import Any, Optional
 
-from app.media.media import MediaInput, MediaResult, MediaType
+from app.media.media import MediaInput, MediaType
 from pydantic import BaseModel, Field
 
 logger = logging.getLogger("kisan_mitra_ai.multimodal.core")
