@@ -221,21 +221,23 @@ export function useDemoCallSession() {
         },
       ]);
 
-      // Stage 1: Speech STT (Ingesting Farmer Input)
+      // Stage 1: Speech STT — hold 900 ms so judges can read it
       setCallState("processing");
       setActivePipelineStep(1);
       console.log("[Pipeline Stage] 1/5: Speech STT");
-      await new Promise((resolve) => setTimeout(resolve, 600));
+      await new Promise((resolve) => setTimeout(resolve, 900));
 
-      // Stage 2: Digital Twin (Loading Farmer Profile & Land Records)
+      // Stage 2: Digital Twin — hold 900 ms so judges can read it
       setActivePipelineStep(2);
       console.log("[Pipeline Stage] 2/5: Digital Twin Context Enrichment");
-      await new Promise((resolve) => setTimeout(resolve, 600));
+      await new Promise((resolve) => setTimeout(resolve, 900));
 
-      // Stage 3: Scheme RAG (Querying Government Knowledge Base)
+      // Stage 3: Scheme RAG — runs real API fetch; enforces a 1 200 ms minimum
+      // so judges see it even when the backend responds instantly.
       setActivePipelineStep(3);
       console.log("[Pipeline Stage] 3/5: Scheme RAG & Eligibility Rules Evaluation");
 
+      const stage3Start = Date.now();
       let data: any = null;
       try {
         // Build the LLM prompt language instruction
@@ -280,7 +282,11 @@ export function useDemoCallSession() {
         console.error("[useDemoCallSession] API request error, proceeding with fallback:", err);
       }
 
-      await new Promise((resolve) => setTimeout(resolve, 500));
+      // Enforce minimum 1 200 ms on Stage 3 for judge readability
+      const stage3Elapsed = Date.now() - stage3Start;
+      if (stage3Elapsed < 1200) {
+        await new Promise((resolve) => setTimeout(resolve, 1200 - stage3Elapsed));
+      }
 
       // If backend was offline or failed, generate language-pure fallback response
       if (!data || !data.voice_response) {
@@ -309,7 +315,8 @@ export function useDemoCallSession() {
         };
       }
 
-      // Stage 4: AI Reasoning (LangGraph Multi-Agent Decision Compilation)
+      // Stage 4: AI Reasoning — hold 1 800 ms; enough for judges to read
+      // "LangGraph Verification" and see the reasoning animation.
       setActivePipelineStep(4);
       console.log("[Pipeline Stage] 4/5: AI Multi-Agent Reasoning Graph");
       setAiResponseData(data);
@@ -328,7 +335,7 @@ export function useDemoCallSession() {
         },
       ]);
 
-      await new Promise((resolve) => setTimeout(resolve, 800));
+      await new Promise((resolve) => setTimeout(resolve, 1800));
 
       // Stage 5: Voice Output (TTS Audio Synthesis & Playback)
       setActivePipelineStep(5);
