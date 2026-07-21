@@ -204,7 +204,9 @@ interface SMSSession {
   thread_history: Array<{ direction: string; text: string; timestamp: number }>;
 }
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+import { getApiBase } from "@/lib/utils";
+
+const API_BASE = getApiBase();
 
 export default function Home() {
   return (

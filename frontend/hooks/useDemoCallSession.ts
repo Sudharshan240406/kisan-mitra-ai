@@ -157,7 +157,9 @@ const DEFAULT_FARMERS: DemoFarmer[] = [
   },
 ];
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+import { getApiBase } from "@/lib/utils";
+
+const API_BASE = getApiBase();
 
 /* ═══════════════════════════════════════════════════════════
    HOOK
@@ -179,7 +181,7 @@ export function useDemoCallSession() {
 
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
-  const { isPlaying: isTtsPlaying, speak, stop: stopTts, ttsWarning } = useTextToSpeech();
+  const { isPlaying: isTtsPlaying, speak, stop: stopTts, voiceStatus, ttsWarning } = useTextToSpeech(selectedLanguage);
 
   /* ── When the user selects a language, it becomes the absolute authority ── */
   const handleLanguageChange = useCallback((langCode: string) => {
@@ -219,20 +221,20 @@ export function useDemoCallSession() {
         },
       ]);
 
-      // Stage 1: Speech STT
+      // Stage 1: Speech STT (Ingesting Farmer Input)
       setCallState("processing");
       setActivePipelineStep(1);
       console.log("[Pipeline Stage] 1/5: Speech STT");
+      await new Promise((resolve) => setTimeout(resolve, 600));
 
-      // Stage 2: Digital Twin (200ms delay for visual feedback)
-      await new Promise((resolve) => setTimeout(resolve, 200));
+      // Stage 2: Digital Twin (Loading Farmer Profile & Land Records)
       setActivePipelineStep(2);
-      console.log("[Pipeline Stage] 2/5: Digital Twin");
+      console.log("[Pipeline Stage] 2/5: Digital Twin Context Enrichment");
+      await new Promise((resolve) => setTimeout(resolve, 600));
 
-      // Stage 3: Scheme RAG (200ms delay for visual feedback)
-      await new Promise((resolve) => setTimeout(resolve, 200));
+      // Stage 3: Scheme RAG (Querying Government Knowledge Base)
       setActivePipelineStep(3);
-      console.log("[Pipeline Stage] 3/5: Scheme RAG");
+      console.log("[Pipeline Stage] 3/5: Scheme RAG & Eligibility Rules Evaluation");
 
       let data: any = null;
       try {
@@ -278,6 +280,8 @@ export function useDemoCallSession() {
         console.error("[useDemoCallSession] API request error, proceeding with fallback:", err);
       }
 
+      await new Promise((resolve) => setTimeout(resolve, 500));
+
       // If backend was offline or failed, generate language-pure fallback response
       if (!data || !data.voice_response) {
         const name = selectedFarmer.name.split(" ")[0];
@@ -305,20 +309,14 @@ export function useDemoCallSession() {
         };
       }
 
-      setAiResponseData(data);
-
-      // Stage 4: AI Reasoning (LangGraph Multi-Agent decision compiled)
+      // Stage 4: AI Reasoning (LangGraph Multi-Agent Decision Compilation)
       setActivePipelineStep(4);
-      console.log("[Pipeline Stage] 4/5: AI Reasoning");
-      await new Promise((resolve) => setTimeout(resolve, 250));
-
-      // Stage 5: Voice Output (TTS Audio Synthesis starting)
-      setActivePipelineStep(5);
-      console.log("[Pipeline Stage] 5/5: Voice Output");
+      console.log("[Pipeline Stage] 4/5: AI Multi-Agent Reasoning Graph");
+      setAiResponseData(data);
 
       const responseText = data.voice_response || FALLBACK_RESPONSES[lang]?.(selectedFarmer.name.split(" ")[0]) || "";
 
-      // Add AI response — entirely in selected language
+      // Add AI response turn to transcript
       setTranscript((prev) => [
         ...prev,
         {
@@ -330,12 +328,18 @@ export function useDemoCallSession() {
         },
       ]);
 
+      await new Promise((resolve) => setTimeout(resolve, 800));
+
+      // Stage 5: Voice Output (TTS Audio Synthesis & Playback)
+      setActivePipelineStep(5);
+      console.log("[Pipeline Stage] 5/5: Voice Output Audio Playback");
       setCallState("speaking");
-      // Speak in selected language voice; on completion log all 5 stages completed
+
+      // Speak in selected language voice; callState transitions to connected ONLY when audio finishes
       speak(responseText, lang, () => {
         setCallState("connected");
         setActivePipelineStep(5);
-        console.log("[Pipeline Stage] All 5 stages completed successfully.");
+        console.log("[Pipeline Stage] All 5 pipeline stages completed successfully with audio playback.");
       });
     },
     [selectedLanguage, selectedFarmer, speak]
@@ -477,6 +481,7 @@ export function useDemoCallSession() {
     isTtsPlaying,
     speechTranscript,
     aiResponseData,
+    voiceStatus,
     ttsWarning,
     triggerIncomingCall,
     acceptCall,

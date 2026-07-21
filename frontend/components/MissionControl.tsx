@@ -107,8 +107,10 @@ interface TimelineEvent {
    Main Component
    ═══════════════════════════════════════════════════════════════════════════ */
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
-const WS_BASE = API_BASE.replace(/^http/, "ws");
+import { getApiBase, getWsBase } from "@/lib/utils";
+
+const API_BASE = getApiBase();
+const WS_BASE = getWsBase();
 
 export default function MissionControl() {
   // Global context data

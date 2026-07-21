@@ -5,8 +5,10 @@ import { useDashboard } from "@/components/DashboardContext";
 import { Cpu, Wifi, WifiOff, Bell, User, AlertTriangle, ShieldCheck, ChevronDown, Check, Phone } from "lucide-react";
 import { useWebSocket } from "@/hooks/useWebSocket";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
-const WS_BASE = API_BASE.replace(/^http/, "ws");
+import { getApiBase, getWsBase } from "@/lib/utils";
+
+const API_BASE = getApiBase();
+const WS_BASE = getWsBase();
 
 interface TopNavigationProps {
   onOpenDemo?: () => void;

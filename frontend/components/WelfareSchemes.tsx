@@ -73,7 +73,9 @@ interface SchemeRecommendation {
   missing_info: string[];
 }
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+import { getApiBase } from "@/lib/utils";
+
+const API_BASE = getApiBase();
 
 export default function WelfareSchemes() {
   const { integrations } = useDashboard();

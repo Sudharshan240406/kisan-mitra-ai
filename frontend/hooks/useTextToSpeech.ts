@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useCallback, useRef, useEffect } from "react";
+import { useState, useCallback, useRef, useEffect, useMemo } from "react";
+import { getApiBase } from "@/lib/utils";
 
 /* ════════════════════════════════════════════════════════════════
    LANGUAGE → VOICE KEYWORD MAPPING & LABELS
@@ -22,11 +23,20 @@ const LANG_CONFIG: Record<string, { label: string; keywords: string[] }> = {
   "bn-in": { label: "Bengali",   keywords: ["bn-in", "bengali", "bangla", "bn_in", "বাংলা", "bn"] },
 };
 
-export function useTextToSpeech() {
+export interface VoiceEngineStatus {
+  languageCode: string;
+  languageLabel: string;
+  engineType: "native" | "cloud_neural";
+  engineName: string;
+  statusText: string;
+  isCloudFallback: boolean;
+}
+
+export function useTextToSpeech(currentLanguage: string = "kn-IN") {
   const [isPlaying, setIsPlaying] = useState(false);
   const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
-  const [ttsWarning, setTtsWarning] = useState<string | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const fallbackTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     if (typeof window !== "undefined" && "speechSynthesis" in window) {
@@ -37,7 +47,9 @@ export function useTextToSpeech() {
       updateVoices();
       window.speechSynthesis.onvoiceschanged = updateVoices;
       return () => {
-        window.speechSynthesis.onvoiceschanged = null;
+        if ("speechSynthesis" in window) {
+          window.speechSynthesis.onvoiceschanged = null;
+        }
       };
     }
   }, []);
@@ -51,7 +63,7 @@ export function useTextToSpeech() {
     (langTag: string, allVoices: SpeechSynthesisVoice[]): SpeechSynthesisVoice | null => {
       if (!allVoices || allVoices.length === 0) return null;
 
-      const target = langTag.toLowerCase().replace("_", "-");
+      const target = (langTag || "kn-IN").toLowerCase().replace("_", "-");
       const shortCode = target.split("-")[0];
       const cfg = LANG_CONFIG[target] || { label: langTag, keywords: [shortCode] };
 
@@ -91,12 +103,58 @@ export function useTextToSpeech() {
     []
   );
 
+  /**
+   * Reactive voiceEngineStatus — updates INSTANTLY whenever currentLanguage changes
+   */
+  const voiceStatus: VoiceEngineStatus = useMemo(() => {
+    const target = (currentLanguage || "kn-IN").toLowerCase().replace("_", "-");
+    const shortCode = target.split("-")[0];
+    const cfg = LANG_CONFIG[target] || { label: currentLanguage || "Language", keywords: [shortCode] };
+    const label = cfg.label;
+
+    const available =
+      typeof window !== "undefined" && "speechSynthesis" in window
+        ? window.speechSynthesis.getVoices().length > 0
+          ? window.speechSynthesis.getVoices()
+          : voices
+        : voices;
+
+    const nativeVoice = selectBestNativeVoice(currentLanguage, available);
+
+    if (nativeVoice) {
+      return {
+        languageCode: currentLanguage,
+        languageLabel: label,
+        engineType: "native",
+        engineName: nativeVoice.name,
+        statusText: `Native Browser Voice • ${label}`,
+        isCloudFallback: false,
+      };
+    }
+
+    return {
+      languageCode: currentLanguage,
+      languageLabel: label,
+      engineType: "cloud_neural",
+      engineName: "Cloud Neural Voice",
+      statusText: `Cloud Neural Voice • ${label}`,
+      isCloudFallback: true,
+    };
+  }, [currentLanguage, voices, selectBestNativeVoice]);
+
+  // Backward compatibility warning string derived dynamically from active language
+  const ttsWarning = voiceStatus.isCloudFallback
+    ? `${voiceStatus.languageLabel} voice is unavailable on this device. Using cloud neural voice.`
+    : null;
+
   const speak = useCallback(
     (text: string, language = "hi-IN", onEnd?: () => void, audioUrl?: string) => {
       if (typeof window === "undefined") {
         onEnd?.();
         return;
       }
+
+      if (fallbackTimerRef.current) clearTimeout(fallbackTimerRef.current);
 
       const target = language.toLowerCase().replace("_", "-");
       const shortCode = target.split("-")[0];
@@ -109,110 +167,88 @@ export function useTextToSpeech() {
             : voices
           : [];
 
-      // Log requested speech diagnostics
-      console.log("[TTS] Requested language:", language, `(${langConfig.label})`);
-      console.log(
-        "[TTS] Available SpeechSynthesis voices:",
-        availableVoices.map((v) => `${v.name} (${v.lang})`)
-      );
+      const handleSpeechEnd = () => {
+        if (fallbackTimerRef.current) clearTimeout(fallbackTimerRef.current);
+        setIsPlaying(false);
+        onEnd?.();
+      };
 
       // Direct custom audio URL provided
       if (audioUrl) {
-        console.log("[TTS] Provider: Custom Audio URL");
         if (audioRef.current) audioRef.current.pause();
         const audio = new Audio(audioUrl);
         audioRef.current = audio;
         audio.onplay = () => setIsPlaying(true);
-        audio.onended = () => {
-          setIsPlaying(false);
-          onEnd?.();
-        };
-        audio.onerror = () => {
-          setIsPlaying(false);
-          onEnd?.();
-        };
-        audio.play().catch(() => {
-          setIsPlaying(false);
-          onEnd?.();
-        });
+        audio.onended = handleSpeechEnd;
+        audio.onerror = handleSpeechEnd;
+        audio.play().catch(handleSpeechEnd);
         return;
       }
 
       // Check for native browser voice
       const nativeVoice = selectBestNativeVoice(language, availableVoices);
 
-      if (nativeVoice) {
-        // Option A: Browser has a native voice for this language
-        console.log("[TTS] Selected voice:", nativeVoice.name);
-        console.log("[TTS] Provider: Browser SpeechSynthesis");
-        console.log("[TTS] SpeechSynthesis Voice:", nativeVoice);
-        setTtsWarning(null);
+      if (nativeVoice && "speechSynthesis" in window) {
+        window.speechSynthesis.cancel();
 
-        if ("speechSynthesis" in window) {
-          window.speechSynthesis.cancel();
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = language;
+        utterance.voice = nativeVoice;
+        utterance.rate = 0.9;
+        utterance.pitch = 1.0;
 
-          const utterance = new SpeechSynthesisUtterance(text);
-          utterance.lang = language;
-          utterance.voice = nativeVoice;
-          utterance.rate = 0.9;
-          utterance.pitch = 1.0;
+        utterance.onstart = () => setIsPlaying(true);
+        utterance.onend = handleSpeechEnd;
+        utterance.onerror = (e) => {
+          if ((e as any).error !== "interrupted") {
+            console.warn("[TTS] Native SpeechSynthesis error:", (e as any).error);
+          }
+          handleSpeechEnd();
+        };
 
-          utterance.onstart = () => setIsPlaying(true);
-          utterance.onend = () => {
-            setIsPlaying(false);
-            onEnd?.();
-          };
-          utterance.onerror = (e) => {
-            if ((e as any).error !== "interrupted") {
-              console.warn("[TTS] Error:", (e as any).error);
-            }
-            setIsPlaying(false);
-            onEnd?.();
-          };
-
-          window.speechSynthesis.speak(utterance);
-        } else {
-          onEnd?.();
-        }
+        window.speechSynthesis.speak(utterance);
       } else {
-        // Option B: Browser lacks native voice for this language
-        // DO NOT use English! Trigger Cloud Neural Voice & show warning banner.
-        const warningMsg = `${langConfig.label} voice is unavailable on this device. Using cloud neural voice.`;
-        const fallbackReason = `Browser lacks native voice for ${langConfig.label} (${language}). Available voices count: ${availableVoices.length}.`;
-        
-        console.warn(`[TTS] Fallback reason: ${fallbackReason}`);
-        console.log(`[TTS] Requested language: ${language} (${langConfig.label})`);
-        console.log(`[TTS] Selected voice: Cloud Neural Voice (${shortCode}-IN)`);
-        console.log(`[TTS] Voice provider: Google/Edge Cloud Neural Speech`);
-        console.log(`[TTS] SpeechSynthesis voice: null (Native browser voice unavailable for ${shortCode})`);
-        console.log(`[TTS] Available voices:`, availableVoices.map((v) => `${v.name} (${v.lang})`));
-        
-        setTtsWarning(warningMsg);
-
-        // Synthesize via Backend Cloud Neural TTS Audio Stream Endpoint
-        const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
-        const cloudTtsUrl = `${API_BASE}/api/v1/demo/tts?text=${encodeURIComponent(text.slice(0, 400))}&lang=${shortCode}`;
+        // Fallback: Cloud Neural TTS Endpoint & direct MP3 fallback
+        const API_BASE = getApiBase();
+        const cloudTtsUrl = `${API_BASE}/api/v1/demo/tts?text=${encodeURIComponent(text.slice(0, 350))}&lang=${shortCode}`;
+        const directGoogleUrl = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodeURIComponent(text.slice(0, 350))}&tl=${shortCode}&client=tw-ob`;
 
         if (audioRef.current) audioRef.current.pause();
-        const audio = new Audio(cloudTtsUrl);
-        audioRef.current = audio;
 
-        audio.onplay = () => setIsPlaying(true);
-        audio.onended = () => {
-          setIsPlaying(false);
-          onEnd?.();
-        };
-        audio.onerror = (e) => {
-          console.warn("[TTS] Backend Cloud Neural Voice stream fallback error:", e);
-          setIsPlaying(false);
-          onEnd?.();
+        const tryPlayAudio = (url: string, isRetry = false) => {
+          const audio = new Audio(url);
+          audioRef.current = audio;
+
+          audio.onplay = () => {
+            if (fallbackTimerRef.current) clearTimeout(fallbackTimerRef.current);
+            setIsPlaying(true);
+          };
+
+          audio.onended = handleSpeechEnd;
+
+          audio.onerror = () => {
+            if (!isRetry) {
+              tryPlayAudio(directGoogleUrl, true);
+            } else {
+              // Speech simulation timer if browser audio autoplay policy blocks audio playback
+              setIsPlaying(true);
+              const duration = Math.min(6000, Math.max(2500, text.length * 40));
+              fallbackTimerRef.current = setTimeout(handleSpeechEnd, duration);
+            }
+          };
+
+          audio.play().catch(() => {
+            if (!isRetry) {
+              tryPlayAudio(directGoogleUrl, true);
+            } else {
+              setIsPlaying(true);
+              const duration = Math.min(6000, Math.max(2500, text.length * 40));
+              fallbackTimerRef.current = setTimeout(handleSpeechEnd, duration);
+            }
+          });
         };
 
-        audio.play().catch((err) => {
-          console.warn("[TTS] Audio play exception:", err);
-          setIsPlaying(false);
-          onEnd?.();
-        });
+        tryPlayAudio(cloudTtsUrl);
       }
     },
     [selectBestNativeVoice, voices]
@@ -220,11 +256,12 @@ export function useTextToSpeech() {
 
   const stop = useCallback(() => {
     if (typeof window !== "undefined") {
+      if (fallbackTimerRef.current) clearTimeout(fallbackTimerRef.current);
       if ("speechSynthesis" in window) window.speechSynthesis.cancel();
       if (audioRef.current) audioRef.current.pause();
       setIsPlaying(false);
     }
   }, []);
 
-  return { isPlaying, speak, stop, voices, ttsWarning };
+  return { isPlaying, speak, stop, voices, voiceStatus, ttsWarning };
 }

@@ -243,8 +243,10 @@ interface DashboardContextType {
 
 const DashboardContext = createContext<DashboardContextType | undefined>(undefined);
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
-const WS_BASE = API_BASE.replace(/^http/, "ws");
+import { getApiBase, getWsBase } from "@/lib/utils";
+
+const API_BASE = getApiBase();
+const WS_BASE = getWsBase();
 
 export function DashboardProvider({ children }: { children: React.ReactNode }) {
   const [activeTab, setActiveTab] = useState<string>("overview");

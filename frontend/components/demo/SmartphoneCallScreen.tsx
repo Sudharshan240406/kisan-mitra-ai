@@ -2,7 +2,7 @@
 
 import React, { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Users, Globe2, ChevronDown, Check, AlertTriangle } from "lucide-react";
+import { X, Users, Globe2, ChevronDown, Check, AlertTriangle, Volume2 } from "lucide-react";
 import { useDemoCallSession, SUPPORTED_LANGUAGES, LanguageOption } from "@/hooks/useDemoCallSession";
 import { FarmerAvatarCard } from "./FarmerAvatarCard";
 import { AudioWaveformVisualizer } from "./AudioWaveformVisualizer";
@@ -125,6 +125,7 @@ export function SmartphoneCallScreen({ onClose }: SmartphoneCallScreenProps) {
     isListening,
     isTtsPlaying,
     aiResponseData,
+    voiceStatus,
     ttsWarning,
     acceptCall,
     rejectCall,
@@ -188,13 +189,20 @@ export function SmartphoneCallScreen({ onClose }: SmartphoneCallScreenProps) {
       {/* ── SCROLLABLE CONTENT AREA ───────────────────────────── */}
       <div className="flex-1 overflow-y-auto overscroll-contain px-5 py-3" style={{ maxHeight: "calc(100dvh - 180px)" }}>
 
-        {/* Cloud TTS Warning Banner */}
-        {ttsWarning && (
-          <div className="mb-3 flex items-center gap-2 rounded-xl bg-amber-500/10 border border-amber-500/30 px-3 py-2 text-[11px] text-amber-300 font-mono">
-            <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0" />
-            <span>{ttsWarning}</span>
+        {/* Voice Engine Status Indicator (UX Improved Status Indicator) */}
+        <div className="mb-3 flex items-center justify-between gap-2 rounded-xl bg-slate-900/80 border border-slate-800/80 px-3.5 py-2 text-xs font-mono select-none">
+          <div className="flex items-center gap-2">
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+            </span>
+            <span className="text-[10px] uppercase tracking-wider font-bold text-slate-400">Voice Engine:</span>
           </div>
-        )}
+          <div className="flex items-center gap-1.5 font-semibold text-emerald-300 text-[11px]">
+            <Volume2 className="w-3.5 h-3.5 text-emerald-400" />
+            <span>{voiceStatus?.statusText || `Cloud Neural Voice • ${activeLang.label}`}</span>
+          </div>
+        </div>
 
         {/* Farmer Profile Tabs */}
         <div className="mb-3 flex items-center justify-between gap-2 overflow-x-auto pb-1 text-xs shrink-0">

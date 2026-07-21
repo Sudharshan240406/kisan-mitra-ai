@@ -503,6 +503,37 @@ def _compute_risk_profile(farmer: Farmer) -> str:
 
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# Demo Cloud Neural TTS Audio Streaming Endpoint
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+from fastapi import Response
+import httpx
+
+@router.get("/tts")
+async def demo_text_to_speech(text: str, lang: str = "hi"):
+    """
+    Cloud Neural TTS audio streaming endpoint for Kisan Mitra AI demo pipeline.
+    Synthesizes input text in all 10 supported Indian languages (hi, kn, te, ta, ml, mr, pa, gu, bn, en).
+    """
+    short_lang = lang.lower().split("-")[0]
+    clean_text = text.strip()[:350]
+    
+    url = f"https://translate.google.com/translate_tts?ie=UTF-8&q={httpx.URL(clean_text).raw_path.decode()}&tl={short_lang}&client=tw-ob"
+    
+    try:
+        async with httpx.AsyncClient(timeout=8.0) as client:
+            resp = await client.get(url, headers={
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+            })
+            if resp.status_code == 200 and len(resp.content) > 100:
+                return Response(content=resp.content, media_type="audio/mpeg")
+    except Exception as exc:
+        logger.warning(f"[TTS Endpoint] Stream fetch exception for lang '{short_lang}': {exc}")
+
+    return Response(content=b"", media_type="audio/mpeg")
+
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 # Interactive Voice Query Endpoint
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 

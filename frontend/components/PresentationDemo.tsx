@@ -50,7 +50,9 @@ interface FarmerProfile {
   is_tenant: boolean;
 }
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+import { getApiBase } from "@/lib/utils";
+
+const API_BASE = getApiBase();
 
 // Define 8 guided story steps (FEATURE 2)
 const STORY_STEPS = [
