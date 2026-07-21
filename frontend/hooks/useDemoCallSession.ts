@@ -377,9 +377,20 @@ export function useDemoCallSession() {
       .then((res) => (res.ok ? res.json() : null))
       .then((data) => {
         if (data && Array.isArray(data) && data.length > 0) {
+          // Normalize short language codes (e.g. "hi" → "hi-IN", "kn" → "kn-IN")
+          // The backend returns short codes; the frontend expects full BCP-47 codes.
+          const SHORT_TO_BCP47: Record<string, string> = {
+            en: "en-IN", hi: "hi-IN", kn: "kn-IN", te: "te-IN",
+            ta: "ta-IN", ml: "ml-IN", mr: "mr-IN", pa: "pa-IN",
+            gu: "gu-IN", bn: "bn-IN",
+          };
+          const normalized = data.map((f: any) => ({
+            ...f,
+            language: SHORT_TO_BCP47[f.language?.toLowerCase()] || f.language || "en-IN",
+          }));
           setFarmers((prev) => {
             const existingIds = new Set(prev.map((f) => f.farmer_id));
-            const newFarmers = data.filter((f: any) => !existingIds.has(f.farmer_id));
+            const newFarmers = normalized.filter((f: any) => !existingIds.has(f.farmer_id));
             return [...prev, ...newFarmers];
           });
         }
