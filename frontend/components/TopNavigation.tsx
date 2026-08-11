@@ -102,6 +102,9 @@ export default function TopNavigation({ onOpenDemo }: TopNavigationProps = {}) {
 
         <div className="relative">
           <button 
+            aria-label="Toggle Trace Log Alerts"
+            aria-expanded={showAlerts}
+            aria-haspopup="true"
             onClick={() => {
               setShowAlerts(!showAlerts);
               setShowProfile(false);
@@ -143,6 +146,9 @@ export default function TopNavigation({ onOpenDemo }: TopNavigationProps = {}) {
         {/* Profile Dropdown */}
         <div className="relative">
           <button 
+            aria-label="User Profile Options"
+            aria-expanded={showProfile}
+            aria-haspopup="true"
             onClick={() => {
               setShowProfile(!showProfile);
               setShowAlerts(false);

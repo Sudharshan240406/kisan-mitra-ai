@@ -36,6 +36,7 @@ def test_validate_production_config_success():
         DB_PASSWORD="super_secure_randomized_password_12345",
         DB_USER="custom_admin",
         DATABASE_URL="postgresql://custom_admin:super_secure_randomized_password_12345@db:5432/km_prod",
+        SECRET_KEY="super_secure_production_random_jwt_secret_key_9988776655",
         FEATURE_LLM_ENABLED=True,
         DEFAULT_LLM_PROVIDER="gemini",
         GEMINI_API_KEY="AIzaSyValidApiKey",

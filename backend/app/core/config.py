@@ -143,6 +143,8 @@ def validate_production_config(cfg: Settings) -> None:
         errors.append("DB_USER must be secure and cannot be empty or 'postgres'.")
     if "postgres:postgres" in cfg.DATABASE_URL:
         errors.append("DATABASE_URL contains default username and password ('postgres:postgres').")
+    if not cfg.SECRET_KEY or cfg.SECRET_KEY in {"supersecretkey12345", "change-me-in-production"}:
+        errors.append("SECRET_KEY must be configured with a secure random key in production.")
 
     # Validate LLM configs
     if cfg.FEATURE_LLM_ENABLED and cfg.DEFAULT_LLM_PROVIDER != "mock":

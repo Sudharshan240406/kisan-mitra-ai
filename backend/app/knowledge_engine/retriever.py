@@ -4,7 +4,10 @@ import random
 import time
 from typing import Any, Dict, List, Optional
 
+from pathlib import Path
+
 logger = logging.getLogger("kisan_mitra_ai.knowledge_engine.retriever")
+
 
 def get_word_embedding(word: str, dimension: int = 384) -> List[float]:
     h = hashlib.sha256(word.encode("utf-8")).hexdigest()
@@ -66,6 +69,8 @@ class SemanticRetriever:
         self.chunk_manager = chunk_manager
         self.documents: List[Dict[str, Any]] = []
         self._seed_default_corpus()
+        self._load_knowledge_files()
+
 
     def add_document(
         self,
@@ -270,3 +275,73 @@ class SemanticRetriever:
                 "deprecation_date": None
             }
         )
+
+    def _load_knowledge_files(self) -> None:
+        """
+        Scans knowledge/ directory for markdown/json files and indexes them into the corpus.
+        """
+        now = time.time()
+        possible_paths = [
+            Path(__file__).resolve().parents[3] / "knowledge",
+            Path("knowledge").resolve(),
+            Path("..") / "knowledge",
+        ]
+        base_dir = None
+        for p in possible_paths:
+            if p.exists() and p.is_dir():
+                base_dir = p
+                break
+
+        if not base_dir:
+            logger.warning("[SemanticRetriever] Could not locate 'knowledge' directory.")
+            return
+
+        category_map = {
+            "crops": "crop_guide",
+            "diseases": "disease",
+            "government_schemes": "government_scheme",
+            "market": "market",
+            "weather": "weather",
+            "fertilizers": "fertilizer",
+            "pesticides": "pesticide",
+            "rag": "rag",
+        }
+
+        indexed_count = 0
+        for folder_name, cat in category_map.items():
+            folder_path = base_dir / folder_name
+            if not folder_path.exists():
+                continue
+            for file_path in folder_path.glob("*"):
+                if file_path.name == ".gitkeep" or file_path.is_dir():
+                    continue
+                if file_path.suffix.lower() in (".md", ".json", ".txt"):
+                    try:
+                        content = file_path.read_text(encoding="utf-8").strip()
+                        if not content:
+                            continue
+                        doc_id = f"{cat}-{file_path.stem}"
+                        title = file_path.stem.replace("_", " ").title()
+                        self.add_document(
+                            doc_id=doc_id,
+                            title=title,
+                            section="Agri Knowledge Base",
+                            content=content,
+                            category=cat,
+                            metadata={
+                                "document_quality": 0.95,
+                                "confidence": 0.95,
+                                "authority": "Kisan Mitra Knowledge Base",
+                                "last_updated": now,
+                                "version": "1.0.0",
+                                "source_type": cat,
+                                "validity_period": {"start": now - 365 * 24 * 3600, "end": now + 5 * 365 * 24 * 3600},
+                                "deprecation_date": None
+                            }
+                        )
+                        indexed_count += 1
+                    except Exception as e:
+                        logger.warning(f"[SemanticRetriever] Failed indexing {file_path}: {e}")
+
+        logger.info(f"[SemanticRetriever] Indexed {indexed_count} documents from {base_dir}")
+

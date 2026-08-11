@@ -110,17 +110,23 @@ class GovernmentSchemeAgent(BaseAgent):
             }
 
         # 5. Formulate structured GovernmentSchemeEvidence
+        scheme_reasoning = (
+            ai_data.get("farmer_friendly_summary")
+            or ai_data.get("explanation")
+            or (f"Eligible for welfare schemes: {', '.join([r.title for r in eligible])}" if eligible else "No matching scheme found.")
+        )
         evidence = GovernmentSchemeEvidence(
             id=f"ev-scheme-{context.request_id}",
             source="SubsidyPortalAPI",
             agent=self.name,
             confidence=confidence,
             weight=0.7,
-            reasoning=ai_data.get("explanation", f"Scheme service lookup: {eligible}"),
+            reasoning=scheme_reasoning,
             scheme_title=top_rec.title if top_rec else "PM-KISAN",
             eligibility_matched=len(eligible) > 0,
             ontology_references=["subsidy_scheme"]
         )
+
 
         content_payload = json.dumps(ai_data)
 

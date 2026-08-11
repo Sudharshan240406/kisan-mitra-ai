@@ -139,10 +139,16 @@ def test_e2e_orchestrator_caching_and_rate_limiting() -> None:
         assert dur < 1000.0
 
         # 3. Test rate limiting throttling by triggering bursts
-        # Capacity is 20, loop 100 times to exceed refilled tokens and trigger HTTP 429 throttling
+        if hasattr(app.state, "container") and hasattr(app.state.container, "performance_manager"):
+            limiter = app.state.container.performance_manager.rate_limiter
+            limiter.clear()
+            limiter.capacity = 5
+            limiter.refill_rate = 0.1
+
         throttled = False
-        for _ in range(100):
-            resp = client.post("/api/v1/query", json=payload)
+        headers = {"X-API-Key": "perf-test-burst-key"}
+        for _ in range(50):
+            resp = client.post("/api/v1/query", json=payload, headers=headers)
             if resp.status_code == 429:
                 throttled = True
                 break

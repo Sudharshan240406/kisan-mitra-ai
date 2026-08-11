@@ -24,25 +24,53 @@ class WeatherAgent(BaseAgent):
         self.state.status = "running"
         self.state.start_time = time.time()
 
-        # Call the weather service
-        location = context.location or "Punjab"
+        # Extract location from query if available, fallback to context or default
+        location = context.location
+        if request and request.query:
+            query_lower = request.query.lower()
+            for loc in ["ludhiana", "amritsar", "jalandhar", "punjab", "haryana", "karnataka", "kolar", "delhi", "patna"]:
+                if loc in query_lower:
+                    location = loc.title()
+                    break
+
+        location = location or "Punjab"
         weather_data = await self.weather_service.get_weather_forecast(location, context)
 
-        # 1. Formulate structured WeatherEvidence
+        # Extract weather parameters dynamically from returned service string if available
+        import re
+        temp = 30.0
+        humidity = 75.0
+        rainfall = 0.0
+
+        temp_match = re.search(r"(\d+(?:\.\d+)?)\s*°?C", weather_data, re.IGNORECASE)
+        if temp_match:
+            temp = float(temp_match.group(1))
+
+        hum_match = re.search(r"(\d+(?:\.\d+)?)\s*%", weather_data)
+        if hum_match:
+            humidity = float(hum_match.group(1))
+
+        rain_match = re.search(r"(\d+(?:\.\d+)?)\s*mm", weather_data, re.IGNORECASE)
+        if rain_match:
+            rainfall = float(rain_match.group(1))
+        elif "rain" in weather_data.lower():
+            rainfall = 25.0
+
+        # Formulate structured WeatherEvidence
         evidence = WeatherEvidence(
             id=f"ev-weather-{context.request_id}",
-            source="MockWeatherAPI",
+            source="WeatherService",
             agent=self.name,
             confidence=0.9,
             weight=1.0,
-            reasoning=f"Weather service lookup: {weather_data}",
-            temperature=30.0,
-            rainfall=15.0,
-            humidity=75.0,
-            ontology_references=["weather_forecast"]
+            reasoning=f"Weather forecast for {location}: {weather_data}",
+            temperature=temp,
+            rainfall=rainfall,
+            humidity=humidity,
+            ontology_references=["weather_forecast", location.lower()]
         )
 
-        content = f"Simulated weather forecast via service: {weather_data}"
+        content = f"Weather forecast for {location}: {weather_data}"
 
         self.state.status = "succeeded"
         self.state.end_time = time.time()
@@ -53,9 +81,10 @@ class WeatherAgent(BaseAgent):
             content=content,
             confidence=0.9,
             metrics={"latency_ms": self.state.execution_time},
-            logs=["Fetched weather forecast registry index."],
+            logs=[f"Fetched weather forecast for {location}."],
             evidence=[evidence.model_dump()]
         )
+
 
     async def validate(self, response: AgentResult, context: AgentContext) -> bool:
         return len(response.content) > 0

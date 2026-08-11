@@ -86,3 +86,15 @@ backend/logs/
 # Caches and DBs
 backend/data/
 data/
+
+# Test/Audit Outputs
+playwright-report/
+screenshots/
+scripts/live_screenshots/
+scripts/live_ss/
+scripts/live_ss3/
+scripts/live_ss4/
+trace/
+verification_results/
+videos/
+

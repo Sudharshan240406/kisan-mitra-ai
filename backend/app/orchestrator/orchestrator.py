@@ -144,6 +144,17 @@ class AgentOrchestrator:
         location = "Punjab"
         crop = "Wheat"
 
+        if request.query:
+            q_low = request.query.lower()
+            for c in ["wheat", "rice", "paddy", "tomato", "cotton", "maize", "mustard", "potato", "onion", "chilli", "sugarcane"]:
+                if c in q_low:
+                    crop = c.title()
+                    break
+            for l in ["ludhiana", "khanna", "jalandhar", "amritsar", "punjab", "karnataka", "kolar", "hubballi", "haryana", "delhi", "patna"]:
+                if l in q_low:
+                    location = l.title()
+                    break
+
         if farmer_id:
             try:
                 mem_start = time.time()
@@ -164,6 +175,7 @@ class AgentOrchestrator:
                         crop = crop_hist[0]
             except Exception as e:
                 logger.warning(f"[MemoryRetrieval] Profile fetch failed from memory engine: {e}")
+
 
         context = AgentContext(
             request_id=request_id,

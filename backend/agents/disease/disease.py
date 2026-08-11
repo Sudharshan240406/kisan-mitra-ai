@@ -24,25 +24,40 @@ class KnowledgeAgent(BaseAgent):
         self.state.status = "running"
         self.state.start_time = time.time()
 
-        # Query pathology manuals via service
-        crop = context.crop or "Wheat"
-        symptoms = context.metadata.get("symptoms") or ["yellow leaves"]
+        # Extract crop and symptoms dynamically from query or context
+        crop = context.crop
+        symptoms = list(context.metadata.get("symptoms") or [])
+        if request and request.query:
+            q_lower = request.query.lower()
+            crops = ["wheat", "rice", "paddy", "tomato", "cotton", "maize", "mustard", "potato", "onion", "chilli", "sugarcane"]
+            for c in crops:
+                if c in q_lower:
+                    crop = c.title()
+                    break
+            
+            symptom_keywords = ["brown spots", "yellow leaves", "rust", "pustules", "blight", "spots", "wilt", "rot"]
+            for s in symptom_keywords:
+                if s in q_lower and s not in symptoms:
+                    symptoms.append(s)
+
+        crop = crop or "Wheat"
+        symptoms = symptoms or ["yellow leaves"]
         knowledge_data = await self.knowledge_service.get_pathology_advisory(crop, symptoms, context)
 
-        # 1. Formulate structured KnowledgeEvidence
+        # Formulate structured KnowledgeEvidence
         evidence = KnowledgeEvidence(
             id=f"ev-knowledge-{context.request_id}",
             source="CropPathologyManuals",
             agent=self.name,
             confidence=0.88,
             weight=0.9,
-            reasoning=f"Knowledge service lookup: {knowledge_data}",
-            citation="Crop Manual Page 45",
-            document_title="Wheat Disease Diagnostics",
-            ontology_references=[crop.lower(), "rust"]
+            reasoning=f"Pathology advisory for {crop} ({', '.join(symptoms)}): {knowledge_data}",
+            citation=f"{crop} Disease Guide",
+            document_title=f"{crop} Pathology Manual",
+            ontology_references=[crop.lower()]
         )
 
-        content = f"Simulated knowledge search via service: {knowledge_data}"
+        content = f"Pathology advisory for {crop} ({', '.join(symptoms)}): {knowledge_data}"
 
         self.state.status = "succeeded"
         self.state.end_time = time.time()
@@ -53,9 +68,10 @@ class KnowledgeAgent(BaseAgent):
             content=content,
             confidence=0.88,
             metrics={"latency_ms": self.state.execution_time},
-            logs=["Scanned crop disease manuals."],
+            logs=[f"Scanned pathology manuals for {crop} with symptoms {symptoms}."],
             evidence=[evidence.model_dump()]
         )
+
 
     async def validate(self, response: AgentResult, context: AgentContext) -> bool:
         return True

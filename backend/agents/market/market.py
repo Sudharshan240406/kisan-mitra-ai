@@ -24,26 +24,48 @@ class MarketAgent(BaseAgent):
         self.state.status = "running"
         self.state.start_time = time.time()
 
-        # Query mandi prices via service
-        crop = context.crop or "Wheat"
-        location = context.location or "Punjab"
+        # Extract crop/commodity and location dynamically from query or context
+        crop = context.crop
+        location = context.location
+        if request and request.query:
+            q_lower = request.query.lower()
+            crops = ["wheat", "rice", "paddy", "tomato", "cotton", "maize", "mustard", "potato", "onion", "chilli", "sugarcane"]
+            locations = ["ludhiana", "khanna", "punjab", "karnataka", "kolar", "hubballi", "haryana", "delhi", "patna"]
+            for c in crops:
+                if c in q_lower:
+                    crop = c.title()
+                    break
+            for l in locations:
+                if l in q_lower:
+                    location = l.title()
+                    break
+
+        crop = crop or "Wheat"
+        location = location or "Punjab"
         market_data = await self.market_service.get_market_prices(crop, location, context)
 
-        # 1. Formulate structured MarketEvidence
+        # Parse price dynamically from market_data if available
+        import re
+        modal_price = 2275.0
+        price_match = re.search(r"₹?\s*(\d{3,5})", market_data)
+        if price_match:
+            modal_price = float(price_match.group(1))
+
+        # Formulate structured MarketEvidence
         evidence = MarketEvidence(
             id=f"ev-market-{context.request_id}",
-            source="MockMandiAPI",
+            source="MandiPriceService",
             agent=self.name,
             confidence=0.95,
             weight=0.8,
-            reasoning=f"Market price service lookup: {market_data}",
+            reasoning=f"Mandi price report for {crop} in {location}: {market_data}",
             commodity=crop,
-            modal_price=2200.0,
-            market_name="Ludhiana Mandi",
+            modal_price=modal_price,
+            market_name=f"{location} APMC Mandi",
             ontology_references=[crop.lower(), "market_price"]
         )
 
-        content = f"Simulated market price profile via service: {market_data}"
+        content = f"Mandi price report for {crop} in {location}: {market_data}"
 
         self.state.status = "succeeded"
         self.state.end_time = time.time()
@@ -54,9 +76,10 @@ class MarketAgent(BaseAgent):
             content=content,
             confidence=0.95,
             metrics={"latency_ms": self.state.execution_time},
-            logs=["Consulted regional commodity registries."],
+            logs=[f"Consulted mandi price registry for {crop} in {location}."],
             evidence=[evidence.model_dump()]
         )
+
 
     async def validate(self, response: AgentResult, context: AgentContext) -> bool:
         return "price" in response.content.lower()
