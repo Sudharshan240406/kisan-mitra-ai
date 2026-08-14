@@ -39,7 +39,7 @@ class AuditManager:
         self.records.append(record)
         try:
             os.makedirs("data", exist_ok=True)
-            with open("data/governance_audit.jsonl", "a") as f:
+            with open("data/governance_audit.jsonl", "a", encoding="utf-8") as f:
                 f.write(record.model_dump_json() + "\n")
         except Exception as e:
             logger.error(f"AuditManager: Failed to write to audit log: {e}")

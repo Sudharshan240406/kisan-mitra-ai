@@ -69,7 +69,10 @@ class CostAndPerformanceManager:
         self.error_count += 1
 
     def get_summary(self) -> dict[str, Any]:
-        """Compiles cost summaries for telemetry reports."""
+        """Compiles cost summaries for telemetry reports including tier distribution."""
+        from app.reasoning.response_tier import tier_tracker
+
+        tier_summary = tier_tracker.get_summary()
         return {
             "total_requests": self.requests_count,
             "total_errors": self.error_count,
@@ -78,7 +81,9 @@ class CostAndPerformanceManager:
             "accumulated_output_tokens": self.accumulated_output_tokens,
             "accumulated_cost_usd": round(self.accumulated_cost_usd, 6),
             "daily_budget_usd": self.daily_budget_usd,
-            "budget_utilization_percent": round((self.accumulated_cost_usd / self.daily_budget_usd) * 100.0, 2) if self.daily_budget_usd > 0 else 0.0
+            "budget_utilization_percent": round((self.accumulated_cost_usd / self.daily_budget_usd) * 100.0, 2) if self.daily_budget_usd > 0 else 0.0,
+            "tier_metrics": tier_summary,
+            "tier_headline": tier_summary["headline_summary"],
         }
 
     def reset_totals(self) -> None:

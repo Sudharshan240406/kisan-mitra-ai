@@ -30,10 +30,11 @@ def get_deterministic_embedding(text: str, dimension: int = 384) -> List[float]:
 
     stopwords = {
         "the", "a", "an", "in", "on", "at", "for", "with", "about", "against",
-        "of", "by", "to", "is", "are", "and", "or", "but", "what", "how", "where", "who", "which"
+        "of", "by", "to", "is", "are", "and", "or", "but", "what", "whats", "how",
+        "where", "who", "which", "today", "now"
     }
     words = [
-        w.strip("?,.!()-+=_@#$%^&*[]{}|\\/`~'\":;").lower()
+        w.replace("'", "").strip("?,.!()-+=_@#$%^&*[]{}|\\/`~\":;").lower()
         for w in text.split()
     ]
     words = [w for w in words if w and w not in stopwords]

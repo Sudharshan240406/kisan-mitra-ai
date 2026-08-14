@@ -919,3 +919,216 @@ connection to server at "localhost" (127.0.0.1), port 5432 failed: Connection re
 [2026-07-21 07:56:39,909] WARNING  in adapters [Trace: N/A, Request: N/A, Session: N/A]: Ollama server offline at http://localhost:11434: timed out
 [2026-07-21 07:56:39,910] ERROR    in platform [Trace: N/A, Request: N/A, Session: N/A]: Adapter execution failed for 'llama3': Ollama server offline at http://localhost:11434: timed out
 [2026-07-21 07:56:39,911] WARNING  in platform [Trace: N/A, Request: N/A, Session: N/A]: [AI Platform] Primary failed. Cascading fallback to: groq-llama-3-70b
+[2026-08-11 10:15:42,588] WARNING  in adapters [Trace: N/A, Request: N/A, Session: N/A]: Ollama server offline at http://localhost:11434: timed out
+[2026-08-11 10:15:42,591] ERROR    in platform [Trace: N/A, Request: N/A, Session: N/A]: Adapter execution failed for 'llama3': Ollama server offline at http://localhost:11434: timed out
+[2026-08-11 10:15:42,592] WARNING  in platform [Trace: N/A, Request: N/A, Session: N/A]: [AI Platform] Primary failed. Cascading fallback to: groq-llama-3-70b
+[2026-08-11 10:16:14,678] WARNING  in adapters [Trace: N/A, Request: N/A, Session: N/A]: Ollama server offline at http://localhost:11434: timed out
+[2026-08-11 10:16:14,679] ERROR    in platform [Trace: N/A, Request: N/A, Session: N/A]: Adapter execution failed for 'llama3': Ollama server offline at http://localhost:11434: timed out
+[2026-08-11 10:16:14,680] WARNING  in platform [Trace: N/A, Request: N/A, Session: N/A]: [AI Platform] Primary failed. Cascading fallback to: groq-llama-3-70b
+[2026-08-11 10:16:46,940] WARNING  in adapters [Trace: N/A, Request: N/A, Session: N/A]: Ollama server offline at http://localhost:11434: timed out
+[2026-08-11 10:16:46,942] ERROR    in platform [Trace: N/A, Request: N/A, Session: N/A]: Adapter execution failed for 'llama3': Ollama server offline at http://localhost:11434: timed out
+[2026-08-11 10:16:46,944] WARNING  in platform [Trace: N/A, Request: N/A, Session: N/A]: [AI Platform] Primary failed. Cascading fallback to: groq-llama-3-70b
+[2026-08-11 12:16:19,892] WARNING  in adapters [Trace: N/A, Request: N/A, Session: N/A]: Ollama server offline at http://localhost:11434: timed out
+[2026-08-11 12:16:19,895] ERROR    in platform [Trace: N/A, Request: N/A, Session: N/A]: Adapter execution failed for 'llama3': Ollama server offline at http://localhost:11434: timed out
+[2026-08-11 12:16:19,897] WARNING  in platform [Trace: N/A, Request: N/A, Session: N/A]: [AI Platform] Primary failed. Cascading fallback to: groq-llama-3-70b
+[2026-08-11 12:16:52,044] WARNING  in adapters [Trace: N/A, Request: N/A, Session: N/A]: Ollama server offline at http://localhost:11434: timed out
+[2026-08-11 12:16:52,045] ERROR    in platform [Trace: N/A, Request: N/A, Session: N/A]: Adapter execution failed for 'llama3': Ollama server offline at http://localhost:11434: timed out
+[2026-08-11 12:16:52,047] WARNING  in platform [Trace: N/A, Request: N/A, Session: N/A]: [AI Platform] Primary failed. Cascading fallback to: groq-llama-3-70b
+[2026-08-11 12:17:24,336] WARNING  in adapters [Trace: N/A, Request: N/A, Session: N/A]: Ollama server offline at http://localhost:11434: timed out
+[2026-08-11 12:17:24,338] ERROR    in platform [Trace: N/A, Request: N/A, Session: N/A]: Adapter execution failed for 'llama3': Ollama server offline at http://localhost:11434: timed out
+[2026-08-11 12:17:24,340] WARNING  in platform [Trace: N/A, Request: N/A, Session: N/A]: [AI Platform] Primary failed. Cascading fallback to: groq-llama-3-70b
+[2026-08-11 12:17:56,748] WARNING  in adapters [Trace: N/A, Request: N/A, Session: N/A]: Ollama server offline at http://localhost:11434: timed out
+[2026-08-11 12:17:56,750] ERROR    in platform [Trace: N/A, Request: N/A, Session: N/A]: Adapter execution failed for 'llama3': Ollama server offline at http://localhost:11434: timed out
+[2026-08-11 12:17:56,750] WARNING  in platform [Trace: N/A, Request: N/A, Session: N/A]: [AI Platform] Primary failed. Cascading fallback to: groq-llama-3-70b
+[2026-08-11 12:18:29,049] WARNING  in adapters [Trace: N/A, Request: N/A, Session: N/A]: Ollama server offline at http://localhost:11434: timed out
+[2026-08-11 12:18:29,050] ERROR    in platform [Trace: N/A, Request: N/A, Session: N/A]: Adapter execution failed for 'llama3': Ollama server offline at http://localhost:11434: timed out
+[2026-08-11 12:18:29,051] WARNING  in platform [Trace: N/A, Request: N/A, Session: N/A]: [AI Platform] Primary failed. Cascading fallback to: groq-llama-3-70b
+[2026-08-11 12:19:01,593] WARNING  in adapters [Trace: N/A, Request: N/A, Session: N/A]: Ollama server offline at http://localhost:11434: timed out
+[2026-08-11 12:19:01,595] ERROR    in platform [Trace: N/A, Request: N/A, Session: N/A]: Adapter execution failed for 'llama3': Ollama server offline at http://localhost:11434: timed out
+[2026-08-11 12:19:01,596] WARNING  in platform [Trace: N/A, Request: N/A, Session: N/A]: [AI Platform] Primary failed. Cascading fallback to: groq-llama-3-70b
+[2026-08-11 12:19:33,912] WARNING  in adapters [Trace: N/A, Request: N/A, Session: N/A]: Ollama server offline at http://localhost:11434: timed out
+[2026-08-11 12:19:33,914] ERROR    in platform [Trace: N/A, Request: N/A, Session: N/A]: Adapter execution failed for 'llama3': Ollama server offline at http://localhost:11434: timed out
+[2026-08-11 12:19:33,914] WARNING  in platform [Trace: N/A, Request: N/A, Session: N/A]: [AI Platform] Primary failed. Cascading fallback to: groq-llama-3-70b
+[2026-08-11 12:20:06,475] WARNING  in adapters [Trace: N/A, Request: N/A, Session: N/A]: Ollama server offline at http://localhost:11434: timed out
+[2026-08-11 12:20:06,477] ERROR    in platform [Trace: N/A, Request: N/A, Session: N/A]: Adapter execution failed for 'llama3': Ollama server offline at http://localhost:11434: timed out
+[2026-08-11 12:20:06,478] WARNING  in platform [Trace: N/A, Request: N/A, Session: N/A]: [AI Platform] Primary failed. Cascading fallback to: groq-llama-3-70b
+[2026-08-11 12:20:38,863] WARNING  in adapters [Trace: N/A, Request: N/A, Session: N/A]: Ollama server offline at http://localhost:11434: timed out
+[2026-08-11 12:20:38,864] ERROR    in platform [Trace: N/A, Request: N/A, Session: N/A]: Adapter execution failed for 'llama3': Ollama server offline at http://localhost:11434: timed out
+[2026-08-11 12:20:38,865] WARNING  in platform [Trace: N/A, Request: N/A, Session: N/A]: [AI Platform] Primary failed. Cascading fallback to: groq-llama-3-70b
+[2026-08-11 12:21:11,518] WARNING  in adapters [Trace: N/A, Request: N/A, Session: N/A]: Ollama server offline at http://localhost:11434: timed out
+[2026-08-11 12:21:11,520] ERROR    in platform [Trace: N/A, Request: N/A, Session: N/A]: Adapter execution failed for 'llama3': Ollama server offline at http://localhost:11434: timed out
+[2026-08-11 12:21:11,520] WARNING  in platform [Trace: N/A, Request: N/A, Session: N/A]: [AI Platform] Primary failed. Cascading fallback to: groq-llama-3-70b
+[2026-08-11 12:21:43,981] WARNING  in adapters [Trace: N/A, Request: N/A, Session: N/A]: Ollama server offline at http://localhost:11434: timed out
+[2026-08-11 12:21:43,983] ERROR    in platform [Trace: N/A, Request: N/A, Session: N/A]: Adapter execution failed for 'llama3': Ollama server offline at http://localhost:11434: timed out
+[2026-08-11 12:21:43,984] WARNING  in platform [Trace: N/A, Request: N/A, Session: N/A]: [AI Platform] Primary failed. Cascading fallback to: groq-llama-3-70b
+[2026-08-11 12:22:16,389] WARNING  in adapters [Trace: N/A, Request: N/A, Session: N/A]: Ollama server offline at http://localhost:11434: timed out
+[2026-08-11 12:22:16,391] ERROR    in platform [Trace: N/A, Request: N/A, Session: N/A]: Adapter execution failed for 'llama3': Ollama server offline at http://localhost:11434: timed out
+[2026-08-11 12:22:16,392] WARNING  in platform [Trace: N/A, Request: N/A, Session: N/A]: [AI Platform] Primary failed. Cascading fallback to: groq-llama-3-70b
+[2026-08-11 12:22:48,791] WARNING  in adapters [Trace: N/A, Request: N/A, Session: N/A]: Ollama server offline at http://localhost:11434: timed out
+[2026-08-11 12:22:48,792] ERROR    in platform [Trace: N/A, Request: N/A, Session: N/A]: Adapter execution failed for 'llama3': Ollama server offline at http://localhost:11434: timed out
+[2026-08-11 12:22:48,793] WARNING  in platform [Trace: N/A, Request: N/A, Session: N/A]: [AI Platform] Primary failed. Cascading fallback to: groq-llama-3-70b
+[2026-08-11 12:23:21,322] WARNING  in adapters [Trace: N/A, Request: N/A, Session: N/A]: Ollama server offline at http://localhost:11434: timed out
+[2026-08-11 12:23:21,323] ERROR    in platform [Trace: N/A, Request: N/A, Session: N/A]: Adapter execution failed for 'llama3': Ollama server offline at http://localhost:11434: timed out
+[2026-08-11 12:23:21,325] WARNING  in platform [Trace: N/A, Request: N/A, Session: N/A]: [AI Platform] Primary failed. Cascading fallback to: groq-llama-3-70b
+[2026-08-11 12:23:53,619] WARNING  in adapters [Trace: N/A, Request: N/A, Session: N/A]: Ollama server offline at http://localhost:11434: timed out
+[2026-08-11 12:23:53,620] ERROR    in platform [Trace: N/A, Request: N/A, Session: N/A]: Adapter execution failed for 'llama3': Ollama server offline at http://localhost:11434: timed out
+[2026-08-11 12:23:53,622] WARNING  in platform [Trace: N/A, Request: N/A, Session: N/A]: [AI Platform] Primary failed. Cascading fallback to: groq-llama-3-70b
+[2026-08-11 12:24:25,978] WARNING  in adapters [Trace: N/A, Request: N/A, Session: N/A]: Ollama server offline at http://localhost:11434: timed out
+[2026-08-11 12:24:25,979] ERROR    in platform [Trace: N/A, Request: N/A, Session: N/A]: Adapter execution failed for 'llama3': Ollama server offline at http://localhost:11434: timed out
+[2026-08-11 12:24:25,980] WARNING  in platform [Trace: N/A, Request: N/A, Session: N/A]: [AI Platform] Primary failed. Cascading fallback to: groq-llama-3-70b
+[2026-08-11 12:24:58,366] WARNING  in adapters [Trace: N/A, Request: N/A, Session: N/A]: Ollama server offline at http://localhost:11434: timed out
+[2026-08-11 12:24:58,367] ERROR    in platform [Trace: N/A, Request: N/A, Session: N/A]: Adapter execution failed for 'llama3': Ollama server offline at http://localhost:11434: timed out
+[2026-08-11 12:24:58,369] WARNING  in platform [Trace: N/A, Request: N/A, Session: N/A]: [AI Platform] Primary failed. Cascading fallback to: groq-llama-3-70b
+[2026-08-11 12:25:30,847] WARNING  in adapters [Trace: N/A, Request: N/A, Session: N/A]: Ollama server offline at http://localhost:11434: timed out
+[2026-08-11 12:25:30,849] ERROR    in platform [Trace: N/A, Request: N/A, Session: N/A]: Adapter execution failed for 'llama3': Ollama server offline at http://localhost:11434: timed out
+[2026-08-11 12:25:30,849] WARNING  in platform [Trace: N/A, Request: N/A, Session: N/A]: [AI Platform] Primary failed. Cascading fallback to: groq-llama-3-70b
+[2026-08-11 12:26:03,328] WARNING  in adapters [Trace: N/A, Request: N/A, Session: N/A]: Ollama server offline at http://localhost:11434: timed out
+[2026-08-11 12:26:03,330] ERROR    in platform [Trace: N/A, Request: N/A, Session: N/A]: Adapter execution failed for 'llama3': Ollama server offline at http://localhost:11434: timed out
+[2026-08-11 12:26:03,330] WARNING  in platform [Trace: N/A, Request: N/A, Session: N/A]: [AI Platform] Primary failed. Cascading fallback to: groq-llama-3-70b
+[2026-08-11 12:26:35,769] WARNING  in adapters [Trace: N/A, Request: N/A, Session: N/A]: Ollama server offline at http://localhost:11434: timed out
+[2026-08-11 12:26:35,771] ERROR    in platform [Trace: N/A, Request: N/A, Session: N/A]: Adapter execution failed for 'llama3': Ollama server offline at http://localhost:11434: timed out
+[2026-08-11 12:26:35,772] WARNING  in platform [Trace: N/A, Request: N/A, Session: N/A]: [AI Platform] Primary failed. Cascading fallback to: groq-llama-3-70b
+[2026-08-11 12:26:36,060] ERROR    in base_events [Trace: N/A, Request: N/A, Session: N/A]: Exception in callback _ProactorBasePipeTransport._call_connection_lost(None)
+handle: <Handle _ProactorBasePipeTransport._call_connection_lost(None)>
+Traceback (most recent call last):
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python311\Lib\asyncio\events.py", line 84, in _run
+    self._context.run(self._callback, *self._args)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python311\Lib\asyncio\proactor_events.py", line 165, in _call_connection_lost
+    self._sock.shutdown(socket.SHUT_RDWR)
+ConnectionResetError: [WinError 10054] An existing connection was forcibly closed by the remote host
+[2026-08-11 12:26:36,099] ERROR    in base_events [Trace: N/A, Request: N/A, Session: N/A]: Exception in callback _ProactorBasePipeTransport._call_connection_lost(None)
+handle: <Handle _ProactorBasePipeTransport._call_connection_lost(None)>
+Traceback (most recent call last):
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python311\Lib\asyncio\events.py", line 84, in _run
+    self._context.run(self._callback, *self._args)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python311\Lib\asyncio\proactor_events.py", line 165, in _call_connection_lost
+    self._sock.shutdown(socket.SHUT_RDWR)
+ConnectionResetError: [WinError 10054] An existing connection was forcibly closed by the remote host
+[2026-08-11 12:26:36,103] ERROR    in base_events [Trace: N/A, Request: N/A, Session: N/A]: Exception in callback _ProactorBasePipeTransport._call_connection_lost(None)
+handle: <Handle _ProactorBasePipeTransport._call_connection_lost(None)>
+Traceback (most recent call last):
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python311\Lib\asyncio\events.py", line 84, in _run
+    self._context.run(self._callback, *self._args)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python311\Lib\asyncio\proactor_events.py", line 165, in _call_connection_lost
+    self._sock.shutdown(socket.SHUT_RDWR)
+ConnectionResetError: [WinError 10054] An existing connection was forcibly closed by the remote host
+[2026-08-11 12:31:02,926] WARNING  in adapters [Trace: N/A, Request: N/A, Session: N/A]: Ollama server offline at http://localhost:11434: timed out
+[2026-08-11 12:31:02,928] ERROR    in platform [Trace: N/A, Request: N/A, Session: N/A]: Adapter execution failed for 'llama3': Ollama server offline at http://localhost:11434: timed out
+[2026-08-11 12:31:02,929] WARNING  in platform [Trace: N/A, Request: N/A, Session: N/A]: [AI Platform] Primary failed. Cascading fallback to: groq-llama-3-70b
+[2026-08-11 12:31:35,053] WARNING  in adapters [Trace: N/A, Request: N/A, Session: N/A]: Ollama server offline at http://localhost:11434: timed out
+[2026-08-11 12:31:35,055] ERROR    in platform [Trace: N/A, Request: N/A, Session: N/A]: Adapter execution failed for 'llama3': Ollama server offline at http://localhost:11434: timed out
+[2026-08-11 12:31:35,056] WARNING  in platform [Trace: N/A, Request: N/A, Session: N/A]: [AI Platform] Primary failed. Cascading fallback to: groq-llama-3-70b
+[2026-08-11 12:32:07,295] WARNING  in adapters [Trace: N/A, Request: N/A, Session: N/A]: Ollama server offline at http://localhost:11434: timed out
+[2026-08-11 12:32:07,297] ERROR    in platform [Trace: N/A, Request: N/A, Session: N/A]: Adapter execution failed for 'llama3': Ollama server offline at http://localhost:11434: timed out
+[2026-08-11 12:32:07,298] WARNING  in platform [Trace: N/A, Request: N/A, Session: N/A]: [AI Platform] Primary failed. Cascading fallback to: groq-llama-3-70b
+[2026-08-11 12:32:39,478] WARNING  in adapters [Trace: N/A, Request: N/A, Session: N/A]: Ollama server offline at http://localhost:11434: timed out
+[2026-08-11 12:32:39,479] ERROR    in platform [Trace: N/A, Request: N/A, Session: N/A]: Adapter execution failed for 'llama3': Ollama server offline at http://localhost:11434: timed out
+[2026-08-11 12:32:39,480] WARNING  in platform [Trace: N/A, Request: N/A, Session: N/A]: [AI Platform] Primary failed. Cascading fallback to: groq-llama-3-70b
+[2026-08-11 12:33:12,147] WARNING  in adapters [Trace: N/A, Request: N/A, Session: N/A]: Ollama server offline at http://localhost:11434: timed out
+[2026-08-11 12:33:12,149] ERROR    in platform [Trace: N/A, Request: N/A, Session: N/A]: Adapter execution failed for 'llama3': Ollama server offline at http://localhost:11434: timed out
+[2026-08-11 12:33:12,149] WARNING  in platform [Trace: N/A, Request: N/A, Session: N/A]: [AI Platform] Primary failed. Cascading fallback to: groq-llama-3-70b
+[2026-08-11 12:33:44,745] WARNING  in adapters [Trace: N/A, Request: N/A, Session: N/A]: Ollama server offline at http://localhost:11434: timed out
+[2026-08-11 12:33:44,747] ERROR    in platform [Trace: N/A, Request: N/A, Session: N/A]: Adapter execution failed for 'llama3': Ollama server offline at http://localhost:11434: timed out
+[2026-08-11 12:33:44,747] WARNING  in platform [Trace: N/A, Request: N/A, Session: N/A]: [AI Platform] Primary failed. Cascading fallback to: groq-llama-3-70b
+[2026-08-11 12:34:17,059] WARNING  in adapters [Trace: N/A, Request: N/A, Session: N/A]: Ollama server offline at http://localhost:11434: timed out
+[2026-08-11 12:34:17,061] ERROR    in platform [Trace: N/A, Request: N/A, Session: N/A]: Adapter execution failed for 'llama3': Ollama server offline at http://localhost:11434: timed out
+[2026-08-11 12:34:17,062] WARNING  in platform [Trace: N/A, Request: N/A, Session: N/A]: [AI Platform] Primary failed. Cascading fallback to: groq-llama-3-70b
+[2026-08-11 12:34:49,638] WARNING  in adapters [Trace: N/A, Request: N/A, Session: N/A]: Ollama server offline at http://localhost:11434: timed out
+[2026-08-11 12:34:49,639] ERROR    in platform [Trace: N/A, Request: N/A, Session: N/A]: Adapter execution failed for 'llama3': Ollama server offline at http://localhost:11434: timed out
+[2026-08-11 12:34:49,640] WARNING  in platform [Trace: N/A, Request: N/A, Session: N/A]: [AI Platform] Primary failed. Cascading fallback to: groq-llama-3-70b
+[2026-08-11 12:35:22,233] WARNING  in adapters [Trace: N/A, Request: N/A, Session: N/A]: Ollama server offline at http://localhost:11434: timed out
+[2026-08-11 12:35:22,235] ERROR    in platform [Trace: N/A, Request: N/A, Session: N/A]: Adapter execution failed for 'llama3': Ollama server offline at http://localhost:11434: timed out
+[2026-08-11 12:35:22,236] WARNING  in platform [Trace: N/A, Request: N/A, Session: N/A]: [AI Platform] Primary failed. Cascading fallback to: groq-llama-3-70b
+[2026-08-11 12:35:54,615] WARNING  in adapters [Trace: N/A, Request: N/A, Session: N/A]: Ollama server offline at http://localhost:11434: timed out
+[2026-08-11 12:35:54,616] ERROR    in platform [Trace: N/A, Request: N/A, Session: N/A]: Adapter execution failed for 'llama3': Ollama server offline at http://localhost:11434: timed out
+[2026-08-11 12:35:54,618] WARNING  in platform [Trace: N/A, Request: N/A, Session: N/A]: [AI Platform] Primary failed. Cascading fallback to: groq-llama-3-70b
+[2026-08-11 12:36:27,041] WARNING  in adapters [Trace: N/A, Request: N/A, Session: N/A]: Ollama server offline at http://localhost:11434: timed out
+[2026-08-11 12:36:27,042] ERROR    in platform [Trace: N/A, Request: N/A, Session: N/A]: Adapter execution failed for 'llama3': Ollama server offline at http://localhost:11434: timed out
+[2026-08-11 12:36:27,043] WARNING  in platform [Trace: N/A, Request: N/A, Session: N/A]: [AI Platform] Primary failed. Cascading fallback to: groq-llama-3-70b
+[2026-08-11 12:36:59,469] WARNING  in adapters [Trace: N/A, Request: N/A, Session: N/A]: Ollama server offline at http://localhost:11434: timed out
+[2026-08-11 12:36:59,470] ERROR    in platform [Trace: N/A, Request: N/A, Session: N/A]: Adapter execution failed for 'llama3': Ollama server offline at http://localhost:11434: timed out
+[2026-08-11 12:36:59,471] WARNING  in platform [Trace: N/A, Request: N/A, Session: N/A]: [AI Platform] Primary failed. Cascading fallback to: groq-llama-3-70b
+[2026-08-11 12:37:32,208] WARNING  in adapters [Trace: N/A, Request: N/A, Session: N/A]: Ollama server offline at http://localhost:11434: timed out
+[2026-08-11 12:37:32,210] ERROR    in platform [Trace: N/A, Request: N/A, Session: N/A]: Adapter execution failed for 'llama3': Ollama server offline at http://localhost:11434: timed out
+[2026-08-11 12:37:32,211] WARNING  in platform [Trace: N/A, Request: N/A, Session: N/A]: [AI Platform] Primary failed. Cascading fallback to: groq-llama-3-70b
+[2026-08-11 12:38:05,058] WARNING  in adapters [Trace: N/A, Request: N/A, Session: N/A]: Ollama server offline at http://localhost:11434: timed out
+[2026-08-11 12:38:05,060] ERROR    in platform [Trace: N/A, Request: N/A, Session: N/A]: Adapter execution failed for 'llama3': Ollama server offline at http://localhost:11434: timed out
+[2026-08-11 12:38:05,060] WARNING  in platform [Trace: N/A, Request: N/A, Session: N/A]: [AI Platform] Primary failed. Cascading fallback to: groq-llama-3-70b
+[2026-08-11 12:38:37,408] WARNING  in adapters [Trace: N/A, Request: N/A, Session: N/A]: Ollama server offline at http://localhost:11434: timed out
+[2026-08-11 12:38:37,409] ERROR    in platform [Trace: N/A, Request: N/A, Session: N/A]: Adapter execution failed for 'llama3': Ollama server offline at http://localhost:11434: timed out
+[2026-08-11 12:38:37,410] WARNING  in platform [Trace: N/A, Request: N/A, Session: N/A]: [AI Platform] Primary failed. Cascading fallback to: groq-llama-3-70b
+[2026-08-11 12:39:10,041] WARNING  in adapters [Trace: N/A, Request: N/A, Session: N/A]: Ollama server offline at http://localhost:11434: timed out
+[2026-08-11 12:39:10,042] ERROR    in platform [Trace: N/A, Request: N/A, Session: N/A]: Adapter execution failed for 'llama3': Ollama server offline at http://localhost:11434: timed out
+[2026-08-11 12:39:10,043] WARNING  in platform [Trace: N/A, Request: N/A, Session: N/A]: [AI Platform] Primary failed. Cascading fallback to: groq-llama-3-70b
+[2026-08-11 12:39:42,561] WARNING  in adapters [Trace: N/A, Request: N/A, Session: N/A]: Ollama server offline at http://localhost:11434: timed out
+[2026-08-11 12:39:42,564] ERROR    in platform [Trace: N/A, Request: N/A, Session: N/A]: Adapter execution failed for 'llama3': Ollama server offline at http://localhost:11434: timed out
+[2026-08-11 12:39:42,565] WARNING  in platform [Trace: N/A, Request: N/A, Session: N/A]: [AI Platform] Primary failed. Cascading fallback to: groq-llama-3-70b
+[2026-08-11 12:40:15,038] WARNING  in adapters [Trace: N/A, Request: N/A, Session: N/A]: Ollama server offline at http://localhost:11434: timed out
+[2026-08-11 12:40:15,039] ERROR    in platform [Trace: N/A, Request: N/A, Session: N/A]: Adapter execution failed for 'llama3': Ollama server offline at http://localhost:11434: timed out
+[2026-08-11 12:40:15,040] WARNING  in platform [Trace: N/A, Request: N/A, Session: N/A]: [AI Platform] Primary failed. Cascading fallback to: groq-llama-3-70b
+[2026-08-11 12:40:47,402] WARNING  in adapters [Trace: N/A, Request: N/A, Session: N/A]: Ollama server offline at http://localhost:11434: timed out
+[2026-08-11 12:40:47,403] ERROR    in platform [Trace: N/A, Request: N/A, Session: N/A]: Adapter execution failed for 'llama3': Ollama server offline at http://localhost:11434: timed out
+[2026-08-11 12:40:47,404] WARNING  in platform [Trace: N/A, Request: N/A, Session: N/A]: [AI Platform] Primary failed. Cascading fallback to: groq-llama-3-70b
+[2026-08-11 12:41:20,077] WARNING  in adapters [Trace: N/A, Request: N/A, Session: N/A]: Ollama server offline at http://localhost:11434: timed out
+[2026-08-11 12:41:20,079] ERROR    in platform [Trace: N/A, Request: N/A, Session: N/A]: Adapter execution failed for 'llama3': Ollama server offline at http://localhost:11434: timed out
+[2026-08-11 12:41:20,080] WARNING  in platform [Trace: N/A, Request: N/A, Session: N/A]: [AI Platform] Primary failed. Cascading fallback to: groq-llama-3-70b
+[2026-08-11 12:43:09,501] WARNING  in adapters [Trace: N/A, Request: N/A, Session: N/A]: Ollama server offline at http://localhost:11434: timed out
+[2026-08-11 12:43:09,503] ERROR    in platform [Trace: N/A, Request: N/A, Session: N/A]: Adapter execution failed for 'llama3': Ollama server offline at http://localhost:11434: timed out
+[2026-08-11 12:43:09,504] WARNING  in platform [Trace: N/A, Request: N/A, Session: N/A]: [AI Platform] Primary failed. Cascading fallback to: groq-llama-3-70b
+[2026-08-11 12:43:41,668] WARNING  in adapters [Trace: N/A, Request: N/A, Session: N/A]: Ollama server offline at http://localhost:11434: timed out
+[2026-08-11 12:43:41,670] ERROR    in platform [Trace: N/A, Request: N/A, Session: N/A]: Adapter execution failed for 'llama3': Ollama server offline at http://localhost:11434: timed out
+[2026-08-11 12:43:41,671] WARNING  in platform [Trace: N/A, Request: N/A, Session: N/A]: [AI Platform] Primary failed. Cascading fallback to: groq-llama-3-70b
+[2026-08-11 12:44:14,190] WARNING  in adapters [Trace: N/A, Request: N/A, Session: N/A]: Ollama server offline at http://localhost:11434: timed out
+[2026-08-11 12:44:14,192] ERROR    in platform [Trace: N/A, Request: N/A, Session: N/A]: Adapter execution failed for 'llama3': Ollama server offline at http://localhost:11434: timed out
+[2026-08-11 12:44:14,193] WARNING  in platform [Trace: N/A, Request: N/A, Session: N/A]: [AI Platform] Primary failed. Cascading fallback to: groq-llama-3-70b
+[2026-08-11 12:44:46,423] WARNING  in adapters [Trace: N/A, Request: N/A, Session: N/A]: Ollama server offline at http://localhost:11434: timed out
+[2026-08-11 12:44:46,424] ERROR    in platform [Trace: N/A, Request: N/A, Session: N/A]: Adapter execution failed for 'llama3': Ollama server offline at http://localhost:11434: timed out
+[2026-08-11 12:44:46,425] WARNING  in platform [Trace: N/A, Request: N/A, Session: N/A]: [AI Platform] Primary failed. Cascading fallback to: groq-llama-3-70b
+[2026-08-11 12:45:19,116] WARNING  in adapters [Trace: N/A, Request: N/A, Session: N/A]: Ollama server offline at http://localhost:11434: timed out
+[2026-08-11 12:45:19,117] ERROR    in platform [Trace: N/A, Request: N/A, Session: N/A]: Adapter execution failed for 'llama3': Ollama server offline at http://localhost:11434: timed out
+[2026-08-11 12:45:19,119] WARNING  in platform [Trace: N/A, Request: N/A, Session: N/A]: [AI Platform] Primary failed. Cascading fallback to: groq-llama-3-70b
+[2026-08-11 12:45:51,930] WARNING  in adapters [Trace: N/A, Request: N/A, Session: N/A]: Ollama server offline at http://localhost:11434: timed out
+[2026-08-11 12:45:51,932] ERROR    in platform [Trace: N/A, Request: N/A, Session: N/A]: Adapter execution failed for 'llama3': Ollama server offline at http://localhost:11434: timed out
+[2026-08-11 12:45:51,933] WARNING  in platform [Trace: N/A, Request: N/A, Session: N/A]: [AI Platform] Primary failed. Cascading fallback to: groq-llama-3-70b
+[2026-08-11 12:46:24,360] WARNING  in adapters [Trace: N/A, Request: N/A, Session: N/A]: Ollama server offline at http://localhost:11434: timed out
+[2026-08-11 12:46:24,361] ERROR    in platform [Trace: N/A, Request: N/A, Session: N/A]: Adapter execution failed for 'llama3': Ollama server offline at http://localhost:11434: timed out
+[2026-08-11 12:46:24,365] WARNING  in platform [Trace: N/A, Request: N/A, Session: N/A]: [AI Platform] Primary failed. Cascading fallback to: groq-llama-3-70b
+[2026-08-11 12:46:56,971] WARNING  in adapters [Trace: N/A, Request: N/A, Session: N/A]: Ollama server offline at http://localhost:11434: timed out
+[2026-08-11 12:46:56,973] ERROR    in platform [Trace: N/A, Request: N/A, Session: N/A]: Adapter execution failed for 'llama3': Ollama server offline at http://localhost:11434: timed out
+[2026-08-11 12:46:56,974] WARNING  in platform [Trace: N/A, Request: N/A, Session: N/A]: [AI Platform] Primary failed. Cascading fallback to: groq-llama-3-70b
+[2026-08-11 12:47:29,436] WARNING  in adapters [Trace: N/A, Request: N/A, Session: N/A]: Ollama server offline at http://localhost:11434: timed out
+[2026-08-11 12:47:29,438] ERROR    in platform [Trace: N/A, Request: N/A, Session: N/A]: Adapter execution failed for 'llama3': Ollama server offline at http://localhost:11434: timed out
+[2026-08-11 12:47:29,438] WARNING  in platform [Trace: N/A, Request: N/A, Session: N/A]: [AI Platform] Primary failed. Cascading fallback to: groq-llama-3-70b
+[2026-08-11 12:48:01,884] WARNING  in adapters [Trace: N/A, Request: N/A, Session: N/A]: Ollama server offline at http://localhost:11434: timed out
+[2026-08-11 12:48:01,885] ERROR    in platform [Trace: N/A, Request: N/A, Session: N/A]: Adapter execution failed for 'llama3': Ollama server offline at http://localhost:11434: timed out
+[2026-08-11 12:48:01,887] WARNING  in platform [Trace: N/A, Request: N/A, Session: N/A]: [AI Platform] Primary failed. Cascading fallback to: groq-llama-3-70b
+[2026-08-11 12:48:34,903] WARNING  in adapters [Trace: N/A, Request: N/A, Session: N/A]: Ollama server offline at http://localhost:11434: timed out
+[2026-08-11 12:48:34,905] ERROR    in platform [Trace: N/A, Request: N/A, Session: N/A]: Adapter execution failed for 'llama3': Ollama server offline at http://localhost:11434: timed out
+[2026-08-11 12:48:34,906] WARNING  in platform [Trace: N/A, Request: N/A, Session: N/A]: [AI Platform] Primary failed. Cascading fallback to: groq-llama-3-70b
+[2026-08-11 12:49:07,477] WARNING  in adapters [Trace: N/A, Request: N/A, Session: N/A]: Ollama server offline at http://localhost:11434: timed out
+[2026-08-11 12:49:07,479] ERROR    in platform [Trace: N/A, Request: N/A, Session: N/A]: Adapter execution failed for 'llama3': Ollama server offline at http://localhost:11434: timed out
+[2026-08-11 12:49:07,480] WARNING  in platform [Trace: N/A, Request: N/A, Session: N/A]: [AI Platform] Primary failed. Cascading fallback to: groq-llama-3-70b
+[2026-08-11 12:49:39,872] WARNING  in adapters [Trace: N/A, Request: N/A, Session: N/A]: Ollama server offline at http://localhost:11434: timed out
+[2026-08-11 12:49:39,873] ERROR    in platform [Trace: N/A, Request: N/A, Session: N/A]: Adapter execution failed for 'llama3': Ollama server offline at http://localhost:11434: timed out
+[2026-08-11 12:49:39,878] WARNING  in platform [Trace: N/A, Request: N/A, Session: N/A]: [AI Platform] Primary failed. Cascading fallback to: groq-llama-3-70b
+[2026-08-11 12:50:12,625] WARNING  in adapters [Trace: N/A, Request: N/A, Session: N/A]: Ollama server offline at http://localhost:11434: timed out
+[2026-08-11 12:50:12,627] ERROR    in platform [Trace: N/A, Request: N/A, Session: N/A]: Adapter execution failed for 'llama3': Ollama server offline at http://localhost:11434: timed out
+[2026-08-11 12:50:12,628] WARNING  in platform [Trace: N/A, Request: N/A, Session: N/A]: [AI Platform] Primary failed. Cascading fallback to: groq-llama-3-70b
+[2026-08-11 12:50:45,497] WARNING  in adapters [Trace: N/A, Request: N/A, Session: N/A]: Ollama server offline at http://localhost:11434: timed out
+[2026-08-11 12:50:45,498] ERROR    in platform [Trace: N/A, Request: N/A, Session: N/A]: Adapter execution failed for 'llama3': Ollama server offline at http://localhost:11434: timed out
+[2026-08-11 12:50:45,499] WARNING  in platform [Trace: N/A, Request: N/A, Session: N/A]: [AI Platform] Primary failed. Cascading fallback to: groq-llama-3-70b
+[2026-08-11 12:51:18,266] WARNING  in adapters [Trace: N/A, Request: N/A, Session: N/A]: Ollama server offline at http://localhost:11434: timed out
+[2026-08-11 12:51:18,267] ERROR    in platform [Trace: N/A, Request: N/A, Session: N/A]: Adapter execution failed for 'llama3': Ollama server offline at http://localhost:11434: timed out
+[2026-08-11 12:51:18,268] WARNING  in platform [Trace: N/A, Request: N/A, Session: N/A]: [AI Platform] Primary failed. Cascading fallback to: groq-llama-3-70b
+[2026-08-11 12:51:51,105] WARNING  in adapters [Trace: N/A, Request: N/A, Session: N/A]: Ollama server offline at http://localhost:11434: timed out
+[2026-08-11 12:51:51,106] ERROR    in platform [Trace: N/A, Request: N/A, Session: N/A]: Adapter execution failed for 'llama3': Ollama server offline at http://localhost:11434: timed out
+[2026-08-11 12:51:51,108] WARNING  in platform [Trace: N/A, Request: N/A, Session: N/A]: [AI Platform] Primary failed. Cascading fallback to: groq-llama-3-70b
+[2026-08-11 12:52:23,732] WARNING  in adapters [Trace: N/A, Request: N/A, Session: N/A]: Ollama server offline at http://localhost:11434: timed out
+[2026-08-11 12:52:23,732] ERROR    in platform [Trace: N/A, Request: N/A, Session: N/A]: Adapter execution failed for 'llama3': Ollama server offline at http://localhost:11434: timed out
+[2026-08-11 12:52:23,739] WARNING  in platform [Trace: N/A, Request: N/A, Session: N/A]: [AI Platform] Primary failed. Cascading fallback to: groq-llama-3-70b
+[2026-08-11 12:52:56,451] WARNING  in adapters [Trace: N/A, Request: N/A, Session: N/A]: Ollama server offline at http://localhost:11434: timed out
+[2026-08-11 12:52:56,456] ERROR    in platform [Trace: N/A, Request: N/A, Session: N/A]: Adapter execution failed for 'llama3': Ollama server offline at http://localhost:11434: timed out
+[2026-08-11 12:52:56,480] WARNING  in platform [Trace: N/A, Request: N/A, Session: N/A]: [AI Platform] Primary failed. Cascading fallback to: groq-llama-3-70b
+[2026-08-11 12:53:29,580] WARNING  in adapters [Trace: N/A, Request: N/A, Session: N/A]: Ollama server offline at http://localhost:11434: timed out
+[2026-08-11 12:53:29,581] ERROR    in platform [Trace: N/A, Request: N/A, Session: N/A]: Adapter execution failed for 'llama3': Ollama server offline at http://localhost:11434: timed out
+[2026-08-11 12:53:29,582] WARNING  in platform [Trace: N/A, Request: N/A, Session: N/A]: [AI Platform] Primary failed. Cascading fallback to: groq-llama-3-70b

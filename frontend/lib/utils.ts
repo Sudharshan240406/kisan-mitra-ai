@@ -11,7 +11,11 @@ export function getApiBase(): string {
   if (process.env.NEXT_PUBLIC_API_URL) {
     return process.env.NEXT_PUBLIC_API_URL.replace(/\/$/, "");
   }
-  if (typeof window !== "undefined" && window.location.hostname !== "localhost" && window.location.hostname !== "127.0.0.1") {
+  if (typeof window !== "undefined") {
+    const host = window.location.hostname;
+    if (host === "localhost" || host === "127.0.0.1" || /^(10|172\.(1[6-9]|2[0-9]|3[01])|192\.168)\./.test(host) || host.endsWith(".local")) {
+      return `http://${host}:8000`;
+    }
     return RENDER_BACKEND_URL;
   }
   return "http://localhost:8000";

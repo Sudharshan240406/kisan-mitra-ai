@@ -16,6 +16,8 @@ from typing import Any, Optional
 
 from pydantic import BaseModel, Field
 
+from app.knowledge_engine.retriever import cosine_similarity, get_deterministic_embedding
+
 logger = logging.getLogger("kisan_mitra_ai.reasoning.core")
 
 
@@ -147,13 +149,22 @@ class ReasoningMetrics(BaseModel):
 
 class ReasoningCache:
     """
-    LRU-style in-memory cache for reasoning outcomes indexed by query hash.
-    Prevents redundant re-evaluation for identical or near-identical queries.
+    LRU-style in-memory cache for reasoning outcomes with semantic similarity matching.
+    Uses query embeddings and cosine similarity to match near-identical intents (>0.9 similarity).
+    Prevents redundant re-evaluation for reworded farmer queries.
     """
-    def __init__(self, max_size: int = 512, ttl_seconds: float = 300.0) -> None:
-        self._store: dict[str, tuple[Any, float]] = {}
+
+    def __init__(
+        self,
+        max_size: int = 512,
+        ttl_seconds: float = 300.0,
+        similarity_threshold: float = 0.90,
+    ) -> None:
+        # Storage format: key -> (query_text, embedding, value, timestamp)
+        self._store: dict[str, tuple[str, list[float], Any, float]] = {}
         self.max_size = max_size
         self.ttl_seconds = ttl_seconds
+        self.similarity_threshold = similarity_threshold
         self._hits = 0
         self._misses = 0
 
@@ -161,23 +172,59 @@ class ReasoningCache:
         return f"{language}::{query.lower().strip()}"
 
     def get(self, query: str, language: str = "en") -> Optional[Any]:
-        key = self._key(query, language)
-        entry = self._store.get(key)
-        if entry:
-            value, ts = entry
-            if (time.time() - ts) <= self.ttl_seconds:
-                self._hits += 1
-                return value
-            del self._store[key]
+        current_time = time.time()
+
+        # Evict expired entries
+        expired_keys = [
+            k
+            for k, (_, _, _, ts) in self._store.items()
+            if (current_time - ts) > self.ttl_seconds
+        ]
+        for k in expired_keys:
+            del self._store[k]
+
+        exact_key = self._key(query, language)
+        if exact_key in self._store:
+            _, _, val, _ = self._store[exact_key]
+            self._hits += 1
+            logger.info(f"[ReasoningCache] Exact match hit for key: '{exact_key}'")
+            return val
+
+        # Semantic similarity lookup against cached query embeddings in same language
+        query_emb = get_deterministic_embedding(query)
+        best_match_val = None
+        best_sim = -1.0
+        best_key = None
+
+        lang_prefix = f"{language}::"
+        for k, (cached_query, cached_emb, val, ts) in self._store.items():
+            if not k.startswith(lang_prefix):
+                continue
+            sim = cosine_similarity(query_emb, cached_emb)
+            if sim > best_sim:
+                best_sim = sim
+                best_match_val = val
+                best_key = k
+
+        if best_sim >= self.similarity_threshold and best_match_val is not None:
+            self._hits += 1
+            logger.info(
+                f"[ReasoningCache] Semantic match hit for query '{query[:35]}' "
+                f"matching '{best_key}' with similarity {best_sim:.3f} (threshold={self.similarity_threshold})"
+            )
+            return best_match_val
+
         self._misses += 1
         return None
 
     def set(self, query: str, value: Any, language: str = "en") -> None:
         key = self._key(query, language)
         if len(self._store) >= self.max_size:
-            oldest = min(self._store, key=lambda k: self._store[k][1])
-            del self._store[oldest]
-        self._store[key] = (value, time.time())
+            oldest_key = min(self._store, key=lambda k: self._store[k][3])
+            del self._store[oldest_key]
+
+        emb = get_deterministic_embedding(query)
+        self._store[key] = (query, emb, value, time.time())
 
     @property
     def stats(self) -> dict[str, Any]:
@@ -187,6 +234,7 @@ class ReasoningCache:
             "hits": self._hits,
             "misses": self._misses,
             "hit_ratio": round(self._hits / total, 3) if total > 0 else 0.0,
+            "similarity_threshold": self.similarity_threshold,
         }
 
 
@@ -256,10 +304,13 @@ class ReasoningPlatform:
         )
 
     def health(self) -> dict[str, Any]:
+        from app.reasoning.response_tier import tier_tracker
+
         return {
             "status": "healthy",
             "active_sessions": len(self._active_sessions),
             "registered_components": self.registry.list_components(),
             "cache_stats": self.cache.stats,
             "metrics": self.metrics.to_dict(),
+            "tier_metrics": tier_tracker.get_summary(),
         }

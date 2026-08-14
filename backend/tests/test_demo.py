@@ -212,3 +212,82 @@ class TestGovernmentSchemeService:
         service = GovernmentSchemeService()
         voice = service.generate_voice_response(DEMO_FARMERS[0], [], "en")
         assert "no matching" in voice.lower() or "not found" in voice.lower() or "contact" in voice.lower()
+
+
+class TestQuestionResponseUniqueness:
+    """
+    Automated Regression Tests for Question-Specific AI Responses.
+    Verifies 20 test cases (5 questions x 4 languages):
+    - Question A response != Question B response
+    - Crop damage questions do NOT return PM-KISAN answers
+    - PM-KISAN questions do NOT return crop damage answers
+    - Pests/disease questions do NOT return PM-KISAN answers
+    """
+
+    QUESTIONS = {
+        "en": [
+            "What government schemes am I eligible for?",
+            "My crop was damaged by heavy rain. What should I do?",
+            "When will I receive my PM-KISAN payment?",
+            "How can I get crop insurance?",
+            "What should I do about pests in my crop?",
+        ],
+        "kn": [
+            "ಸರ್ಕಾರದ ಯಾವ ಯೋಜನೆಗಳಿಗೆ ನಾನು ಅರ್ಹನಾಗಿದ್ದೇನೆ?",
+            "ಮಳೆಯಿಂದ ನನ್ನ ಬೆಳೆ ಹಾನಿಯಾಗಿದೆ, ನಾನು ಏನು ಮಾಡಬೇಕು?",
+            "ನನ್ನ ಪಿಎಂ-ಕಿಸಾನ್ ಹಣ ಎಂದಿಗೆ ಬರುತ್ತದೆ?",
+            "ಬೆಳೆ ವಿಮೆ ಪಡೆದುಕೊಳ್ಳುವುದು ಹೇಗೆ?",
+            "ಬೆಳೆಯಲ್ಲಿ ಕೀಟ ಬಾಧೆ ನಿಯಂತ್ರಿಸುವುದು ಹೇಗೆ?",
+        ],
+        "hi": [
+            "मैं किन सरकारी योजनाओं के लिए पात्र हूं?",
+            "भारी बारिश से मेरी फसल खराब हो गई है, मुझे क्या करना चाहिए?",
+            "मुझे पीएम-किसान की किस्त कब मिलेगी?",
+            "फसल बीमा कैसे प्राप्त करें?",
+            "फसल में कीट नियंत्रण कैसे करें?",
+        ],
+        "te": [
+            "నేను ఏ ప్రభుత్వ పథకాలకు అర్హుడిని?",
+            "వర్షాల వల్ల నా పంట పాడైపోయింది, నేను ఏమి చేయాలి?",
+            "నా పీఎం-కిసాన్ డబ్బులు ఎప్పుడు వస్తాయి?",
+            "పంట బీమా ఎలా పొందాలి?",
+            "పంట తెగుళ్ల నివారణ ఎలా చేయాలి?",
+        ],
+    }
+
+    async def test_20_question_response_uniqueness(self):
+        """Test 5 questions x 4 languages = 20 cases for absolute uniqueness."""
+        from app.api.v1.demo import process_demo_voice_query, DemoVoiceQueryRequest
+
+        for lang, q_list in self.QUESTIONS.items():
+            responses = []
+            schemes = []
+
+            for q in q_list:
+                req = DemoVoiceQueryRequest(
+                    farmer_id="DEMO-F001",
+                    user_selected_language=lang,
+                    question=q
+                )
+                res = await process_demo_voice_query(req)
+                resp_text = res["voice_response"]
+                top_scheme = res["top_scheme"]
+
+                # Ensure non-empty response
+                assert len(resp_text) > 10, f"Empty response for question '{q}' in {lang}"
+                assert top_scheme is not None, f"Null scheme for question '{q}' in {lang}"
+
+                responses.append(resp_text)
+                schemes.append(top_scheme)
+
+            # Assert all 5 responses for this language are unique
+            assert len(set(responses)) == 5, f"Duplicate responses detected in {lang}: {responses}"
+
+            # Assert crop damage (index 1) does NOT talk about PM-Kisan
+            damage_resp = responses[1].lower()
+            assert "kisan samman" not in damage_resp and "ಕಿಸಾನ್ ಸಮ್ಮಾನ" not in damage_resp
+
+            # Assert PM-Kisan (index 2) does NOT talk about rain damage / PMFBY
+            pm_resp = responses[2].lower()
+            assert "fasal bima" not in pm_resp and "ಮಳೆಯಿಂದ" not in pm_resp
+

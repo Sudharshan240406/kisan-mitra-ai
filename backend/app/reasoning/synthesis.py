@@ -21,6 +21,7 @@ from typing import Any
 from app.reasoning.confidence import ConfidenceReport
 from app.reasoning.core import ReasoningContext
 from app.reasoning.evidence import RankedEvidence
+from app.reasoning.response_tier import process_response_tier
 
 logger = logging.getLogger("kisan_mitra_ai.reasoning.synthesis")
 
@@ -76,8 +77,22 @@ class DecisionSynthesizer:
         top = ranked_evidence[0]
         rest = ranked_evidence[1:5]  # up to 4 alternatives
 
-        # Primary recommendation
-        primary = self._build_primary(top, ctx, conf)
+        # Tiered Response Processing (Tier 1 Retrieval / Tier 2 Cheap LLM / Tier 3 Full LLM)
+        llm_provider = (
+            ctx.metadata.get("container").llm_provider
+            if (ctx.metadata and "container" in ctx.metadata)
+            else None
+        )
+        tier_res = process_response_tier(
+            query=ctx.query,
+            ranked_evidence=ranked_evidence,
+            context=ctx,
+            overall_confidence=conf.overall_confidence,
+            llm_provider=llm_provider,
+        )
+
+        primary = tier_res["recommendation"]
+        summary = tier_res["summary"]
 
         # Alternatives
         alternatives = [
@@ -104,10 +119,13 @@ class DecisionSynthesizer:
             f"[{ev.rank}] {ev.agent} → composite={ev.composite_score:.3f} | conf={ev.confidence:.2f} | {ev.reasoning[:80]}..."
             for ev in ranked_evidence[:6]
         ]
+        reasoning_path.append(f"[Tier Strategy] {tier_res['tier'].value} (cost=${tier_res['estimated_cost_usd']:.6f})")
 
         return {
             "primary_recommendation": primary,
-            "summary": f"Based on {len(ranked_evidence)} evidence sources: {primary[:120]}...",
+            "summary": summary,
+            "response_tier": tier_res["tier"].value,
+            "tier_cost_usd": tier_res["estimated_cost_usd"],
             "alternatives": alternatives,
             "risk_assessment": {
                 "risk_score": round(risk_score, 3),

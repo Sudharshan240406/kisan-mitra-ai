@@ -90,6 +90,69 @@ const FALLBACK_RESPONSES: Record<string, (name: string) => string> = {
   "bn-IN": (n) => `${n} জি, আপনার তথ্য প্রক্রিয়া করা হয়েছে। আপনি পিএম-কিসান সম্মান নিধি প্রকল্পের জন্য যোগ্য হতে পারেন যা বছরে ₹6,000 প্রদান করে। দয়া করে আপনার আধার কার্ড এবং জমির রেকর্ড নিকটস্থ কৃষি অফিসে জমা দিন।`,
 };
 
+export function getFallbackResponse(question: string, langCode: string, name: string): { topScheme: string; responseText: string } {
+  const q = question.toLowerCase().trim();
+
+  const isCropDamage = /damage|rain|flood|loss|ಹಾನಿ|ಮಳೆ|ನಷ್ಟ|नुकसान|खराब|बारिश|मुआवजा|పాడైపోయింది|నష్టం|సేదం|നശിച്ചു/.test(q);
+  const isPmKisan = /pm-kisan|pm kisan|kisan payment|6000|instalment|installment|ಕಿಸಾನ್|किस्त|किश्त|కిసాన్|తవணை|തവണ/.test(q);
+  const isInsurance = /insurance|bima|ವಿಮೆ|बीमा|బీమా|காப்பீடு|ഇൻഷുറൻസ്/.test(q);
+  const isPest = /pest|pests|disease|insect|yellow rust|spray|ಕೀಟ|ರೋಗ|कीट|बीमारी|తెగులు|పురుగులు|పూச்சி|കീട/.test(q);
+  const isPrice = /price|rate|mandi|market|cost|ಬೆಲೆ|ಮಾರುಕಟ್ಟೆ|ಮಂಡಿ|भाव|दाम|मंडी|ధర|మార్కెట్|விலை|വില/.test(q);
+
+  if (isCropDamage) {
+    const text: Record<string, string> = {
+      "kn-IN": `ಮಳೆಯಿಂದ ಬೆಳೆ ಹಾನಿಯಾಗಿದ್ದರೆ ಪ್ರಧಾನ ಮಂತ್ರಿ ಫಸಲ್ ಬಿಮಾ ಯೋಜನೆಯಡಿ (PMFBY) 72 ಗಂಟೆಗಳ ಒಳಗೆ 1800-180-1551 ಗೆ ಕರೆ ಮಾಡಿ ನಷ್ಟ ಪರಿಹಾರ ಪಡೆಯಬಹುದು.`,
+      "hi-IN": `भारी बारिश से हुए फसल नुकसान के लिए प्रधानमंत्री फसल बीमा योजना (PMFBY) के तहत 72 घंटे के भीतर टोल-फ्री 1800-180-1551 पर सूचना दें।`,
+      "te-IN": `వర్షాల వల్ల పంట నష్టపోతే ప్రధాన మంత్రి ఫసల్ బీమా యోజన (PMFBY) కింద 72 గంటల వ్యవధిలో 1800-180-1551 కి నివేదించండి.`,
+      "en-IN": `For crop damage caused by heavy rain, report within 72 hours under Pradhan Mantri Fasal Bima Yojana (PMFBY) via helpline 1800-180-1551.`,
+    };
+    return { topScheme: "Pradhan Mantri Fasal Bima Yojana", responseText: text[langCode] || text["en-IN"] };
+  }
+
+  if (isPmKisan) {
+    const text: Record<string, string> = {
+      "kn-IN": `ಪಿಎಂ ಕಿಸಾನ್ ಯೋಜನೆಯಡಿ ವಾರ್ಷಿಕ ₹6,000 ಹಣವನ್ನು 3 ಕಂತುಗಳಲ್ಲಿ (₹2,000 ಪ್ರತಿ ಕಂತು) ನೇರವಾಗಿ ಬ್ಯಾಂಕ್ ಖಾತೆಗೆ ಜಮೆ ಮಾಡಲಾಗುತ್ತದೆ.`,
+      "hi-IN": `पीएम किसान की राशि प्रतिवर्ष ₹6,000 की 3 समान किस्तों में सीधे बैंक खाते में भेजी जाती है। अपनी ई-केवाईसी जांचें।`,
+      "te-IN": `పీఎం కిసాన్ సమ్మాన్ నిధి ద్వారా సంవత్సరానికి ₹6,000 ఆర్థిక సహాయం 3 విడతలలో నేరుగా బ్యాంక్ ఖాతాలో జమ చేయబడుతుంది.`,
+      "en-IN": `Under PM-Kisan Samman Nidhi, eligible farmers receive ₹6,000 per year in 3 equal instalments of ₹2,000 via direct bank transfer.`,
+    };
+    return { topScheme: "PM-Kisan Samman Nidhi", responseText: text[langCode] || text["en-IN"] };
+  }
+
+  if (isInsurance) {
+    const text: Record<string, string> = {
+      "kn-IN": `ನಿಮ್ಮ ಹತ್ತಿರದ ಸಿಎಸ್‌ಸಿ ಸೆಂಟರ್, ಬ್ಯಾಂಕ್ ಅಥವಾ PMFBY ಪೋರ್ಟಲ್ ಮೂಲಕ ಬೆಳೆ ನೋಂದಣಿ ಅವಧಿ ಮುಗಿಯುವ ಮುನ್ನ ಕಡಿಮೆ ದರದಲ್ಲಿ ಬೆಳೆ ವಿಮೆ ಪಡೆದುಕೊಳ್ಳಬಹುದು.`,
+      "hi-IN": `आप निकटतम सीएससी केंद्र, बैंक शाखा या PMFBY पोर्टल के माध्यम से बुवाई सीजन की अंतिम तिथि से पहले फसल बीमा करवा सकते हैं।`,
+      "te-IN": `మీ సమీప CSC కేంద్రం, బ్యాంక్ లేదా PMFBY పోర్టల్ ద్వారా పంట బీమా నమోదు చేసుకోవచ్చు.`,
+      "en-IN": `You can enroll for PM Fasal Bima Yojana crop insurance at your local CSC center, bank branch, or via the PMFBY portal before the cutoff date.`,
+    };
+    return { topScheme: "PMFBY Crop Insurance Enrollment", responseText: text[langCode] || text["en-IN"] };
+  }
+
+  if (isPest) {
+    const text: Record<string, string> = {
+      "kn-IN": `ಬೆಳೆಯಲ್ಲಿ ಕೀಟ ಮತ್ತು ರೋಗ ಬಾಧೆ ನಿಯಂತ್ರಿಸಲು ಸಮಗ್ರ ಕೀಟ ನಿರ್ವಹಣೆ (IPM) ಅನುಸರಿಸಿ. ಉಚಿತ ಸಲಹೆಗೆ ಕಿಸಾನ್ ಕಾಲ್ ಸೆಂಟರ್ 1800-180-1551 ಗೆ ಕರೆ ಮಾಡಿ.`,
+      "hi-IN": `फसल में कीट एवं रोग नियंत्रण के लिए एकीकृत कीट प्रबंधन (IPM) अपनाएं और किसान कॉल सेंटर 1800-180-1551 पर संपर्क करें।`,
+      "te-IN": `పంట తెగుళ్లు నివారణకు సమగ్ర సస్యరక్షణ చర్యలు చేపట్టండి. కిసాన్ కాల్ సెంటర్ 1800-180-1551 ని సంప్రదించండి.`,
+      "en-IN": `To control pest infestation and crop diseases, adopt Integrated Pest Management (IPM). Call Kisan Call Centre at 1800-180-1551 for advice.`,
+    };
+    return { topScheme: "Integrated Pest Management", responseText: text[langCode] || text["en-IN"] };
+  }
+
+  if (isPrice) {
+    const text: Record<string, string> = {
+      "kn-IN": `ಇಂದಿನ ಮಾರುಕಟ್ಟೆ ಧಾರಣೆಯು ನಿಮ್ಮ ಸಮೀಪದ ಕೃಷಿ ಉತ್ಪನ್ನ ಮಾರುಕಟ್ಟೆ (APMC) ಹಾಗೂ e-NAM ಪೋರ್ಟಲ್‌ನಲ್ಲಿ ಲಭ್ಯವಿದೆ.`,
+      "hi-IN": `आज की मंडी दरें आपके निकटतम कृषि उपज मंडी समिति (APMC) और e-NAM पोर्टल पर उपलब्ध हैं।`,
+      "te-IN": `ఈరోజు మార్కెట్ మరియు మండి ధరలు e-NAM పోర్టల్ మరియు స్థానిక APMC మార్కెట్‌లో లభ్యమవుతాయి.`,
+      "en-IN": `Today's market prices and mandi rates are available via the e-NAM portal and your local APMC market.`,
+    };
+    return { topScheme: "e-NAM & Mandi Price Information", responseText: text[langCode] || text["en-IN"] };
+  }
+
+  const defaultFn = FALLBACK_RESPONSES[langCode] || FALLBACK_RESPONSES["en-IN"];
+  return { topScheme: "Kisan Mitra Agricultural Advisory", responseText: defaultFn(name) };
+}
+
 /* ═══════════════════════════════════════════════════════════
    DEFAULT FARMERS
    ═══════════════════════════════════════════════════════════ */
@@ -288,11 +351,10 @@ export function useDemoCallSession() {
         await new Promise((resolve) => setTimeout(resolve, 1200 - stage3Elapsed));
       }
 
-      // If backend was offline or failed, generate language-pure fallback response
+      // If backend was offline or failed, generate intent-aware fallback response
       if (!data || !data.voice_response) {
         const name = selectedFarmer.name.split(" ")[0];
-        const fallbackFn = FALLBACK_RESPONSES[lang] || FALLBACK_RESPONSES["en-IN"];
-        const respText = fallbackFn(name);
+        const fallbackInfo = getFallbackResponse(spokenText, lang, name);
 
         data = {
           success: true,
@@ -302,8 +364,8 @@ export function useDemoCallSession() {
           detected_speech_language: lang,
           response_language: lang,
           response_language_tag: lang,
-          top_scheme: "PM-Kisan Samman Nidhi",
-          voice_response: respText,
+          top_scheme: fallbackInfo.topScheme,
+          voice_response: fallbackInfo.responseText,
           reasoning: [
             `✓ Language: ${langOption.promptName}`,
             `✓ Query processed for ${selectedFarmer.name} (${selectedFarmer.land_hectares} Ha).`,

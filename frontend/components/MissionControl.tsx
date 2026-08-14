@@ -148,6 +148,9 @@ export default function MissionControl() {
   const [demoFarmers, setDemoFarmers] = useState<FarmerProfile[]>([]);
   const [isDemoRunning, setIsDemoRunning] = useState(false);
   const [selectedFarmer, setSelectedFarmer] = useState<string>("");
+  const [selectedLanguage, setSelectedLanguage] = useState<string>("hi");
+  const [selectedQuestion, setSelectedQuestion] = useState<string>("What government schemes am I eligible for?");
+  const [customQuestion, setCustomQuestion] = useState<string>("");
   const [elapsedMs, setElapsedMs] = useState(0);
   const [topSchemeName, setTopSchemeName] = useState<string>("");
   const [documentGuidance, setDocumentGuidance] = useState<DocumentGuidance | null>(null);
@@ -372,7 +375,15 @@ export default function MissionControl() {
     if (!farmerId) return;
     setAiState("CONNECTING");
     try {
-      await fetch(`${API_BASE}/api/v1/demo/simulate-call/${farmerId}`, { method: "POST" });
+      const questionToPass = selectedQuestion === "custom" ? customQuestion : selectedQuestion;
+      await fetch(`${API_BASE}/api/v1/demo/simulate-call/${farmerId}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          question: questionToPass,
+          language: selectedLanguage,
+        }),
+      });
     } catch {
       setAiState("ERROR");
     }
@@ -527,19 +538,20 @@ export default function MissionControl() {
 
       {/* 🕹 SIMULATION PLATFORM PANEL (Hidden in Presentation Mode) */}
       {!presentationMode && (
-        <div className="glass-panel rounded-2xl p-5 border border-slate-900 z-10">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div className="flex items-center gap-2">
+        <div className="glass-panel rounded-2xl p-5 border border-slate-900 z-10 flex flex-col gap-4">
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+            <div className="flex items-center gap-2 shrink-0">
               <Phone className="w-4 h-4 text-[var(--lime-glow)]" />
               <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest font-mono">Interactive Call Simulator</span>
             </div>
 
-            <div className="flex items-center gap-3 flex-wrap sm:flex-nowrap">
+            <div className="flex items-center gap-3 flex-wrap lg:flex-nowrap w-full lg:w-auto">
+              {/* Farmer Selection */}
               <select
                 value={selectedFarmer}
                 onChange={(e) => setSelectedFarmer(e.target.value)}
                 disabled={callActive || isDemoRunning}
-                className="bg-slate-950 text-slate-200 border border-slate-900 rounded-xl px-4 py-2 text-xs focus:outline-none focus:border-[var(--lime-glow)] min-w-[240px] disabled:opacity-40 select-none cursor-pointer"
+                className="bg-slate-950 text-slate-200 border border-slate-900 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-[var(--lime-glow)] min-w-[200px] disabled:opacity-40 select-none cursor-pointer"
                 aria-label="Select farmer profile for simulation"
               >
                 <option value="">Select a demographic farmer...</option>
@@ -548,6 +560,36 @@ export default function MissionControl() {
                     {f.name} — {f.category}, {f.district} ({f.land_hectares} ha)
                   </option>
                 ))}
+              </select>
+
+              {/* Language Selection */}
+              <select
+                value={selectedLanguage}
+                onChange={(e) => setSelectedLanguage(e.target.value)}
+                disabled={callActive || isDemoRunning}
+                className="bg-slate-950 text-slate-200 border border-slate-900 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-[var(--lime-glow)] disabled:opacity-40 select-none cursor-pointer"
+                aria-label="Select language for call simulation"
+              >
+                <option value="hi">Hindi (हिन्दी)</option>
+                <option value="kn">Kannada (ಕನ್ನಡ)</option>
+                <option value="pa">Punjabi (ਪੰਜਾਬੀ)</option>
+                <option value="en">English</option>
+              </select>
+
+              {/* Question Selection */}
+              <select
+                value={selectedQuestion}
+                onChange={(e) => setSelectedQuestion(e.target.value)}
+                disabled={callActive || isDemoRunning}
+                className="bg-slate-950 text-slate-200 border border-slate-900 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-[var(--lime-glow)] min-w-[240px] disabled:opacity-40 select-none cursor-pointer"
+                aria-label="Select question category for call simulation"
+              >
+                <option value="What government schemes am I eligible for?">🏛 Government Schemes (PM-Kisan / PMFBY)</option>
+                <option value="What is the current mandi rate for wheat in Punjab?">📈 Market Price (Wheat Mandi Rates)</option>
+                <option value="What is the weather forecast for Ludhiana today?">🌧 Weather Forecast (Rain & Temp)</option>
+                <option value="My wheat crop has yellow rust spots, what should I spray?">🐛 Disease & Pest (Yellow Rust Spray)</option>
+                <option value="How much water does wheat crop need in Rabi season?">🌾 Irrigation & Agronomy (Sowing & Water)</option>
+                <option value="custom">✏️ Type Custom Question...</option>
               </select>
 
               <button
@@ -559,7 +601,7 @@ export default function MissionControl() {
                 Simulate Ingress
               </button>
 
-              <div className="h-6 w-px bg-slate-900 hidden sm:block" />
+              <div className="h-6 w-px bg-slate-900 hidden lg:block" />
 
               <button
                 onClick={handleStartDemo}
@@ -574,6 +616,20 @@ export default function MissionControl() {
               </button>
             </div>
           </div>
+
+          {/* Custom Question Text Input */}
+          {selectedQuestion === "custom" && (
+            <div className="flex items-center gap-2 pt-2 border-t border-slate-900">
+              <input
+                type="text"
+                placeholder="Type custom farmer query (e.g. 'What fertilizer dose for wheat?')..."
+                value={customQuestion}
+                onChange={(e) => setCustomQuestion(e.target.value)}
+                disabled={callActive || isDemoRunning}
+                className="w-full bg-slate-950 text-slate-200 border border-slate-800 rounded-xl px-4 py-2 text-xs focus:outline-none focus:border-[var(--lime-glow)]"
+              />
+            </div>
+          )}
         </div>
       )}
 

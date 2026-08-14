@@ -241,8 +241,14 @@ export default function PresentationDemo({ onOpenDemo }: PresentationDemoProps =
     handleRestart();
     setAutoMode(true);
     setIsPlaying(true);
-    fetch(`${API_BASE}/api/v1/demo/simulate-call/${selectedFarmerId}`, { method: "POST" })
-      .catch(() => {});
+    fetch(`${API_BASE}/api/v1/demo/simulate-call/${selectedFarmerId}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        question: "What government schemes am I eligible for?",
+        language: activeFarmer?.language || "hi",
+      }),
+    }).catch(() => {});
   };
 
   // Elapsed timer formatting
