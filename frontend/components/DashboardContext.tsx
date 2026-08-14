@@ -282,11 +282,11 @@ export function DashboardProvider({ children }: { children: React.ReactNode }) {
 
   // Feature Flags State
   const [featureFlags, setFeatureFlags] = useState({
-    mockLlm: true,
+    mockLlm: false,
     strictSafety: true,
     cacheAnswers: true,
     rateLimiting: true,
-    modelName: "mock-gemini-pro"
+    modelName: "gemini-1.5-pro"
   });
 
   // Agent Hub Status Check
@@ -417,6 +417,12 @@ export function DashboardProvider({ children }: { children: React.ReactNode }) {
       if (aiProvidersRes.ok) {
         const aiProvidersData = await aiProvidersRes.json();
         setAiProviders(aiProvidersData);
+        if (Array.isArray(aiProvidersData) && aiProvidersData.length > 0) {
+          const activeModel = aiProvidersData.find((p: any) => p.status === "active") || aiProvidersData[0];
+          if (activeModel?.model_id) {
+            setFeatureFlags(prev => ({ ...prev, modelName: activeModel.model_id, mockLlm: false }));
+          }
+        }
       }
 
       // 6. AI Platform budget summary logs
