@@ -94,6 +94,22 @@ class DecisionSynthesizer:
         primary = tier_res["recommendation"]
         summary = tier_res["summary"]
 
+        # Prepend personalization tag if farmer context is active
+        if ctx.farmer_id and ctx.metadata and "container" in ctx.metadata:
+            try:
+                container = ctx.metadata["container"]
+                p_ctx = container.personalization_platform.get_personalized_context(ctx.farmer_id)
+                if p_ctx:
+                    avail_budget = p_ctx.profile.budget_limit - p_ctx.profile.budget_spent
+                    personalization_tag = (
+                        f"[PERSONALIZED FOR {p_ctx.profile.name.upper()}] "
+                        f"(Risk: {p_ctx.profile.risk_tolerance.upper()}, Available Budget: {avail_budget:.0f} INR) "
+                    )
+                    if personalization_tag and not primary.startswith("[PERSONALIZED FOR"):
+                        primary = personalization_tag + primary
+            except Exception:
+                pass
+
         # Alternatives
         alternatives = [
             self._build_alternative(ev, rank=i + 1, primary_agent=top.agent)
