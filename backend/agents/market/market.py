@@ -29,15 +29,30 @@ class MarketAgent(BaseAgent):
         location = context.location
         if request and request.query:
             q_lower = request.query.lower()
-            crops = ["wheat", "rice", "paddy", "tomato", "cotton", "maize", "mustard", "potato", "onion", "chilli", "sugarcane"]
-            locations = ["ludhiana", "khanna", "punjab", "karnataka", "kolar", "hubballi", "haryana", "delhi", "patna"]
-            for c in crops:
-                if c in q_lower:
-                    crop = c.title()
+            known_crops = {
+                "wheat": "Wheat", "rice": "Rice", "paddy": "Rice", "cotton": "Cotton",
+                "sugarcane": "Sugarcane", "tomato": "Tomato", "potato": "Potato",
+                "onion": "Onion", "chilli": "Chilli", "turmeric": "Turmeric",
+                "soybean": "Soybean", "groundnut": "Groundnut", "mustard": "Mustard",
+                "maize": "Maize", "pulses": "Pulses", "gram": "Gram"
+            }
+            known_locs = {
+                "bengaluru": "Bengaluru, Karnataka", "bangalore": "Bengaluru, Karnataka",
+                "maharashtra": "Maharashtra", "mumbai": "Mumbai, Maharashtra",
+                "pune": "Pune, Maharashtra", "nagpur": "Nagpur, Maharashtra",
+                "yavatmal": "Yavatmal, Maharashtra", "ludhiana": "Ludhiana, Punjab",
+                "khanna": "Khanna, Punjab", "punjab": "Punjab", "karnataka": "Karnataka",
+                "kolar": "Kolar, Karnataka", "hubballi": "Hubballi, Karnataka",
+                "haryana": "Haryana", "delhi": "Delhi", "patna": "Patna, Bihar",
+                "hyderabad": "Hyderabad, Telangana", "telangana": "Telangana"
+            }
+            for k, val in known_crops.items():
+                if k in q_lower:
+                    crop = val
                     break
-            for l in locations:
-                if l in q_lower:
-                    location = l.title()
+            for k, val in known_locs.items():
+                if k in q_lower:
+                    location = val
                     break
 
         crop = crop or "Wheat"

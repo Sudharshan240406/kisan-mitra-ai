@@ -28,12 +28,22 @@ class WeatherAgent(BaseAgent):
         location = context.location
         if request and request.query:
             query_lower = request.query.lower()
-            for loc in ["ludhiana", "amritsar", "jalandhar", "punjab", "haryana", "karnataka", "kolar", "delhi", "patna"]:
-                if loc in query_lower:
-                    location = loc.title()
+            known_locs = {
+                "bengaluru": "Bengaluru, Karnataka", "bangalore": "Bengaluru, Karnataka",
+                "maharashtra": "Maharashtra", "mumbai": "Mumbai, Maharashtra",
+                "pune": "Pune, Maharashtra", "nagpur": "Nagpur, Maharashtra",
+                "ludhiana": "Ludhiana, Punjab", "amritsar": "Amritsar, Punjab",
+                "jalandhar": "Jalandhar, Punjab", "punjab": "Punjab",
+                "haryana": "Haryana", "karnataka": "Karnataka",
+                "kolar": "Kolar, Karnataka", "delhi": "Delhi", "patna": "Patna, Bihar",
+                "hyderabad": "Hyderabad, Telangana", "telangana": "Telangana"
+            }
+            for k, val in known_locs.items():
+                if k in query_lower:
+                    location = val
                     break
 
-        location = location or "Punjab"
+        location = location or "India"
         weather_data = await self.weather_service.get_weather_forecast(location, context)
 
         # Extract weather parameters dynamically from returned service string if available

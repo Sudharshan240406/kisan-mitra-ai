@@ -142,19 +142,52 @@ class AgentOrchestrator:
         )
 
         lang = "en"
-        location = "Punjab"
-        crop = "Wheat"
+        query_crop = None
+        query_location = None
+
+        KNOWN_CROPS = {
+            "wheat": "Wheat", "rice": "Rice", "paddy": "Rice", "cotton": "Cotton",
+            "sugarcane": "Sugarcane", "tomato": "Tomato", "potato": "Potato",
+            "onion": "Onion", "chilli": "Chilli", "chili": "Chilli", "turmeric": "Turmeric",
+            "soybean": "Soybean", "soya": "Soybean", "groundnut": "Groundnut", "peanut": "Groundnut",
+            "mustard": "Mustard", "maize": "Maize", "corn": "Maize", "pulses": "Pulses",
+            "gram": "Gram", "barley": "Barley", "jowar": "Jowar", "bajra": "Bajra"
+        }
+
+        KNOWN_LOCATIONS = {
+            "bengaluru": "Bengaluru, Karnataka", "bangalore": "Bengaluru, Karnataka",
+            "dharwad": "Dharwad, Karnataka", "kolar": "Kolar, Karnataka",
+            "hubballi": "Hubballi, Karnataka", "hubli": "Hubballi, Karnataka",
+            "mysuru": "Mysuru, Karnataka", "mysore": "Mysuru, Karnataka",
+            "karnataka": "Karnataka",
+            "maharashtra": "Maharashtra", "mumbai": "Mumbai, Maharashtra",
+            "pune": "Pune, Maharashtra", "nagpur": "Nagpur, Maharashtra",
+            "yavatmal": "Yavatmal, Maharashtra", "nashik": "Nashik, Maharashtra",
+            "punjab": "Punjab", "ludhiana": "Ludhiana, Punjab",
+            "khanna": "Khanna, Punjab", "jalandhar": "Jalandhar, Punjab",
+            "amritsar": "Amritsar, Punjab", "haryana": "Haryana",
+            "karnal": "Karnal, Haryana", "delhi": "Delhi", "new delhi": "Delhi",
+            "patna": "Patna, Bihar", "bihar": "Bihar", "telangana": "Telangana",
+            "hyderabad": "Hyderabad, Telangana", "warangal": "Warangal, Telangana",
+            "gujarat": "Gujarat", "rajkot": "Rajkot, Gujarat",
+            "rajasthan": "Rajasthan", "jaipur": "Jaipur, Rajasthan",
+            "uttar pradesh": "Uttar Pradesh", "lucknow": "Lucknow, Uttar Pradesh",
+            "tamil nadu": "Tamil Nadu", "chennai": "Chennai, Tamil Nadu",
+        }
 
         if request.query:
             q_low = request.query.lower()
-            for c in ["wheat", "rice", "paddy", "tomato", "cotton", "maize", "mustard", "potato", "onion", "chilli", "sugarcane"]:
-                if c in q_low:
-                    crop = c.title()
+            for k, val in KNOWN_CROPS.items():
+                if k in q_low:
+                    query_crop = val
                     break
-            for l in ["ludhiana", "khanna", "jalandhar", "amritsar", "punjab", "karnataka", "kolar", "hubballi", "haryana", "delhi", "patna"]:
-                if l in q_low:
-                    location = l.title()
+            for k, val in KNOWN_LOCATIONS.items():
+                if k in q_low:
+                    query_location = val
                     break
+
+        location = query_location
+        crop = query_crop
 
         if farmer_id:
             try:
@@ -170,12 +203,19 @@ class AgentOrchestrator:
                 profile = mem_data.get("profile")
                 if profile:
                     lang = profile.get("preferred_language", "en")
-                    location = f"{profile.get('district', 'Ludhiana')}, {profile.get('state', 'Punjab')}"
-                    crop_hist = profile.get("crop_history", [])
-                    if crop_hist:
-                        crop = crop_hist[0]
+                    if not location:
+                        location = f"{profile.get('district', 'Ludhiana')}, {profile.get('state', 'Punjab')}"
+                    if not crop:
+                        crop_hist = profile.get("crop_history", [])
+                        if crop_hist:
+                            crop = crop_hist[0]
             except Exception as e:
                 logger.warning(f"[MemoryRetrieval] Profile fetch failed from memory engine: {e}")
+
+        if not crop:
+            crop = "Wheat"
+        if not location:
+            location = "Punjab"
 
 
         context = AgentContext(
