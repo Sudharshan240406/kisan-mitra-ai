@@ -134,6 +134,7 @@ export default function PresentationDemo({ onOpenDemo }: PresentationDemoProps =
 
   // References
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const activeCallIdRef = useRef<string>("");
 
   // Initialize prefers-reduced-motion
   useEffect(() => {
@@ -188,6 +189,12 @@ export default function PresentationDemo({ onOpenDemo }: PresentationDemoProps =
   // Reactive WebSocket event catcher: syncs active step with real-world simulator (FEATURE 4)
   useEffect(() => {
     if (lastEvent && autoMode) {
+      const payload = lastEvent.payload;
+      if (lastEvent.type === "CALL_STARTED" && payload?.call_id) {
+        activeCallIdRef.current = payload.call_id;
+      } else if (payload?.call_id && activeCallIdRef.current && payload.call_id !== activeCallIdRef.current) {
+        return;
+      }
       const matchIdx = STORY_STEPS.findIndex(s => s.wsEvent === lastEvent.type);
       if (matchIdx !== -1) {
         setActiveStep(matchIdx);
@@ -237,7 +244,7 @@ export default function PresentationDemo({ onOpenDemo }: PresentationDemoProps =
 
   // Triggers live backend simulation
   const handleTriggerLiveSimulation = () => {
-    if (!selectedFarmerId) return;
+    if (!selectedFarmerId || isPlaying) return;
     handleRestart();
     setAutoMode(true);
     setIsPlaying(true);
@@ -248,7 +255,9 @@ export default function PresentationDemo({ onOpenDemo }: PresentationDemoProps =
         question: "What government schemes am I eligible for?",
         language: activeFarmer?.language || "hi",
       }),
-    }).catch(() => {});
+    }).catch(() => {
+      setIsPlaying(false);
+    });
   };
 
   // Elapsed timer formatting

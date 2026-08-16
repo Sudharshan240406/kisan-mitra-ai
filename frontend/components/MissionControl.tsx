@@ -160,9 +160,10 @@ export default function MissionControl() {
   // Timeline events history
   const [timelineEvents, setTimelineEvents] = useState<TimelineEvent[]>([]);
 
-  // Refs for scrolling
+  // Refs for scrolling & call scoping
   const transcriptScrollRef = useRef<HTMLDivElement>(null);
   const timelineScrollRef = useRef<HTMLDivElement>(null);
+  const activeCallIdRef = useRef<string>("");
 
   // Check prefers-reduced-motion
   useEffect(() => {
@@ -197,11 +198,20 @@ export default function MissionControl() {
     }
   }, [timelineEvents]);
 
-  // Handle Event Ingestion & Timeline logging
+  // Handle Event Ingestion & Timeline logging with call_id scoping
   useEffect(() => {
     if (!lastEvent) return;
     const { type, payload } = lastEvent;
     const timeStr = new Date().toLocaleTimeString();
+
+    // CALL_STARTED sets the active call ID for this session
+    if (type === "CALL_STARTED" && payload?.call_id) {
+      activeCallIdRef.current = payload.call_id;
+    } else if (payload?.call_id && activeCallIdRef.current && payload.call_id !== activeCallIdRef.current) {
+      // Ignore stale/superseded events from previous/concurrent calls
+      console.warn(`[MissionControl] Suppressed stale event '${type}' for call_id '${payload.call_id}' (active: '${activeCallIdRef.current}')`);
+      return;
+    }
 
     const addEvent = (event: string, dur = "—", conf = "—", status: "success" | "pending" | "failed" = "success") => {
       setTimelineEvents((prev) => [
@@ -372,7 +382,8 @@ export default function MissionControl() {
 
   // Simulator Triggers
   const handleSimulateCall = async (farmerId: string) => {
-    if (!farmerId) return;
+    if (!farmerId || callActive || isDemoRunning) return;
+    setCallActive(true);
     setAiState("CONNECTING");
     try {
       const questionToPass = selectedQuestion === "custom" ? customQuestion : selectedQuestion;
@@ -386,6 +397,7 @@ export default function MissionControl() {
       });
     } catch {
       setAiState("ERROR");
+      setCallActive(false);
     }
   };
 

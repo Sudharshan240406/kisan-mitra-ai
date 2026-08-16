@@ -329,10 +329,18 @@ export function DashboardProvider({ children }: { children: React.ReactNode }) {
     url: `${WS_BASE}/ws/live`,
   });
 
+  const activeCallIdRef = useRef<string>("");
+
   // Track call and simulation stages from WebSocket events
   useEffect(() => {
     if (!lastEvent) return;
     const { type, payload } = lastEvent;
+
+    if (type === "CALL_STARTED" && payload?.call_id) {
+      activeCallIdRef.current = payload.call_id;
+    } else if (payload?.call_id && activeCallIdRef.current && payload.call_id !== activeCallIdRef.current) {
+      return;
+    }
 
     switch (type) {
       case "CALL_STARTED":

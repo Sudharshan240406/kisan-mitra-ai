@@ -556,9 +556,11 @@ async def start_demo() -> dict[str, Any]:
 
     results: list[dict[str, Any]] = []
 
-
+    demo_id = f"DEMO-SUITE-{int(time.time())}"
 
     await ws_manager.push_event("DEMO_STARTED", {
+
+        "demo_id": demo_id,
 
         "total_farmers": len(farmers),
 
@@ -575,6 +577,8 @@ async def start_demo() -> dict[str, Any]:
         # Notify dashboard: next farmer starting
 
         await ws_manager.push_event("DEMO_PROGRESS", {
+
+            "demo_id": demo_id,
 
             "current": i + 1,
 
