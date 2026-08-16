@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
+import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from "react";
 import { Cpu, CloudSun, TrendingUp, BookOpen, Award, Database, ShieldCheck } from "lucide-react";
 import { useWebSocket, WSEvent } from "@/hooks/useWebSocket";
 
