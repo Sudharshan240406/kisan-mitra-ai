@@ -70,10 +70,11 @@ class AgentOrchestrator:
                 )
 
         perf_mgr = getattr(self.container, "performance_manager", None)
+        cache_key = f"query:{getattr(request, 'tenant_id', None) or 'default'}:{getattr(request, 'farmer_id', None) or 'anon'}:{request.query}"
         if perf_mgr:
-            cached_res = perf_mgr.memory_cache.get(f"query:{request.query}")
+            cached_res = perf_mgr.memory_cache.get(cache_key)
             if cached_res:
-                logger.info(f"Orchestrator: Serving cached response for query '{request.query}'")
+                logger.info(f"Orchestrator: Serving cached response for query '{request.query}' (key: {cache_key})")
                 if hasattr(self.container, "reasoning_platform") and self.container.reasoning_platform:
                     self.container.reasoning_platform.cache._hits += 1
                 latency_ms = (time.time() - start_time) * 1000.0
@@ -675,7 +676,7 @@ class AgentOrchestrator:
                 execution_time_ms=duration_ms
             )
             if perf_mgr:
-                perf_mgr.memory_cache.set(f"query:{request.query}", response)
+                perf_mgr.memory_cache.set(cache_key, response)
                 perf_mgr.record_latency(duration_ms)
             return response
 
