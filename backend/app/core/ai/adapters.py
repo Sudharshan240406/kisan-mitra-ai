@@ -346,7 +346,8 @@ class OllamaAdapter(BaseAdapter):
         if self._client is None:
             try:
                 import httpx
-                self._client = httpx.Client(base_url=self.host, timeout=30.0)
+                timeout = httpx.Timeout(2.0, connect=1.0)
+                self._client = httpx.Client(base_url=self.host, timeout=timeout)
             except ImportError:
                 raise AIPlatformException("httpx package must be installed to run Ollama provider.")
 

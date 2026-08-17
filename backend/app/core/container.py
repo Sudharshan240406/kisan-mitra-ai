@@ -199,12 +199,14 @@ class Container:
         self.ai_router = AIModelRouter(self.ai_registry)
 
         # Wire unified AI model platform
+        default_provider = getattr(self.settings, "DEFAULT_LLM_PROVIDER", "gemini") or "gemini"
         self.llm_provider: BaseLLMProvider = AIModelPlatform(
             registry=self.ai_registry,
             cost_manager=self.ai_cost_manager,
             router=self.ai_router,
             event_bus=self.event_bus,
-            telemetry=self.telemetry
+            telemetry=self.telemetry,
+            default_provider=default_provider
         )
         logger.info("Container: Dynamic AI Model Platform initialized successfully.")
 

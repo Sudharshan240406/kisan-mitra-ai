@@ -89,8 +89,16 @@ class AIModelRouter:
             latency_score = 1000.0 / max(model.average_latency_ms, 100.0)
             latency_score = min(latency_score, 1.0)
 
-            # Preference Bonus
-            pref_bonus = 0.1 if preferred_provider and model.provider_name == preferred_provider.lower() else 0.0
+            # Preference Bonus: Give strong precedence (+2.0) to explicitly requested or configured provider (e.g. Gemini)
+            pref_bonus = 0.0
+            if preferred_provider:
+                p_low = preferred_provider.lower()
+                if (
+                    model.provider_name.lower() == p_low
+                    or model.model_id.lower() == p_low
+                    or p_low in model.model_id.lower()
+                ):
+                    pref_bonus = 2.0
 
             # Final utility scorecard assembly
             utility_score = (

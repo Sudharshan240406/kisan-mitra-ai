@@ -26,13 +26,15 @@ class AIModelPlatform(BaseLLMProvider):
         cost_manager: CostAndPerformanceManager,
         router: AIModelRouter,
         event_bus: EventBus,
-        telemetry: TelemetryFramework
+        telemetry: TelemetryFramework,
+        default_provider: Optional[str] = None
     ) -> None:
         self.registry = registry
         self.cost_manager = cost_manager
         self.router = router
         self.event_bus = event_bus
         self.telemetry = telemetry
+        self.default_provider = default_provider or "gemini"
         self.default_model_id = "gemini-1.5-pro"
 
     def get_model_name(self) -> str:
@@ -62,7 +64,7 @@ class AIModelPlatform(BaseLLMProvider):
     ) -> str:
         # Determine task type dynamically from context or arguments
         task_type = kwargs.get("task_type", "advisory")
-        preferred_provider = kwargs.get("preferred_provider", None)
+        preferred_provider = kwargs.get("preferred_provider", self.default_provider)
 
         budget_left = self.cost_manager.daily_budget_usd - self.cost_manager.accumulated_cost_usd
 

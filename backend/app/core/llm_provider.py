@@ -296,7 +296,8 @@ class OllamaLLMProvider(BaseLLMProvider):
         if self._client is None:
             try:
                 import httpx
-                self._client = httpx.Client(base_url=self.host, timeout=60.0)
+                timeout = httpx.Timeout(2.0, connect=1.0)
+                self._client = httpx.Client(base_url=self.host, timeout=timeout)
             except ImportError as e:
                 raise ProviderException("httpx package is not installed.", details={"error": str(e)})
 
