@@ -413,7 +413,10 @@ async def test_routers_and_telemetry_workflow() -> None:
     assert ChannelEventType.MESSAGE_RECEIVED.value in events_logged
 
     # Wait briefly for background task processing to complete
-    await asyncio.sleep(0.5)
+    for _ in range(20):
+        if ChannelEventType.MESSAGE_PROCESSED.value in events_logged:
+            break
+        await asyncio.sleep(0.1)
 
     # Verification of background run completion
     assert ChannelEventType.MESSAGE_PROCESSED.value in events_logged
