@@ -100,6 +100,19 @@ CURATED_SCHEMES: list[dict[str, Any]] = [
         "nearest_office": "Regional Centre of Organic Farming (RCOF)",
         "department": "Ministry of Agriculture",
         "tags": ["subsidy", "organic farming", "chemical free", "natural farming", "pkvy", "government scheme"]
+    },
+    {
+        "id": "pm-kusum",
+        "name": "PM-KUSUM",
+        "title": "Pradhan Mantri Kisan Urja Suraksha evam Utthaan Mahabhiyan",
+        "benefits": "60% government subsidy for installing solar agriculture pumps and solarizing grid-connected irrigation pumps.",
+        "description": "Financial subsidy and technical support for farmers to set up stand-alone solar agriculture pumps and replace diesel/electric pumps.",
+        "required_documents": ["Aadhaar", "Bank Passbook", "Land Record", "Electricity Connection Copy"],
+        "url": "https://pmkusum.mnre.gov.in",
+        "helpline": "1800-180-3333",
+        "nearest_office": "State Renewable Energy Development Agency or District Agriculture Office",
+        "department": "Ministry of New and Renewable Energy",
+        "tags": ["pump", "solar pump", "irrigation pump", "borewell", "tubewell", "kusum", "subsidy", "machinery", "equipment"]
     }
 ]
 
@@ -176,6 +189,11 @@ class SchemeService:
             if not farmer.is_organic:
                 return "Possibly Eligible", "Must participate in organic cluster transition group.", 0.8
             return "Eligible", "Practices organic farming with eligible landholding size.", 1.0
+
+        elif sid == "pm-kusum":
+            if farmer.land_size_hectares <= 0:
+                return "Not Eligible", "Cultivable land ownership required for solar pump installation.", 1.0
+            return "Eligible", "Eligible for up to 60% solar pump subsidy under PM-KUSUM scheme.", 1.0
 
         # Fallback default
         return "Possibly Eligible", "Meets general farming demographic criteria.", 0.5

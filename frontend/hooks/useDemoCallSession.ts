@@ -79,15 +79,79 @@ const GREETINGS: Record<string, (name: string) => string> = {
 
 const FALLBACK_RESPONSES: Record<string, (name: string) => string> = {
   "en-IN": (n) => `Your inquiry has been processed. You may be eligible for PM-Kisan Samman Nidhi scheme providing ₹6,000 per year. Please submit your Aadhaar card and land records to the nearest agriculture office.`,
-  "hi-IN": (n) => `${n} जी, आपकी जानकारी संसाधित की गई है। आप पीएम-किसान सम्मान निधि योजना के लिए पात्र हो सकते हैं जो प्रति वर्ष ₹6,000 प्रदान करती है। कृपया अपना आधार कार्ड और भूमि अभिलेख नजदीकी कृषि कार्यालय में जमा करें।`,
-  "kn-IN": (n) => `${n} ಅವರೇ, ನಿಮ್ಮ ಮಾಹಿತಿಯನ್ನು ಪ್ರಕ್ರಿಯೆಗೊಳಿಸಲಾಗಿದೆ. ನೀವು ಪಿಎಂ-ಕಿಸಾನ್ ಸಮ್ಮಾನ ನಿಧಿ ಯೋಜನೆಗೆ ಅರ್ಹರಾಗಿರಬಹುದು, ಇದು ವಾರ್ಷಿಕ ₹6,000 ಒದಗಿಸುತ್ತದೆ. ದಯವಿಟ್ಟು ನಿಮ್ಮ ಆಧಾರ್ ಕಾರ್ಡ್ ಮತ್ತು ಭೂಮಿ ದಾಖಲೆಗಳನ್ನು ಸಮೀಪದ ಕೃಷಿ ಕಚೇರಿಗೆ ಸಲ್ಲಿಸಿ.`,
-  "te-IN": (n) => `${n} గారు, మీ సమాచారం ప్రాసెస్ చేయబడింది. మీరు పిఎం-కిసాన్ సమ్మాన్ నిధి పథకానికి అర్హులు కావచ్చు, ఇది సంవత్సరానికి ₹6,000 అందిస్తుంది. దయచేసి మీ ఆధార్ కార్డు మరియు భూమి పత్రాలను సమీపంలోని వ్యవసాయ కార్యాలయంలో సమర్పించండి.`,
-  "ta-IN": (n) => `${n} அவர்களே, உங்கள் தகவல் செயலாக்கப்பட்டது. நீங்கள் பிஎம்-கிசான் சம்மான் நிதி திட்டத்திற்கு தகுதியானவராக இருக்கலாம், இது ஆண்டுக்கு ₹6,000 வழங்குகிறது. தயவுசெய்து உங்கள் ஆதார் அட்டை மற்றும் நிலப் பதிவுகளை அருகிலுள்ள வேளாண் அலுவலகத்தில் சமர்ப்பிக்கவும்.`,
-  "ml-IN": (n) => `${n} ജി, നിങ്ങളുടെ വിവരങ്ങൾ പ്രോസസ്സ് ചെയ്തു. നിങ്ങൾ പിഎം-കിസാൻ സമ്മാൻ നിധി പദ്ധതിക്ക് അർഹനാകാം, ഇത് പ്രതിവർഷം ₹6,000 നൽകുന്നു. ദയവായി നിങ്ങളുടെ ആധാർ കാർഡും ഭൂമി രേഖകളും അടുത്തുള്ള കൃഷി ഓഫീസിൽ സമർപ്പിക്കുക.`,
-  "mr-IN": (n) => `${n} जी, आपली माहिती प्रक्रिया केली गेली आहे. आपण पीएम-किसान सम्मान निधी योजनेसाठी पात्र असाल, जी दरवर्षी ₹6,000 देते. कृपया आपले आधार कार्ड आणि जमीन नोंदी जवळच्या कृषी कार्यालयात सादर करा.`,
-  "pa-IN": (n) => `${n} ਜੀ, ਤੁਹਾਡੀ ਜਾਣਕਾਰੀ ਪ੍ਰਕਿਰਿਆ ਕੀਤੀ ਗਈ ਹੈ। ਤੁਸੀਂ ਪੀਐਮ-ਕਿਸਾਨ ਸਮਮਾਨ ਨਿਧੀ ਯੋਜਨਾ ਲਈ ਯੋਗ ਹੋ ਸਕਦੇ ਹੋ ਜੋ ਪ੍ਰਤੀ ਸਾਲ ₹6,000 ਪ੍ਰਦਾਨ ਕਰਦੀ ਹੈ। ਕਿਰਪਾ ਕਰਕੇ ਆਪਣਾ ਆਧਾਰ ਕਾਰਡ ਅਤੇ ਜ਼ਮੀਨੀ ਰਿਕਾਰਡ ਨੇੜੇ ਦੇ ਖੇਤੀਬਾੜੀ ਦਫ਼ਤਰ ਵਿੱਚ ਜਮ੍ਹਾਂ ਕਰੋ।`,
-  "gu-IN": (n) => `${n} જી, તમારી માહિતી પ્રક્રિયા કરવામાં આવી છે. તમે પીએમ-કિસાન સમ્માન નિધિ યોજના માટે પાત્ર હોઈ શકો, જે વાર્ષિક ₹6,000 આપે છે. કૃપા કરી તમારું આધાર કાર્ડ અને જમીન નોંધ નજીકની કૃષિ કચેરીમાં જમા કરો.`,
-  "bn-IN": (n) => `${n} জি, আপনার তথ্য প্রক্রিয়া করা হয়েছে। আপনি পিএম-কিসান সম্মান নিধি প্রকল্পের জন্য যোগ্য হতে পারেন যা বছরে ₹6,000 প্রদান করে। দয়া করে আপনার আধার কার্ড এবং জমির রেকর্ড নিকটস্থ কৃষি অফিসে জমা দিন।`,
+  "hi-IN": (n) => `${n} जी, आपकी जानकारी संस�export function getFallbackResponse(question: string, langCode: string, name: string): { topScheme: string; responseText: string } {
+  const q = question.toLowerCase().trim();
+
+  const isCropDamage = /damage|rain|flood|drought|loss|compensation|claim|ruined|hailstorm|ಹಾನಿ|ಮಳೆ|ಮಳೆಯಿಂದ|ನಷ್ಟ|ಪರಿಹಾರ|ಬೆಳೆ ಹಾನಿ|ಬೆಳೆ ನಷ್ಟ|नुकसान|खराब|बारिश|मुआवजा|क्षति|पाड़ैपोयिंदी|నష్టం|పరిహారం|നശിച്ചു|നഷ്ടപരിഹാരം/.test(q);
+  const isInsurance = /insurance|bima|premium|policy|ವಿಮೆ|ಬೆಳೆ ವಿಮೆ|ಫಸಲ್ ಬಿಮಾ|बीमा|फसल बीमा|காப்பீடு|ഇൻഷുറൻസ്|బీమా/.test(q);
+  const isPump = /pump|solar|borewell|tubewell|kusum|motor|ಪಂಪ್|ಬೋರ್‌ವೆಲ್|ಮೋಟಾರ್|पंप|ट्यूबवेल/.test(q);
+  const isPmKisan = /pm-kisan|pm kisan|kisan payment|6000|instalment|installment|ಕಿಸಾನ್ ಸಮ್ಮಾನ|ಕಿಸಾನ್ ಹಣ|किस्त|किश्त|కిసాన్ డబ్బులు|పీఎం-కిసాన్|തവണ/.test(q);
+  const isPest = /pest|pests|disease|insect|yellow rust|spray|ಕೀಟ|ರೋಗ|कीट|बीमारी|తెగులు|పురుగులు|పూச்சி|കീട/.test(q);
+  const isPrice = /price|rate|mandi|market|cost|ಬೆಲೆ|ಮಾರುಕಟ್ಟೆ|ಮಂಡಿ|भाव|दाम|मंडी|ధర|మార్కెట్|விலை|വില/.test(q);
+
+  if (isCropDamage) {
+    const text: Record<string, string> = {
+      "kn-IN": `ಮಳೆಯಿಂದ ಬೆಳೆ ಹಾನಿಯಾಗಿದ್ದರೆ ಪ್ರಧಾನ ಮಂತ್ರಿ ಫಸಲ್ ಬಿಮಾ ಯೋಜನೆಯಡಿ (PMFBY) 72 ಗಂಟೆಗಳ ಒಳಗೆ 1800-180-1551 ಗೆ ಕರೆ ಮಾಡಿ ನಷ್ಟ ಪರಿಹಾರ ಪಡೆಯಬಹುದು.`,
+      "hi-IN": `भारी बारिश से हुए फसल नुकसान के लिए प्रधानमंत्री फसल बीमा योजना (PMFBY) के तहत 72 घंटे के भीतर टोल-फ्री 1800-180-1551 पर सूचना दें।`,
+      "te-IN": `వర్షాల వల్ల పంట నష్టపోతే ప్రధాన మంత్రి ఫసల్ బీమా యోజన (PMFBY) కింద 72 గంటల వ్యవధిలో 1800-180-1551 కి నివేదించండి.`,
+      "en-IN": `For crop damage caused by heavy rain or natural disasters, report within 72 hours under Pradhan Mantri Fasal Bima Yojana (PMFBY) via helpline 1800-180-1551 to claim loss compensation.`,
+    };
+    return { topScheme: "Pradhan Mantri Fasal Bima Yojana", responseText: text[langCode] || text["en-IN"] };
+  }
+
+  if (isInsurance) {
+    const text: Record<string, string> = {
+      "kn-IN": `ನಿಮ್ಮ ಹತ್ತಿರದ ಸಿಎಸ್‌ಸಿ ಸೆಂಟರ್, ಬ್ಯಾಂಕ್ ಅಥವಾ PMFBY ಪೋರ್ಟಲ್ ಮೂಲಕ ಬೆಳೆ ನೋಂದಣಿ ಅವಧಿ ಮುಗಿಯುವ ಮುನ್ನ ಕಡಿಮೆ ಕಂತಿನ ದರದಲ್ಲಿ ಬೆಳೆ ವಿಮೆ ಪಡೆದುಕೊಳ್ಳಬಹುದು.`,
+      "hi-IN": `आप निकटतम सीएससी केंद्र, बैंक शाखा या PMFBY पोर्टल के माध्यम से बुवाई सीजन की अंतिम तिथि से पहले फसल बीमा करवा सकते हैं।`,
+      "te-IN": `మీ సమీప CSC కేంద్రం, బ్యాంక్ లేదా PMFBY పోర్టల్ ద్వారా పంట బీమా నమోదు చేసుకోవచ్చు.`,
+      "en-IN": `You can enroll for PM Fasal Bima Yojana crop insurance at your local CSC center, bank branch, or via the PMFBY portal before the cutoff date.`,
+    };
+    return { topScheme: "PMFBY Crop Insurance Enrollment", responseText: text[langCode] || text["en-IN"] };
+  }
+
+  if (isPump) {
+    const text: Record<string, string> = {
+      "kn-IN": `ಪಿಎಂ-ಕುಸುಮ್ (PM-KUSUM) ಯೋಜನೆಯಡಿ ಸೌರಶಕ್ತಿ ಕೃಷಿ ಪಂಪ್‌ಸೆಟ್ ಮತ್ತು ನೀರಾವರಿ ಉಪಕರಣ ಅಳವಡಿಕೆಗೆ ಶೇಕಡಾ 60% ವರೆಗೆ ಸರ್ಕಾರಿ ಸಬ್ಸಿಡಿ ದೊರೆಯುತ್ತದೆ.`,
+      "hi-IN": `पीएम-कुसुम (PM-KUSUM) योजना के तहत कृषि सोलर पंप और सिंचाई उपकरण लगाने पर 60% तक सरकारी सब्सिडी दी जाती है।`,
+      "te-IN": `పీఎం-కుసుమ్ (PM-KUSUM) పథకం కింద సోలార్ వ్యవసాయ పంపుల ఏర్పాటుకు 60% ప్రభుత్వ రాయితీ లభిస్తుంది.`,
+      "en-IN": `Under PM-KUSUM scheme, farmers receive up to 60% government subsidy for installing solar agriculture pumps and repairing irrigation equipment.`,
+    };
+    return { topScheme: "PM-KUSUM Solar Pump Scheme", responseText: text[langCode] || text["en-IN"] };
+  }
+
+  if (isPmKisan) {
+    const text: Record<string, string> = {
+      "kn-IN": `ಪಿಎಂ ಕಿಸಾನ್ ಯೋಜನೆಯಡಿ ವಾರ್ಷಿಕ ₹6,000 ಹಣವನ್ನು 3 ಕಂತುಗಳಲ್ಲಿ (₹2,000 ಪ್ರತಿ ಕಂತು) ನೇರವಾಗಿ ಬ್ಯಾಂಕ್ ಖಾತೆಗೆ ಜಮೆ ಮಾಡಲಾಗುತ್ತದೆ.`,
+      "hi-IN": `पीएम किसान की राशि प्रतिवर्ष ₹6,000 की 3 समान किस्तों में सीधे बैंक खाते में भेजी जाती है। अपनी ई-केवाईसी जांचें।`,
+      "te-IN": `పీఎం కిసాన్ సమ్మాన్ నిధి ద్వారా సంవత్సరానికి ₹6,000 ఆర్థిక సహాయం 3 విడతలలో నేరుగా బ్యాంక్ ఖాతాలో జమ చేయబడుతుంది.`,
+      "en-IN": `Under PM-Kisan Samman Nidhi, eligible farmers receive ₹6,000 per year in 3 equal instalments of ₹2,000 via direct bank transfer.`,
+    };
+    return { topScheme: "PM-Kisan Samman Nidhi", responseText: text[langCode] || text["en-IN"] };
+  }
+
+  if (isPest) {
+    const text: Record<string, string> = {
+      "kn-IN": `ಬೆಳೆಯಲ್ಲಿ ಕೀಟ ಮತ್ತು ರೋಗ ಬಾಧೆ ನಿಯಂತ್ರಿಸಲು ಸಮಗ್ರ ಕೀಟ ನಿರ್ವಹಣೆ (IPM) ಅನುಸರಿಸಿ. ಉಚಿತ ಸಲಹೆಗೆ ಕಿಸಾನ್ ಕಾಲ್ ಸೆಂಟರ್ 1800-180-1551 ಗೆ ಕರೆ ಮಾಡಿ.`,
+      "hi-IN": `फसल में कीट एवं रोग नियंत्रण के लिए एकीकृत कीट प्रबंधन (IPM) अपनाएं और किसान कॉल सेंटर 1800-180-1551 पर संपर्क करें।`,
+      "te-IN": `పంట తెగుళ్లు నివారణకు సమగ్ర సస్యరక్షణ చర్యలు చేపట్టండి. కిసాన్ కాల్ సెంటర్ 1800-180-1551 ని సంప్రదించండి.`,
+      "en-IN": `To control pest infestation and crop diseases, adopt Integrated Pest Management (IPM). Call Kisan Call Centre at 1800-180-1551 for advice.`,
+    };
+    return { topScheme: "Integrated Pest Management", responseText: text[langCode] || text["en-IN"] };
+  }
+
+  if (isPrice) {
+    const text: Record<string, string> = {
+      "kn-IN": `ಇಂದಿನ ಮಾರುಕಟ್ಟೆ ಧಾರಣೆಯು ನಿಮ್ಮ ಸಮೀಪದ ಕೃಷಿ ಉತ್ಪನ್ನ ಮಾರುಕಟ್ಟೆ (APMC) ಹಾಗೂ e-NAM ಪೋರ್ಟಲ್‌ನಲ್ಲಿ ಲಭ್ಯವಿದೆ.`,
+      "hi-IN": `आज की मंडी दरें आपके निकटतम कृषि उपज मंडी समिति (APMC) और e-NAM पोर्टल पर उपलब्ध हैं।`,
+      "te-IN": `ఈరోజు మార్కెట్ మరియు మండి ధరలు e-NAM పోర్టల్ మరియు స్థానిక APMC మార్కెట్‌లో లభ్యమవుతాయి.`,
+      "en-IN": `Today's market prices and mandi rates are available via the e-NAM portal and your local APMC market.`,
+    };
+    return { topScheme: "e-NAM & Mandi Price Information", responseText: text[langCode] || text["en-IN"] };
+  }
+
+  const defaultFn = FALLBACK_RESPONSES[langCode] || FALLBACK_RESPONSES["en-IN"];
+  return { topScheme: "Kisan Mitra Agricultural Advisory", responseText: defaultFn(name) };
+}�়া করা হয়েছে। আপনি পিএম-কিসান সম্মান নিধি প্রকল্পের জন্য যোগ্য হতে পারেন যা বছরে ₹6,000 প্রদান করে। দয়া করে আপনার আধার কার্ড এবং জমির রেকর্ড নিকটস্থ কৃষি অফিসে জমা দিন।`,
 };
 
 export function getFallbackResponse(question: string, langCode: string, name: string): { topScheme: string; responseText: string } {

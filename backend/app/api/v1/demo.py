@@ -958,6 +958,8 @@ LANGUAGE_RESPONSES: dict[str, dict[str, str]] = {
 
         "drip_irrigation": "ಪ್ರಧಾನ ಮಂತ್ರಿ ಕೃಷಿ ಸಿಂಚಾಯಿ ಯೋಜನೆ (PMKSY) ಅಡಿಯಲ್ಲಿ ಹನಿ ನೀರಾವರಿ ಅಳವಡಿಕೆಗೆ ಶೇಕಡಾ 45% ರಿಂದ 55% ವರೆಗೆ ಸರ್ಕಾರಿ ಸಬ್ಸಿಡಿ ದೊರೆಯುತ್ತದೆ.",
 
+        "solar_pump": "ಪಿಎಂ-ಕುಸುಮ್ (PM-KUSUM) ಯೋಜನೆಯಡಿ ಸೌರಶಕ್ತಿ ಕೃಷಿ ಪಂಪ್‌ಸೆಟ್ ಮತ್ತು ನೀರಾವರಿ ಉಪಕರಣ ಅಳವಡಿಕೆಗೆ ಶೇಕಡಾ 60% ವರೆಗೆ ಸರ್ಕಾರಿ ಸಬ್ಸಿಡಿ ದೊರೆಯುತ್ತದೆ. ಕೃಷಿ ಇಲಾಖೆಯಲ್ಲಿ ಅರ್ಜಿ ಸಲ್ಲಿಸಿ.",
+
         "organic_farming": "ಪರಂಪರಾಗತ್ ಕೃಷಿ ವಿಕಾಸ ಯೋಜನೆ ಅಡಿಯಲ್ಲಿ ಸಾವಯವ ಕೃಷಿ ಉತ್ತೇಜನಕ್ಕಾಗಿ ಪ್ರತಿ ಹೆಕ್ಟೇರ್‌ಗೆ ₹31,000 ಧನಸಹಾಯ ದೊರೆಯುತ್ತದೆ.",
 
         "weather": "ನಿಮ್ಮ ಜಿಲ್ಲೆಯ ಇಂದಿನ ಹವಾಮಾನ ವರದಿಯಂತೆ ಕೀಟನಾಶಕ ಸಿಂಪಡಣೆ ಮತ್ತು ನೀರಾವರಿಯನ್ನು ಯೋಜಿಸಿ.",
@@ -1192,6 +1194,8 @@ LANGUAGE_RESPONSES: dict[str, dict[str, str]] = {
 
         "drip_irrigation": "Under Pradhan Mantri Krishi Sinchayee Yojana (PMKSY), farmers receive 45% to 55% government subsidy for installing micro-irrigation (drip and sprinkler) systems.",
 
+        "solar_pump": "Under PM-KUSUM scheme, farmers receive up to 60% government subsidy for installing solar agriculture pumps and repairing irrigation pump equipment. Apply via the state portal.",
+
         "organic_farming": "To encourage organic farming, financial assistance of ₹31,000 per hectare is provided under Paramparagat Krishi Vikas Yojana (PKVY) for organic inputs and certification.",
 
         "weather": "Check today's local Agromet Weather Advisory for your district before planning irrigation or pesticide spraying.",
@@ -1207,122 +1211,105 @@ LANGUAGE_RESPONSES: dict[str, dict[str, str]] = {
 
 
 SCHEME_MAP: dict[str, tuple[str, str]] = {
-
     "schemes_eligible": ("Government Schemes & Eligibility Evaluation", "General Scheme Eligibility Inquiry"),
-
     "crop_damage": ("Pradhan Mantri Fasal Bima Yojana", "Crop Damage Compensation Claim"),
-
     "pm_kisan": ("PM-Kisan Samman Nidhi", "PM-Kisan Payment Status & DBT Inquiry"),
-
     "crop_insurance": ("PMFBY Crop Insurance Enrollment", "Crop Insurance Registration & Coverage"),
-
     "pest_disease": ("Integrated Pest Management", "Crop Pest & Disease Protection Advisory"),
-
     "market_price": ("e-NAM & Mandi Price Information", "Market Price & Mandi Rate Inquiry"),
-
     "soil_fertilizer": ("Soil Health Card Scheme", "Soil Testing & Fertilizer Recommendation"),
-
     "drip_irrigation": ("PM Krishi Sinchayee Yojana", "Micro-Irrigation Subsidy Inquiry"),
-
+    "solar_pump": ("PM-KUSUM Solar Pump Scheme", "Solar Pump & Irrigation Machinery Subsidy"),
     "organic_farming": ("Paramparagat Krishi Vikas Yojana", "Organic Farming Assistance"),
-
     "weather": ("Agromet Weather Advisory Service", "Weather Forecast Advisory"),
-
     "default": ("Kisan Mitra Agricultural Advisory", "General Agricultural Query")
-
 }
 
 
-
-
-
 def _classify_intent(question: str) -> str:
-
     """Categorize user question into specific, non-overlapping agricultural intent domains."""
-
     q = question.lower().strip()
 
-
-
-    # 1. Specific Crop Damage / Rain Loss
-
-    if any(w in q for w in ["damaged", "heavy rain", "flood", "crop damage", "loss", "ಹಾನಿ", "ಮಳೆ", "ಬೆಳೆ ಹಾನಿ", "नुकसान", "खराब", "बारिश", "मुआवजा", "పాడైపోయింది", "నష్టం", "సేదం", "നശിച്ചു"]):
-
+    # 1. Specific Crop Damage / Rain / Loss / Compensation
+    if any(w in q for w in [
+        "damaged", "heavy rain", "flood", "drought", "crop damage", "crop loss", "loss", "compensation", 
+        "ruined", "ruin", "destroy", "hailstorm", "cyclone", "claim compensation",
+        "ಹಾನಿ", "ಮಳೆ", "ಮಳೆಯಿಂದ", "ಬೆಳೆ ಹಾನಿ", "ನಷ್ಟ", "ಪರಿಹಾರ", "ಪರಿಹಾರ ಹೇಗೆ", "ಬೆಳೆ ನಷ್ಟ", "ಅನಾವೃಷ್ಟಿ", "ಪ್ರವಾಹ",
+        "नुकसान", "खराब", "बारिश", "मुआवजा", "क्षति", "सूखा", "बाढ़", "फसल नुकसान",
+        "పాడైపోయింది", "నష్టం", "పరిహారం", "సేదం", "നശിച്ചു", "നഷ്ടപരിഹാരം"
+    ]):
         return "crop_damage"
 
-
-
-    # 2. PM-KISAN Payment / Status
-
-    if any(w in q for w in ["pm-kisan", "pm kisan", "kisan payment", "6000", "instalment", "installment", "ಕಿಸಾನ್ ಹಣ", "किस्त", "किश्त", "కిసాన్ డబ్బులు", "పీఎం-కిసాన్", "కిసాన్", "తవணை", "തവണ"]):
-
-        return "pm_kisan"
-
-
-
-    # 3. Crop Insurance Enrollment
-
-    if any(w in q for w in ["get crop insurance", "crop insurance", "insurance policy", "insurance claim", "bima policy", "ವಿಮೆ ಪಡೆದುಕೊಳ್ಳುವುದು", "ಬೆಳೆ ವಿಮೆ", "फसल बीमा", "பயிர் காப்பீடு", "പട്ടയം", "పంట బీమా", "బీమా"]):
-
+    # 2. Crop Insurance Enrollment / Policy / Bima
+    if any(w in q for w in [
+        "get crop insurance", "crop insurance", "insurance policy", "insurance claim", "bima policy", "bima", "premium", "enrollment",
+        "ವಿಮೆ ಪಡೆದುಕೊಳ್ಳುವುದು", "ಬೆಳೆ ವಿಮೆ", "ಫಸಲ್ ಬಿಮಾ", "ವಿಮೆ",
+        "फसल बीमा", "बीमा", "பயிர் காப்பீடு", "காப்பீடு", "പട്ടയം", "పంట బీమా", "బీమా"
+    ]):
         return "crop_insurance"
 
+    # 3. Solar Pump / Borewell / Irrigation Pump / PM-KUSUM
+    if any(w in q for w in [
+        "pump", "broken", "solar pump", "kusum", "pm-kusum", "pm kusum", "borewell", "tubewell", "motor", "machinery", "equipment",
+        "ಪಂಪ್", "ಮೋಟಾರ್", "ಬೋರ್‌ವೆಲ್", "पंप", "ट्यूबवेल", "मशीनरी"
+    ]):
+        return "solar_pump"
 
+    # 4. PM-KISAN Payment / Status / Income Support
+    if any(w in q for w in [
+        "pm-kisan", "pm kisan", "kisan payment", "6000", "instalment", "installment", 
+        "ಕಿಸಾನ್ ಹಣ", "ಪಿಎಂ-ಕಿಸಾನ್", "किस्त", "किश्त", "కిసాన్ డబ్బులు", "పీఎం-కిసాన్", "തവണ"
+    ]):
+        return "pm_kisan"
 
-    # 4. Pest / Insect / Disease Control
-
-    if any(w in q for w in ["pest", "pests", "disease", "insect", "insects", "yellow rust", "spray", "ಕೀಟ", "ರೋಗ", "कीट", "कीड़ा", "बीमारी", "తెగులు", "తెగుళ్ల", "పురుగులు", "నివారణ", "பூச்சி"]):
-
+    # 5. Pest / Insect / Disease Control
+    if any(w in q for w in [
+        "pest", "pests", "disease", "insect", "insects", "yellow rust", "spray", 
+        "ಕೀಟ", "ರೋಗ", "कीट", "कीड़ा", "बीमारी", "తెగులు", "తెగుళ్ల", "పురుగులు", "నివారణ", "பூச்சி"
+    ]):
         return "pest_disease"
 
-
-
-    # 5. General Scheme Eligibility
-
-    if any(w in q for w in ["eligible", "eligibility", "schemes", "government scheme", "ಯೋಜನೆಗಳಿಗೆ", "ಯೋಜನೆ", "पात्र", "योजनाएं", "అర్హుడిని", "పథకాలకు", "పథకాలు", "దిట్టం"]):
-
+    # 6. General Scheme & Subsidy Eligibility
+    if any(w in q for w in [
+        "subsidy", "subsidies", "eligible", "eligibility", "small farmer", "marginal farmer", "schemes", "government scheme", 
+        "ಯೋಜನೆಗಳಿಗೆ", "ಯೋಜನೆ", "ಸಬ್ಸಿಡಿ", "ಅರ್ಹತೆ", "पात्र", "योजनाएं", "सब्सिडी", "అర్హుడిని", "పథకాలకు", "పథకాలు", "దిట్టం"
+    ]):
         return "schemes_eligible"
 
-
-
-    # 6. Market Price / Mandi Rate
-
-    if any(w in q for w in ["price", "rate", "mandi", "market", "cost", "ಬೆಲೆ", "ಧಾರಣೆ", "ಮಾರುಕಟ್ಟೆ", "ಮಂಡಿ", "भाव", "दाम", "मंडी", "बाजार", "ధర", "మార్కెట్", "விலை", "വില", "ਭਾਅ", "দাম"]):
-
+    # 7. Market Price / Mandi Rate
+    if any(w in q for w in [
+        "price", "rate", "mandi", "market", "cost", 
+        "ಬೆಲೆ", "ಧಾರಣೆ", "ಮಾರುಕಟ್ಟೆ", "ಮಂಡಿ", "भाव", "दाम", "मंडी", "बाजार", "ధర", "మార్కెట్", "விலை", "വില", "ਭਾਅ", "দাম"
+    ]):
         return "market_price"
 
-
-
-    # 7. Soil Health & Fertilizer
-
-    if any(w in q for w in ["soil", "fertilizer", "urea", "dap", "npk", "testing", "ಮಣ್ಣು", "ರಸಗೊಬ್ಬರ", "ಗೊಬ್ಬರ", "ಪರೀಕ್ಷೆ", "मिट्टी", "खाद", "उर्वरक", "నేల", "ఎరువు", "மண்", "உரம்", "മണ്ണ്"]):
-
+    # 8. Soil Health & Fertilizer
+    if any(w in q for w in [
+        "soil", "fertilizer", "urea", "dap", "npk", "testing", 
+        "ಮಣ್ಣು", "ರಸಗೊಬ್ಬರ", "ಗೊಬ್ಬರ", "ಪರೀಕ್ಷೆ", "मिट्टी", "खाद", "उर्वरक", "నేల", "ఎరువు", "மண்", "உரம்", "മണ്ണ്"
+    ]):
         return "soil_fertilizer"
 
-
-
-    # 8. Drip / Sprinkler Irrigation
-
-    if any(w in q for w in ["drip", "irrigation", "sprinkler", "subsidy", "ಹನಿ ನೀರಾವರಿ", "ಸಬ್ಸಿಡಿ", "ड्रिप", "सिंचाई", "డ్రిప్", "సేద్యం", "சொட்டு நீர்", "ഡ്രിപ്പ്"]):
-
+    # 9. Drip / Sprinkler Irrigation
+    if any(w in q for w in [
+        "drip", "sprinkler", "micro-irrigation", 
+        "ಹನಿ ನೀರಾವರಿ", "ड्रिप", "सिंचाई", "డ్రిప్", "సేద్యం", "சொட்டு நீர்", "ഡ്രിപ്പ്"
+    ]):
         return "drip_irrigation"
 
-
-
-    # 9. Organic Farming
-
-    if any(w in q for w in ["organic", "jaivik", "compost", "bio", " natural", "ಸಾವಯವ", "जैविक", "సేంద్రీయ", "இயற்கை", "ജൈവ"]):
-
+    # 10. Organic Farming
+    if any(w in q for w in [
+        "organic", "jaivik", "compost", "bio", " natural", 
+        "ಸಾವಯವ", "जैविक", "సేంద్రీय", "இயற்கை", "ജൈവ"
+    ]):
         return "organic_farming"
 
-
-
-    # 10. Weather Forecast
-
-    if any(w in q for w in ["weather", "forecast", "climate", "temperature", "ಹವಾಮಾನ", "मौसम", "వాతావరణం", "வானிலை", "കാലാവസ്ഥ"]):
-
+    # 11. Weather Forecast
+    if any(w in q for w in [
+        "weather", "forecast", "climate", "temperature", 
+        "ಹವಾಮಾನ", "मौसम", "వాతావరణం", "வானிலை", "കാലാവಸ್ಥ"
+    ]):
         return "weather"
-
-
 
     return "default"
 

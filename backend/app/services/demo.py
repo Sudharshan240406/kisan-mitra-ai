@@ -336,7 +336,25 @@ class DemoService:
         crop_str = crops[0] if crops else "Wheat"
         loc_str = location or "Punjab"
 
-        if any(k in q_low for k in ["price", "mandi", "rate"]):
+        if any(k in q_low for k in ["damage", "damaged", "loss", "compensation", "bima", "insurance", " claim", "ಮಳೆ", "ಹಾನಿ", "ನಷ್ಟ", "ಪರಿಹಾರ", "नुकसान", "मुआवजा"]):
+            answers = {
+                "hi": f"भारी बारिश या आपदा से हुए फसल नुकसान के लिए प्रधानमंत्री फसल बीमा योजना (PMFBY) के तहत 72 घंटे के भीतर टोल-फ्री 1800-180-1551 पर सूचना दें।",
+                "kn": f"ಮಳೆಯಿಂದ ಬೆಳೆ ಹಾನಿಯಾಗಿದ್ದರೆ ಪ್ರಧಾನ ಮಂತ್ರಿ ಫಸಲ್ ಬಿಮಾ ಯೋಜನೆಯಡಿ (PMFBY) 72 ಗಂಟೆಗಳ ಒಳಗೆ 1800-180-1551 ಗೆ ಕರೆ ಮಾಡಿ ನಷ್ಟ ಪರಿಹಾರ ಪಡೆಯಬಹುದು.",
+                "pa": f"ਫ਼ਸਲ ਦੇ ਨੁਕਸਾਨ ਲਈ ਪ੍ਰਧਾਨ ਮੰਤਰੀ ਫ਼ਸਲ ਬੀਮਾ ਯੋਜਨਾ (PMFBY) ਦੇ ਤਹਿਤ 1800-180-1551 'ਤੇ ਰਿਪੋਰਟ ਕਰੋ।",
+                "en": f"For crop damage caused by heavy rain or natural disasters, report within 72 hours under Pradhan Mantri Fasal Bima Yojana (PMFBY) via helpline 1800-180-1551 to claim loss compensation."
+            }
+            return answers.get(lang, answers["en"])
+
+        elif any(k in q_low for k in ["pump", "borewell", "tubewell", "motor", "kusum", "ಪಂಪ್", "ಬೋರ್‌ವೆಲ್", "पंप", "ट्यूबवेल"]):
+            answers = {
+                "hi": f"पीएम-कुसुम (PM-KUSUM) योजना के तहत कृषि सोलर पंप और सिंचाई उपकरण लगाने पर 60% तक सरकारी सब्सिडी मिलती है।",
+                "kn": f"ಪಿಎಂ-ಕುಸುಮ್ (PM-KUSUM) ಯೋಜನೆಯಡಿ ಸೌರಶಕ್ತಿ ಕೃಷಿ ಪಂಪ್‌ಸೆಟ್ ಮತ್ತು ನೀರಾವರಿ ಪಂಪ್ ಅಳವಡಿಕೆಗೆ ಶೇಕಡಾ 60% ವರೆಗೆ ಸರ್ಕಾರಿ ಸಬ್ಸಿಡಿ ದೊರೆಯುತ್ತದೆ.",
+                "pa": f"ਪੀਐਮ-ਕੁਸੁਮ (PM-KUSUM) ਯੋਜਨਾ ਤਹਿਤ ਸੋਲਰ ਪੰਪ ਲਈ 60% ਸਰਕਾਰੀ ਸਬਸਿਡੀ ਮਿਲਦੀ ਹੈ।",
+                "en": f"Under the PM-KUSUM scheme, farmers receive up to 60% government subsidy for installing solar agriculture pumps and repairing irrigation equipment."
+            }
+            return answers.get(lang, answers["en"])
+
+        elif any(k in q_low for k in ["mandi", "price", "rate", "market", "भाव", "दाम", "ಮಂಡಿ", "ಬೆಲೆ"]):
             answers = {
                 "hi": f"{loc_str} में {crop_str} का वर्तमान मंडी भाव ₹2,275 प्रति क्विंटल है। मंडी में कीमतें स्थिर बनी हुई हैं।",
                 "kn": f"{loc_str} ದಲ್ಲಿ {crop_str} ನ ಪ್ರಸ್ತುತ ಮಂಡಿ ಬೆಲೆ ಕ್ವಿಂಟಾಲ್‌ಗೆ ₹2,275 ಆಗಿದೆ. ಬೆಲೆಗಳು ಸ್ಥಿರವಾಗಿವೆ.",
@@ -345,7 +363,7 @@ class DemoService:
             }
             return answers.get(lang, answers["en"])
 
-        elif any(k in q_low for k in ["weather", "rain", "forecast"]):
+        elif any(k in q_low for k in ["weather", "forecast"]):
             answers = {
                 "hi": f"{loc_str} में मौसम साफ रहने की संभावना है। तापमान सामान्य रहेगा, खेत के कार्यों के लिए समय अनुकूल है।",
                 "kn": f"{loc_str} ದಲ್ಲಿ ಹವಾಮಾನ ಮುನ್ಸೂಚನೆಯು ಸ್ಪಷ್ಟವಾಗಿರುತ್ತದೆ. ತಾಪಮಾನ ಸಾಮಾನ್ಯವಾಗಿರುತ್ತದೆ, ಕೃಷಿ ಕೆಲಸಕ್ಕೆ ಸೂಕ್ತವಾಗಿದೆ.",
