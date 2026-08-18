@@ -291,3 +291,35 @@ class TestQuestionResponseUniqueness:
             pm_resp = responses[2].lower()
             assert "fasal bima" not in pm_resp and "ಮಳೆಯಿಂದ" not in pm_resp
 
+
+
+class TestOutOfScopeFallback:
+    """
+    Automated Regression Tests for False-Confidence Fallback.
+    Ensures out-of-scope or unmapped queries do NOT silently return PM-Kisan
+    or another scheme confidently, but instead return an honest fallback message.
+    """
+
+    OUT_OF_SCOPE_QUERIES = [
+        "My irrigation pump broke, is there a scheme for that?",
+        "Where can I buy tractor tires near my village?",
+        "Who won the cricket match yesterday?",
+    ]
+
+    async def test_out_of_scope_queries_return_honest_fallback(self):
+        from app.api.v1.demo import process_demo_voice_query, DemoVoiceQueryRequest
+
+        for q in self.OUT_OF_SCOPE_QUERIES:
+            req = DemoVoiceQueryRequest(
+                farmer_id="DEMO-F001",
+                user_selected_language="en",
+                question=q
+            )
+            res = await process_demo_voice_query(req)
+            resp_text = res["voice_response"]
+            top_scheme = res["top_scheme"]
+
+            # Must NOT falsely claim PM-Kisan or PMFBY for unrelated pump/car/tire query
+            assert top_scheme == "General Agricultural Guidance", f"Query '{q}' falsely matched scheme '{top_scheme}'"
+            assert "don't have specific scheme information" in resp_text.lower() or "1800-180-1551" in resp_text
+            assert "pm-kisan" not in resp_text.lower() or "samman nidhi" not in resp_text.lower()
